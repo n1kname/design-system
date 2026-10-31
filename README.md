@@ -39,7 +39,10 @@ CSS names: `--c-*` for colour, `--sp-*`, `--radius-*`, `--layout-*`, `--font-*`,
 | Above or below | `--c-div-neg-*`, `--c-div-mid`, `--c-div-pos-*` | Two hues, near-grey midpoint. |
 | Good or bad | `--c-status-*` | Reserved. Always with an icon and a label. |
 
-Text in a chart wears text tokens, never a series colour. Scatter plots, maps and small multiples stop at three series.
+Text in a chart wears text tokens, never a series colour. Scatter plots, maps and small multiples stop at three series:
+past that, some non-neighbouring pairs get too close for colour-blind readers. A label inside a fill takes white or the
+dark ink, whichever passes 4.5:1, and should stay large or move outside the mark. Slot 1 is the brand orange each theme
+uses, so the dark lightness ceiling sits at 0.76, not the usual 0.67.
 
 Charts render at build time, so a page ships no chart JavaScript and its data stays in that page's HTML.
 
