@@ -1,0 +1,90 @@
+---
+/**
+ * Ranked bars as inline SVG, drawn at build time. No script reaches the browser and
+ * the data stays in this page's HTML, so no shared asset ever holds it. Colours are
+ * tokens, so it follows the theme. Drawn for wide and narrow columns, so its text
+ * stays readable on a phone. `alt` speaks for the chart, and needs every value.
+ */
+import { rankedBars } from '@ds/charts/bars';
+
+interface Row {
+  label: string;
+  value: number;
+  valueLabel?: string;
+  /** A token, such as var(--c-chart-1). Without one, the de-emphasis tone. */
+  color?: string;
+}
+
+interface Props {
+  data: Row[];
+  title?: string;
+  alt: string;
+  caption?: string;
+}
+
+const { data, title, alt, caption } = Astro.props;
+const chart = rankedBars(data);
+---
+
+<figure class="ranked-bars">
+  <div class="plate">
+    {title && <p class="title">{title}</p>}
+    <div role="img" aria-label={alt}>
+      <div class="wide" set:html={chart.wide} />
+      <div class="narrow" set:html={chart.narrow} />
+    </div>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .ranked-bars {
+    margin-block: var(--sp-6) var(--sp-7);
+  }
+
+  .plate {
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6);
+    container-type: inline-size;
+  }
+
+  .title {
+    margin: 0 0 var(--sp-4);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+  }
+
+  div :global(svg) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .narrow {
+    display: none;
+    max-width: 440px;
+  }
+
+  @container (max-width: 560px) {
+    .wide {
+      display: none;
+    }
+
+    .narrow {
+      display: block;
+    }
+  }
+
+  figcaption {
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+    max-width: var(--layout-measure);
+  }
+</style>

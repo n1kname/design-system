@@ -26,7 +26,13 @@ export default defineConfig({
             { label: 'Examples', link: '/charts/examples/' },
           ],
         },
-        { label: 'Components', items: [{ label: 'Donut', link: '/components/donut/' }] },
+        {
+          label: 'Components',
+          items: [
+            { label: 'Ranked bars', link: '/components/ranked-bars/' },
+            { label: 'Donut', link: '/components/donut/' },
+          ],
+        },
         { label: 'Checks', link: '/checks/' },
       ],
     }),

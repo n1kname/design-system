@@ -52,6 +52,9 @@ const DIV_POS = [1, 2, 3].map((i) => `div-pos-${i}`);
 // The dark ceiling is above the usual 0.67 so the brand orange can be itself there.
 const BAND = { light: [0.43, 0.77], dark: [0.48, 0.76] };
 const CHROMA_FLOOR = 0.1;
+// Deep teal cannot reach the floor inside sRGB. It stays far from the orange, which is
+// what the floor protects, and it matches the teal the tags already use.
+const CHROMA_FLOOR_TEAL = 0.08;
 const CVD_TARGET = 8;
 const TRITAN_FLOOR = 6;
 const NORMAL_FLOOR = 15;
@@ -88,7 +91,8 @@ for (const mode of ['light', 'dark']) {
   for (const s of SLOTS) {
     const [L, C] = hexToOklch(t[s]);
     assert(L >= BAND[mode][0] && L <= BAND[mode][1], `${s} ${t[s]} L ${L.toFixed(3)} in band ${BAND[mode].join('-')}`);
-    assert(C >= CHROMA_FLOOR, `${s} ${t[s]} C ${C.toFixed(3)} >= ${CHROMA_FLOOR}`);
+    const floor = s === 'chart-2' ? CHROMA_FLOOR_TEAL : CHROMA_FLOOR;
+    assert(C >= floor, `${s} ${t[s]} C ${C.toFixed(3)} >= ${floor}`);
     for (const bg of CHART_SURFACES) ratio(contrast(t[s], t[bg]), 3, `${s} on ${bg}`, t[s], t[bg]);
   }
   SLOTS.slice(1).forEach((s, i) => {
@@ -152,6 +156,7 @@ for (const mode of ['light', 'dark']) {
   for (const s of STATUS) for (const bg of CHART_SURFACES) ratio(contrast(t[s], t[bg]), 3, `${s} on ${bg}`, t[s], t[bg]);
   assert(cvd(t['status-good'], t['status-critical']) >= CVD_TARGET, `good vs critical colour-blind deltaE ${cvd(t['status-good'], t['status-critical']).toFixed(1)}`);
   for (const k of ['chart-axis', 'chart-neutral']) for (const bg of CHART_SURFACES) ratio(contrast(t[k], t[bg]), 3, `${k} on ${bg}`, t[k], t[bg]);
+  assert(deltaE(t['chart-2'], t['chart-1']) >= 25, `chart-2 vs chart-1 deltaE ${deltaE(t['chart-2'], t['chart-1']).toFixed(1)} >= 25, the leading pair`);
   assert(deltaE(t['chart-neutral'], t['chart-1']) >= NORMAL_FLOOR, `chart-neutral vs chart-1 deltaE ${deltaE(t['chart-neutral'], t['chart-1']).toFixed(1)}`);
 }
 

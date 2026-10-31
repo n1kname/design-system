@@ -1,0 +1,39 @@
+---
+title: Ranked bars
+description: One value per category, read on a shared baseline, drawn at build time.
+---
+
+import RankedBars from '@ds/components/RankedBars.astro';
+import { emphasisData } from '../../../lib/examples.mjs';
+
+For comparing values, especially close ones. Reach for this before a donut.
+
+<RankedBars
+  data={emphasisData}
+  title="Fictional shares"
+  alt="Ranked bars of seven fictional shares. Alder at 24% and Birch at 21% are highlighted. Cedar 16%, Dogwood 13%, Elm 10%, Fir 9%, Ginkgo 7%."
+  caption="A caption goes here. Below 560px of column, the labels move above the bars."
+/>
+
+```astro wrap
+---
+import RankedBars from '@ds/components/RankedBars.astro';
+---
+
+<RankedBars
+  title="Optional."
+  alt="Say what the chart shows, including the values."
+  caption="Optional."
+  data={[
+    { label: 'Alder', value: 24, valueLabel: '24%', color: 'var(--c-chart-1)' },
+    { label: 'Birch', value: 21, valueLabel: '21%' },
+  ]}
+/>
+```
+
+## Keep in mind
+
+- **Rows keep the order you give them.** Sort first if you want the largest on top.
+- **`alt` speaks for the whole chart,** so it needs every value.
+- **No `color` means the neutral tone.** Give a colour to the rows the story is about, not to all of them.
+- **It's one series.** If the bars are different things that need telling apart, you probably want a stacked bar.

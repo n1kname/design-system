@@ -58,4 +58,7 @@ export const emphasisData = shares.map((d, i) => ({
   strong: i < 2,
 }));
 
+// Every slice has its own slot, so a slice can be matched to its label.
+export const partsData = shares.slice(0, 5).map((d, i) => ({ ...d, valueLabel: `${d.value}%`, color: categorical[i] }));
+
 export { SERIES, STACK, deltas, lines, categorical, sequential, diverging };

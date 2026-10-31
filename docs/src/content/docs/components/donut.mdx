@@ -4,14 +4,16 @@ description: A donut as inline SVG with its labels in a list, drawn at build tim
 ---
 
 import Donut from '@ds/components/Donut.astro';
-import { emphasisData } from '../../../lib/examples.mjs';
+import { partsData } from '../../../lib/examples.mjs';
+
+For showing a few parts of a whole at a glance. For close values, or more than six, use [ranked bars](/components/ranked-bars/).
 
 Plot has no arc mark, so this one is drawn with d3-shape.
 
 <Donut
-  data={emphasisData}
+  data={partsData}
   title={['Fictional', 'shares']}
-  alt="Donut chart of seven fictional shares. Alder at 24% and Birch at 21% are highlighted, the rest are grey."
+  alt="Donut chart of five fictional shares. Alder 24%, Birch 21%, Cedar 16%, Dogwood 13%, Elm 10%."
   caption="A caption goes here. Below 600px of column, the list moves under the ring."
 />
 
@@ -35,6 +37,6 @@ import Donut from '@ds/components/Donut.astro';
 
 - **Labels are HTML, not SVG text.** Text inside an SVG shrinks with the column. A list keeps its real size.
 - **`alt` speaks for the whole chart.** The ring and the list are hidden from screen readers, so `alt` needs every value.
-- **No `color` means the neutral tone.** Give a colour to the slices the story is about, not to all of them.
+- **Every slice needs its own slot.** Otherwise you can't match a slice to its label. Grey slices only work when you don't need to tell them apart, and that's rarely true.
 - **Slices keep the order you give them.** It starts at 12 o'clock and runs clockwise, so sort first if you want largest first.
 - **Six slices is a good limit.** Past that, bars usually read better.

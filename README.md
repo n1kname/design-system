@@ -34,7 +34,7 @@ CSS names: `--c-*` for colour, `--sp-*`, `--radius-*`, `--layout-*`, `--font-*`,
 | Job | Tokens | Rule |
 |---|---|---|
 | Identity | `--c-chart-1` to `8` | Fixed order, never cycled. A ninth series folds into Other. |
-| One thing matters | `--c-chart-1` and `--c-chart-neutral` | Highlight it, grey the rest. |
+| One thing matters | `--c-chart-1` and `--c-chart-neutral` | Highlight it, grey the rest. Use ranked bars. |
 | How much | `--c-seq-1` to `7`, `--c-seq2-1` to `7` | One hue. Step 1 means little, in both themes. |
 | Above or below | `--c-div-neg-*`, `--c-div-mid`, `--c-div-pos-*` | Two hues, near-grey midpoint. |
 | Good or bad | `--c-status-*` | Reserved. Always with an icon and a label. |

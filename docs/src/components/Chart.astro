@@ -26,9 +26,10 @@ const { chart, alt } = Astro.props;
 
   .narrow {
     display: none;
+    max-width: 440px;
   }
 
-  @container (max-width: 480px) {
+  @container (max-width: 560px) {
     .wide {
       display: none;
     }

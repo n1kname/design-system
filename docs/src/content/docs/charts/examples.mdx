@@ -7,7 +7,8 @@ import Chart from '../../../components/Chart.astro';
 import Legend from '../../../components/Legend.astro';
 import Ramp from '../../../components/Ramp.astro';
 import Donut from '@ds/components/Donut.astro';
-import { SERIES, STACK, categorical, sequential, diverging, deltas, lineChart, stackChart, heatmap, divergeChart, emphasisData } from '../../../lib/examples.mjs';
+import RankedBars from '@ds/components/RankedBars.astro';
+import { SERIES, STACK, categorical, sequential, diverging, deltas, lineChart, stackChart, heatmap, divergeChart, emphasisData, partsData } from '../../../lib/examples.mjs';
 
 The data on this page is made up, generated from a fixed seed. Switch the theme to see the charts follow it: they hold no hex values and no script.
 
@@ -29,12 +30,22 @@ A stack only has neighbours touching, so it can use all eight.
 
 ## One thing matters
 
-Use one slot and the neutral tone when the story is about a few values. A donut is for part-to-whole at a glance. To compare close values, use bars.
+Use one slot and the neutral tone when the story is about a few values. Bars keep close values easy to compare.
+
+<RankedBars
+  data={emphasisData}
+  title="Fictional shares"
+  alt="Ranked bars of seven fictional shares. Alder at 24% and Birch at 21% are highlighted. Cedar 16%, Dogwood 13%, Elm 10%, Fir 9%, Ginkgo 7%."
+/>
+
+## Parts of a whole
+
+A donut, when a few parts and their total are the point. Every slice has its own slot, so you can match it to its label.
 
 <Donut
-  data={emphasisData}
+  data={partsData}
   title={['Fictional', 'shares']}
-  alt="Donut chart of seven fictional shares. Alder at 24% and Birch at 21% are highlighted, the rest are grey."
+  alt="Donut chart of five fictional shares. Alder 24%, Birch 21%, Cedar 16%, Dogwood 13%, Elm 10%."
 />
 
 ## How much
@@ -47,7 +58,7 @@ One hue. Step 1 means little and recedes into the surface, in both themes.
 
 ## Above or below
 
-<Chart chart={divergeChart} alt="Bars for twelve fictional months above and below a baseline, blue below and orange above.">
+<Chart chart={divergeChart} alt="Bars for twelve fictional months above and below a baseline, teal below and orange above.">
   <Ramp colors={diverging} labels={['under -12', '-12', '-6', '-2 to 2', '2', '6', '12+']} />
   <details class="data-table">
     <summary>Table: every month</summary>

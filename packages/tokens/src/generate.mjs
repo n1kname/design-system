@@ -14,7 +14,7 @@ import { hexToOklch, hexToRgb, oklch } from './color.mjs';
 const OUT = new URL('../tokens/', import.meta.url);
 const NEUTRAL_HUE = hexToOklch('#421800')[2];
 const ACCENT_HUE = hexToOklch('#FF6711')[2];
-const BLUE_HUE = 255;
+const TEAL_HUE = 200;
 
 // ------------------------------------------------------------------ primitives
 
@@ -50,22 +50,23 @@ const good = { light: oklch(0.62, 0.14, 150), dark: oklch(0.76, 0.14, 150) };
 const critical = { light: oklch(0.5, 0.17, 27), dark: oklch(0.62, 0.17, 27) };
 
 // Categorical: eight hues in a fixed order, the same hue per slot in both themes,
-// so a series keeps its colour across a theme switch. Slot 1 is the brand orange
-// as each theme uses it. Lightness alternates dark and light slot by slot, which
-// keeps neighbours apart in greyscale and for colour-blind readers; chroma is held
-// at about 0.11 so no hue shouts over the orange. Never reorder one theme alone,
-// and never cycle: a ninth series folds into Other.
-const CATEGORICAL_HUES = ['orange', 'blue', 'teal', 'plum', 'violet', 'gold', 'rose', 'sage'];
-const HUE = { blue: 255, teal: 200, plum: 345, violet: 298, gold: 85, rose: 5, sage: 145 };
+// so a series keeps its colour across a theme switch. Orange and teal lead, the pair
+// the sites already use: slot 1 is the brand orange as each theme uses it, and slot 2
+// is the same teal as the focus tags, deep on light and bright on dark. Lightness
+// alternates slot by slot, which keeps neighbours apart in greyscale and for
+// colour-blind readers; chroma is held at about 0.11 so no hue shouts over the orange.
+// Never reorder one theme alone, and never cycle: a ninth series folds into Other.
+const CATEGORICAL_HUES = ['orange', 'teal', 'blue', 'plum', 'sage', 'violet', 'gold', 'rose'];
+const HUE = { teal: TEAL_HUE, blue: 265, plum: 335, sage: 145, violet: 288, gold: 85, rose: 15 };
 const slot = (rows) => rows.map(([name, L, C]) => oklch(L, C, HUE[name]));
 const CATEGORICAL = {
   light: [accent['600'], ...slot([
-    ['blue', 0.48, 0.11], ['teal', 0.6, 0.11], ['plum', 0.46, 0.11], ['violet', 0.6, 0.11],
-    ['gold', 0.5, 0.11], ['rose', 0.6, 0.11], ['sage', 0.48, 0.11],
+    ['teal', 0.48, 0.082], ['blue', 0.6, 0.11], ['plum', 0.44, 0.13], ['sage', 0.6, 0.11],
+    ['violet', 0.48, 0.11], ['gold', 0.6, 0.11], ['rose', 0.5, 0.11],
   ])],
   dark: [accent['500'], ...slot([
-    ['blue', 0.6, 0.11], ['teal', 0.74, 0.11], ['plum', 0.6, 0.11], ['violet', 0.74, 0.11],
-    ['gold', 0.6, 0.11], ['rose', 0.72, 0.11], ['sage', 0.6, 0.11],
+    ['teal', 0.74, 0.11], ['blue', 0.6, 0.11], ['plum', 0.755, 0.13], ['sage', 0.6, 0.11],
+    ['violet', 0.73, 0.11], ['gold', 0.6, 0.11], ['rose', 0.7, 0.11],
   ])],
 };
 
@@ -75,15 +76,15 @@ const CATEGORICAL = {
 const SEQ_L = [0.93, 0.86, 0.78, 0.686, 0.605, 0.51, 0.42];
 const SEQ_ACCENT = { 0.686: '500', 0.605: '600', 0.51: '700', 0.42: '800' };
 const seqOrange = SEQ_L.map((L) => accent[SEQ_ACCENT[L]] ?? oklch(L, 0.04 + (0.93 - L) * 0.6, ACCENT_HUE));
-const seqBlue = SEQ_L.map((L) => oklch(L, Math.min(0.14, 0.03 + (0.93 - L) * 0.4), BLUE_HUE));
+const seqTeal = SEQ_L.map((L) => oklch(L, Math.min(0.11, 0.03 + (0.93 - L) * 0.3), TEAL_HUE));
 
-// Diverging: the blue slot's hue below and the brand orange above, around a
+// Diverging: the teal slot's hue below and the brand orange above, around a
 // midpoint with almost no chroma, because a peach midpoint would read as "a little above".
 const DIV_L = { light: [0.81, 0.605, 0.51], dark: [0.51, 0.686, 0.81] };
-const divNeg = (mode, c) => DIV_L[mode].map((L, i) => oklch(L, c[i], BLUE_HUE));
+const divNeg = (mode, c) => DIV_L[mode].map((L, i) => oklch(L, c[i], TEAL_HUE));
 const DIV = {
-  light: { neg: divNeg('light', [0.1, 0.13, 0.13]), mid: oklch(0.93, 0.004, NEUTRAL_HUE), pos: [accent['300'], accent['600'], accent['700']] },
-  dark: { neg: divNeg('dark', [0.13, 0.13, 0.08]), mid: oklch(0.33, 0.006, NEUTRAL_HUE), pos: [accent['700'], accent['500'], accent['300']] },
+  light: { neg: divNeg('light', [0.09, 0.11, 0.1]), mid: oklch(0.93, 0.004, NEUTRAL_HUE), pos: [accent['300'], accent['600'], accent['700']] },
+  dark: { neg: divNeg('dark', [0.1, 0.11, 0.08]), mid: oklch(0.33, 0.006, NEUTRAL_HUE), pos: [accent['700'], accent['500'], accent['300']] },
 };
 
 const TAG_FOCUS_HUE = 200;
@@ -252,7 +253,7 @@ const primitive = {
       dark: colorGroup(steps(CATEGORICAL.dark)),
     },
     seq: colorGroup(steps(seqOrange)),
-    seq2: colorGroup(steps(seqBlue)),
+    seq2: colorGroup(steps(seqTeal)),
   },
 };
 
