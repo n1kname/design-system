@@ -2,7 +2,7 @@
 // requirement: a component that invents a colour pair adds its assertion here
 // before shipping. Exits non-zero on any failure.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { contrast, deltaE, hexToOklch } from './color.mjs';
 
 const values = JSON.parse(readFileSync(new URL('../dist/values.json', import.meta.url), 'utf8'));
@@ -64,9 +64,16 @@ const cvd = (a, b) => Math.min(deltaE(a, b, 'protan'), deltaE(a, b, 'deutan'));
 
 let total = 0;
 let failures = 0;
+let section = '';
+const results = [];
+const heading = (text) => {
+  section = text;
+  console.log(`\n${text}`);
+};
 const assert = (ok, line) => {
   total++;
   if (!ok) failures++;
+  results.push({ section, ok, line: line.trim() });
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${line}`);
 };
 const ratio = (x, min, label, a, b) =>
@@ -74,10 +81,10 @@ const ratio = (x, min, label, a, b) =>
 
 for (const mode of ['light', 'dark']) {
   const t = values[mode];
-  console.log(`\n${mode.toUpperCase()}: pairings`);
+  heading(`${mode}: pairings`);
   for (const [fg, bg, min, label] of PAIRS) ratio(contrast(t[fg], t[bg]), min, label, t[fg], t[bg]);
 
-  console.log(`\n${mode.toUpperCase()}: categorical`);
+  heading(`${mode}: categorical`);
   for (const s of SLOTS) {
     const [L, C] = hexToOklch(t[s]);
     assert(L >= BAND[mode][0] && L <= BAND[mode][1], `${s} ${t[s]} L ${L.toFixed(3)} in band ${BAND[mode].join('-')}`);
@@ -106,7 +113,7 @@ for (const mode of ['light', 'dark']) {
     assert(cvd(x, y) >= CVD_TARGET && deltaE(x, y) >= NORMAL_FLOOR && deltaE(x, y, 'tritan') >= TRITAN_FLOOR, `all-pairs chart-${p + 1} vs chart-${q + 1} deltaE ${cvd(x, y).toFixed(1)} / ${deltaE(x, y).toFixed(1)}`);
   }
 
-  console.log(`\n${mode.toUpperCase()}: sequential`);
+  heading(`${mode}: sequential`);
   for (const name of ['seq', 'seq2']) {
     const steps = SEQ(name).map((k) => t[k]);
     const Ls = steps.map((h) => hexToOklch(h)[0]);
@@ -126,7 +133,7 @@ for (const mode of ['light', 'dark']) {
     assert(spread < 25, `${name} stays one hue (spread ${spread.toFixed(1)} degrees)`);
   }
 
-  console.log(`\n${mode.toUpperCase()}: diverging`);
+  heading(`${mode}: diverging`);
   const midC = hexToOklch(t['div-mid'])[1];
   assert(midC <= 0.012, `div-mid ${t['div-mid']} chroma ${midC.toFixed(3)} <= 0.012, reads as nothing`);
   [DIV_NEG, DIV_POS].forEach((arm) => {
@@ -141,12 +148,13 @@ for (const mode of ['light', 'dark']) {
     assert(d >= CVD_TARGET, `${k} vs ${DIV_POS[i]} colour-blind deltaE ${d.toFixed(1)} >= ${CVD_TARGET}`);
   });
 
-  console.log(`\n${mode.toUpperCase()}: status and chrome`);
+  heading(`${mode}: status and chrome`);
   for (const s of STATUS) for (const bg of CHART_SURFACES) ratio(contrast(t[s], t[bg]), 3, `${s} on ${bg}`, t[s], t[bg]);
   assert(cvd(t['status-good'], t['status-critical']) >= CVD_TARGET, `good vs critical colour-blind deltaE ${cvd(t['status-good'], t['status-critical']).toFixed(1)}`);
   for (const k of ['chart-axis', 'chart-neutral']) for (const bg of CHART_SURFACES) ratio(contrast(t[k], t[bg]), 3, `${k} on ${bg}`, t[k], t[bg]);
   assert(deltaE(t['chart-neutral'], t['chart-1']) >= NORMAL_FLOOR, `chart-neutral vs chart-1 deltaE ${deltaE(t['chart-neutral'], t['chart-1']).toFixed(1)}`);
 }
 
+writeFileSync(new URL('../dist/report.json', import.meta.url), JSON.stringify({ total, failures, results }, null, 2) + '\n');
 console.log(`\n${failures} failure(s) of ${total} checks.`);
 process.exit(failures ? 1 : 0);

@@ -1,0 +1,9 @@
+---
+interface Props {
+  colors: string[];
+  labels?: string[];
+}
+const { colors, labels = [] } = Astro.props;
+---
+
+<div class="ramp">{colors.map((c, i) => <div><i style={`background: ${c}`} />{labels[i]}</div>)}</div>

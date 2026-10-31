@@ -7,7 +7,9 @@
   "exports": {
     "./tokens.css": "./dist/tokens.css",
     "./tokens.json": "./dist/tokens-studio.json",
-    "./color": "./src/color.mjs"
+    "./color": "./src/color.mjs",
+    "./values.json": "./dist/values.json",
+    "./report.json": "./dist/report.json"
   },
   "files": [
     "dist",

@@ -10,6 +10,8 @@ export { Plot };
 
 const { document } = parseHTML('<!doctype html><html><body></body></html>');
 
+// The caller's wrapper speaks for the chart (role="img" with a label), so the SVG
+// is hidden from screen readers and Plot's labels on its inner parts are dropped.
 export const renderPlot = (options) => {
   const node = Plot.plot({
     document,
@@ -22,7 +24,8 @@ export const renderPlot = (options) => {
     },
     ...options,
   });
-  return node.outerHTML;
+  node.setAttribute('aria-hidden', 'true');
+  return node.outerHTML.replace(/(<(?!svg)[a-z]+[^>]*?) aria-label="[^"]*"/g, '$1');
 };
 
 // Hairline, solid, one step off the surface. Never dashed.

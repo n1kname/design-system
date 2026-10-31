@@ -1,0 +1,21 @@
+---
+title: Checks
+description: Every contrast and colour check, with the results of the last build.
+---
+
+import CheckReport from '../../components/CheckReport.astro';
+
+These run in the build, on the built tokens, and a failure stops the build. This page reads the results of that run, so the numbers can't drift from the tokens.
+
+## What gets checked
+
+- **Contrast, WCAG 2.2 AA:** 4.5:1 for text, 3:1 for chart marks and control edges, on the page, on cards and on sunken plates.
+- **Colour blindness:** protanopia, deuteranopia and tritanopia, simulated with the Machado, Oliveira and Fernandes 2009 model, then measured in OKLab. Neighbours need 8 for protanopia and deuteranopia, and 6 for tritanopia.
+- **Normal vision:** neighbours need 15 in OKLab, and any two slots need 10.
+- **Greyscale:** neighbours need 1.25:1. That's my own floor, no standard sets one.
+- **Labels on fills:** white or the dark ink has to reach 4.5:1 on every slot.
+- **Sequential and diverging:** lightness moves in one direction in steps of at least 0.06, and the ends stand out from the surface.
+
+## Results
+
+<CheckReport />

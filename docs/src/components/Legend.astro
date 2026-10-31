@@ -1,0 +1,9 @@
+---
+interface Props {
+  names: string[];
+  colors: string[];
+}
+const { names, colors } = Astro.props;
+---
+
+<div class="legend">{names.map((n, i) => <span><i style={`background: ${colors[i]}`} />{n}</span>)}</div>

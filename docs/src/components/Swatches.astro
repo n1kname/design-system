@@ -1,0 +1,110 @@
+---
+/**
+ * Fixed hex values for both themes, side by side, so the page shows them whichever
+ * theme it is in. Contrast is computed here, not typed, so the numbers cannot drift.
+ */
+import values from '@ds/tokens/values.json';
+import { contrast } from '@ds/tokens/color';
+
+interface Row {
+  token: string;
+  against?: string;
+  label?: string;
+}
+interface Props {
+  rows: Row[];
+}
+const { rows } = Astro.props;
+const cell = (mode: 'light' | 'dark', r: Row) => {
+  const hex = values[mode][r.token as keyof (typeof values)['light']];
+  const bg = values[mode][(r.against ?? 'bg') as keyof (typeof values)['light']];
+  return { hex, bg, ratio: contrast(hex, bg).toFixed(2) };
+};
+---
+
+<table class="swatches not-content">
+  <thead>
+    <tr><th>Token</th><th>Light</th><th>Dark</th><th>Against</th></tr>
+  </thead>
+  <tbody>
+    {
+      rows.map((r) => (
+        <tr>
+          <td>
+            <code>--c-{r.token}</code>
+            {r.label && <span class="note">{r.label}</span>}
+          </td>
+          {(['light', 'dark'] as const).map((m) => {
+            const c = cell(m, r);
+            return (
+              <td>
+                <span class="chip" style={`background: ${c.bg}`}><i style={`background: ${c.hex}`} /></span>
+                <code>{c.hex}</code>
+                <span class="ratio">{c.ratio}:1</span>
+              </td>
+            );
+          })}
+          <td><code>{r.against ?? 'bg'}</code></td>
+        </tr>
+      ))
+    }
+  </tbody>
+</table>
+
+<style>
+  .swatches {
+    width: 100%;
+    margin-top: var(--sp-4);
+    border-collapse: collapse;
+    font-size: var(--text-body-sm);
+    color: var(--c-text);
+  }
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--c-text-muted);
+  }
+
+  th,
+  td {
+    padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
+    border-bottom: 1px solid var(--c-border);
+    vertical-align: middle;
+  }
+
+  code {
+    font: var(--text-caption) var(--font-mono);
+    color: var(--c-text);
+  }
+
+  .note,
+  .ratio {
+    display: block;
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  .chip {
+    display: inline-flex;
+    padding: 4px;
+    margin-right: var(--sp-2);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    vertical-align: middle;
+  }
+
+  .chip i {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 640px) {
+    th:last-child,
+    td:last-child {
+      display: none;
+    }
+  }
+</style>

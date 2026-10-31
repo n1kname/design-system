@@ -1,0 +1,40 @@
+---
+title: Donut
+description: A donut as inline SVG with its labels in a list, drawn at build time.
+---
+
+import Donut from '@ds/components/Donut.astro';
+import { emphasisData } from '../../../lib/examples.mjs';
+
+Plot has no arc mark, so this one is drawn with d3-shape.
+
+<Donut
+  data={emphasisData}
+  title={['Fictional', 'shares']}
+  alt="Donut chart of seven fictional shares. Alder at 24% and Birch at 21% are highlighted, the rest are grey."
+  caption="A caption goes here. Below 600px of column, the list moves under the ring."
+/>
+
+```astro wrap
+---
+import Donut from '@ds/components/Donut.astro';
+---
+
+<Donut
+  title={['Fictional', 'shares']}
+  alt="Say what the chart shows, including the values."
+  caption="Optional."
+  data={[
+    { label: 'Alder', value: 24, valueLabel: '24%', color: 'var(--c-chart-1)', strong: true },
+    { label: 'Birch', value: 21, valueLabel: '21%' },
+  ]}
+/>
+```
+
+## Keep in mind
+
+- **Labels are HTML, not SVG text.** Text inside an SVG shrinks with the column. A list keeps its real size.
+- **`alt` speaks for the whole chart.** The ring and the list are hidden from screen readers, so `alt` needs every value.
+- **No `color` means the neutral tone.** Give a colour to the slices the story is about, not to all of them.
+- **Slices keep the order you give them.** It starts at 12 o'clock and runs clockwise, so sort first if you want largest first.
+- **Six slices is a good limit.** Past that, bars usually read better.

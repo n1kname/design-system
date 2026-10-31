@@ -1,0 +1,72 @@
+---
+title: Palette
+description: Which chart colour does which job, in light and dark, and where it stops working.
+---
+
+import Swatches from '../../../components/Swatches.astro';
+import Ramp from '../../../components/Ramp.astro';
+import { sequential, diverging } from '../../../lib/examples.mjs';
+
+export const seq2 = [1, 2, 3, 4, 5, 6, 7].map((i) => `var(--c-seq2-${i})`);
+
+Every chart colour does one job. Pick the job first, then the colour.
+
+| What the colour says | Tokens | Rule |
+|---|---|---|
+| Which one | `--c-chart-1` to `8` | Fixed order, never cycled. A ninth series folds into Other. |
+| This one matters | `--c-chart-1`, `--c-chart-neutral` | Highlight it, grey the rest. |
+| How much | `--c-seq-*`, `--c-seq2-*` | One hue. Step 1 means little, in both themes. |
+| Above or below | `--c-div-*` | Two hues around a near-grey midpoint. |
+| Good or bad | `--c-status-*` | Reserved. Always with an icon and a label. |
+
+## Categorical
+
+Eight hues in a fixed order, the same hue per slot in both themes, so a series keeps its colour when the theme changes. Slot 1 is the orange each theme already uses. Chroma stays close to 0.11, so nothing shouts over the orange, and lightness alternates slot by slot, so neighbours stay apart in greyscale.
+
+The ratio is against the sunken plate, the hardest surface in light mode. Results for every surface are on the [Checks](/checks/) page.
+
+<Swatches rows={[
+  { token: 'chart-1', against: 'surface-sunken', label: 'Orange' },
+  { token: 'chart-2', against: 'surface-sunken', label: 'Blue' },
+  { token: 'chart-3', against: 'surface-sunken', label: 'Teal' },
+  { token: 'chart-4', against: 'surface-sunken', label: 'Plum' },
+  { token: 'chart-5', against: 'surface-sunken', label: 'Violet' },
+  { token: 'chart-6', against: 'surface-sunken', label: 'Gold' },
+  { token: 'chart-7', against: 'surface-sunken', label: 'Rose' },
+  { token: 'chart-8', against: 'surface-sunken', label: 'Sage' },
+]} />
+
+## Sequential
+
+Orange by default, blue when a second scale is on screen. The orange ramp lands exactly on the brand steps. These follow the theme you're viewing.
+
+<div className="not-content">
+  <Ramp colors={sequential} labels={['1', '2', '3', '4', '5', '6', '7']} />
+  <Ramp colors={seq2} labels={['1', '2', '3', '4', '5', '6', '7']} />
+</div>
+
+## Diverging
+
+Blue below the baseline, orange above it. The midpoint has almost no chroma, because a peach midpoint would read as "a little above".
+
+<div className="not-content">
+  <Ramp colors={diverging} labels={['neg-3', 'neg-2', 'neg-1', 'mid', 'pos-1', 'pos-2', 'pos-3']} />
+</div>
+
+## Status
+
+Reserved meaning, never "series 4". Good and critical differ in lightness as well as hue, because at the same lightness they collapse for colour-blind readers.
+
+<Swatches rows={[
+  { token: 'status-good', against: 'surface-sunken', label: 'Good' },
+  { token: 'status-warning', against: 'surface-sunken', label: 'Warning' },
+  { token: 'status-serious', against: 'surface-sunken', label: 'Serious' },
+  { token: 'status-critical', against: 'surface-sunken', label: 'Critical' },
+]} />
+
+## Where it stops working
+
+- **Eight colours can't all stay apart for colour-blind readers.** Some pairs that aren't neighbours get close (gold and sage in light, orange and gold in dark). Stacks and lines only have neighbours touching, so they can use all eight. Scatter plots, maps and small multiples stop at three.
+- **Labels inside a fill pass WCAG but mostly score low on APCA.** So keep them large, or put them outside the mark.
+- **Dark mode goes above the usual lightness limit.** The common guideline stops at 0.67. The brand orange sits at 0.69, and I'd rather keep the real orange, so the checks allow up to 0.76.
+- **The simulations are models.** None of this has been tested with colour-blind readers yet. If it fails for you, please tell me.

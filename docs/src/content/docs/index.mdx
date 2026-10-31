@@ -1,0 +1,37 @@
+---
+title: Design system
+description: Design tokens, a chart palette and chart helpers, in light and dark.
+---
+
+Tokens, a chart palette and a few components, shared by a small family of personal sites. It's also a way for me to learn in public, with a bit of help from robots.
+
+**Work in progress.** Components get added as sites move over to it, so expect this to change. Tested in Chrome only so far.
+
+## What's here
+
+- [**Colour**](/foundations/colour/): the roles, with their contrast in both themes.
+- [**Type and space**](/foundations/type-and-space/): three families, one rule for picking between them.
+- [**Chart palette**](/charts/palette/): which colour does which job, and where it stops working.
+- [**Chart examples**](/charts/examples/): every palette on a real chart, on synthetic data.
+- [**Donut**](/components/donut/): the first component.
+- [**Checks**](/checks/): every contrast and colour check, from the last build.
+
+## How it's built
+
+- **Tokens** are [DTCG 2025.10](https://www.designtokens.org/) files, computed in OKLCH and built by [Style Dictionary](https://styledictionary.com/).
+- **Charts** use [Observable Plot](https://observablehq.com/plot/), rendered to SVG at build time. A page ships no chart JavaScript, and its data stays in that page's HTML.
+- **Checks** run in the build. If a colour pair fails, the build fails.
+
+## Use it
+
+```bash
+pnpm install
+pnpm build
+pnpm check
+```
+
+The CSS ends up in `packages/tokens/dist/tokens.css`. Nothing is on npm yet.
+
+Dark mode is `data-theme="dark"` on the root, or the system setting when `data-theme` is absent.
+
+Seen something that doesn't work? Please open an issue on [GitHub](https://github.com/n1kname/design-system), any advice is welcome.

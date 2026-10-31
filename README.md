@@ -1,12 +1,12 @@
 # Design system
 
-Design tokens, a chart palette and chart helpers. Every chart demo in this repo uses synthetic data.
+Design tokens, a chart palette and chart helpers. Every chart example in this repo uses synthetic data.
 
 ```
 packages/tokens       DTCG 2025.10 tokens, built by Style Dictionary into CSS, with contrast checks
 packages/charts       Observable Plot presets and a donut, rendered at build time to SVG
 packages/components   Astro components
-demo                  One static page showing every palette in both themes
+docs                  The docs site, built with Starlight
 ```
 
 ## Use
@@ -17,8 +17,8 @@ pnpm build
 pnpm check
 ```
 
-`pnpm build` writes `packages/tokens/dist/tokens.css` and `demo/dist/index.html`. It exits non-zero if any colour
-pairing fails.
+`pnpm build` writes `packages/tokens/dist/tokens.css` and the docs site to `docs/dist`. It exits non-zero if any colour
+pairing fails. `pnpm run docs` runs the docs site locally.
 
 ## Tokens
 

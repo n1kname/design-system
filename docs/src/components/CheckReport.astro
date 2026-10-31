@@ -1,0 +1,47 @@
+---
+/** The results of the last build's contrast checks, grouped by theme and section. */
+import report from '@ds/tokens/report.json';
+
+const sections = [...new Set(report.results.map((r) => r.section))];
+---
+
+<p class="summary"><strong>{report.total - report.failures} of {report.total}</strong> checks pass in this build.</p>
+
+{
+  sections.map((s) => {
+    const rows = report.results.filter((r) => r.section === s);
+    const passed = rows.filter((r) => r.ok).length;
+    return (
+      <details>
+        <summary>{s[0].toUpperCase() + s.slice(1)} ({passed} of {rows.length})</summary>
+        <ul class="not-content">
+          {rows.map((r) => <li class:list={{ fail: !r.ok }}>{r.ok ? 'Pass' : 'Fail'}: {r.line}</li>)}
+        </ul>
+      </details>
+    );
+  })
+}
+
+<style>
+  details {
+    margin-top: var(--sp-2);
+  }
+
+  summary {
+    cursor: pointer;
+    color: var(--c-text);
+  }
+
+  ul {
+    margin: var(--sp-2) 0 var(--sp-4);
+    padding: 0;
+    list-style: none;
+    font: var(--text-caption)/1.7 var(--font-mono);
+    color: var(--c-text-secondary);
+  }
+
+  .fail {
+    color: var(--c-status-critical);
+    font-weight: 600;
+  }
+</style>

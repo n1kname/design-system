@@ -1,0 +1,122 @@
+/* Starlight's variables, pointed at our tokens. Starlight sets data-theme on the
+ * root, which is the same switch the tokens use, so both themes follow on their own. */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource-variable/bitter/index.css';
+
+:root,
+:root[data-theme='light'] {
+  --sl-font: var(--font-body);
+  --sl-font-mono: var(--font-mono);
+  --sl-color-bg: var(--c-bg);
+  --sl-color-bg-nav: var(--c-bg);
+  --sl-color-bg-sidebar: var(--c-bg);
+  --sl-color-bg-inline-code: var(--c-surface-sunken);
+  --sl-color-hairline: var(--c-border);
+  --sl-color-hairline-light: var(--c-border);
+  --sl-color-hairline-shade: var(--c-border);
+  --sl-color-white: var(--c-text);
+  --sl-color-text: var(--c-text-secondary);
+  --sl-color-gray-1: var(--c-text);
+  --sl-color-gray-2: var(--c-text-secondary);
+  --sl-color-gray-3: var(--c-text-muted);
+  --sl-color-gray-4: var(--c-text-muted);
+  --sl-color-gray-5: var(--c-border);
+  --sl-color-gray-6: var(--c-surface-sunken);
+  --sl-color-black: var(--c-bg);
+  --sl-color-accent-low: var(--c-surface-tint);
+  --sl-color-accent: var(--c-accent-edge);
+  --sl-color-accent-high: var(--c-text-accent);
+  --sl-color-text-accent: var(--c-text-accent);
+  --sl-color-text-invert: var(--c-on-accent);
+}
+
+/* Display marks a boundary: the page title and section breaks. */
+h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3 {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-h2);
+}
+
+.chart-panel {
+  margin-top: 1rem;
+  padding: var(--sp-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.chart-panel svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-3);
+  font-size: var(--text-body-sm);
+  color: var(--c-text);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.legend i,
+.ramp i {
+  display: block;
+  border-radius: 3px;
+}
+
+.legend i {
+  width: 12px;
+  height: 12px;
+}
+
+.ramp {
+  display: flex;
+  gap: 2px;
+  margin-top: var(--sp-3);
+  font: var(--text-caption) var(--font-mono);
+  color: var(--c-text-muted);
+}
+
+.ramp div {
+  flex: 1;
+  min-width: 0;
+}
+
+.ramp i {
+  height: 16px;
+  margin-bottom: var(--sp-1);
+}
+
+.data-table {
+  margin-top: var(--sp-3);
+  font-size: var(--text-body-sm);
+  color: var(--c-text-muted);
+}
+
+.data-table table {
+  display: table;
+  margin-top: var(--sp-2);
+  font: var(--text-mono) var(--font-mono);
+  color: var(--c-text);
+}
+
+/* The current page in the sidebar: the accent fill with its own label, the pair
+ * the checks assert. Starlight's default uses the text accent, which fails with dark ink. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}

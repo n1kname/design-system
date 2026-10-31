@@ -10,6 +10,6 @@
   "scripts": {
     "build": "pnpm -r run build",
     "check": "pnpm -r run check && node scripts/check-public.mjs",
-    "demo": "pnpm --filter @ds/demo run build"
+    "docs": "pnpm --filter @ds/docs run dev"
   }
 }

@@ -1,0 +1,48 @@
+---
+title: Colour
+description: Colour roles and their contrast in light and dark.
+---
+
+import Swatches from '../../../components/Swatches.astro';
+
+Name the role, not the colour. Every value comes from a warm neutral ramp and an orange accent ramp, computed in OKLCH so equal steps look equal.
+
+The contrast shown is computed from the tokens at build time. WCAG 2.2 AA asks for 4.5:1 on text and 3:1 on graphics and control edges.
+
+## Surfaces
+
+The ratio here is against the page, and it's low on purpose. Surfaces separate through their borders.
+
+<Swatches rows={[
+  { token: 'surface', label: 'Cards' },
+  { token: 'surface-sunken', label: 'Plates and wells' },
+  { token: 'surface-tint', label: 'Tinted panels' },
+]} />
+
+## Text
+
+<Swatches rows={[
+  { token: 'text', label: 'Body' },
+  { token: 'text-secondary', label: 'A second ink level' },
+  { token: 'text-muted', label: 'Captions, axis text' },
+  { token: 'text-accent', label: 'Links' },
+]} />
+
+## Accent
+
+The label on the accent fill is the dark ink in both themes, because white on this orange doesn't reach 4.5:1.
+
+<Swatches rows={[
+  { token: 'on-accent', against: 'accent', label: 'Label on the fill' },
+  { token: 'accent-edge', label: 'Accent as a graphic or large type' },
+  { token: 'focus', label: 'Focus ring' },
+]} />
+
+## Borders
+
+`border` is a decorative hairline, so no minimum applies. `border-strong` is for form controls and needs 3:1.
+
+<Swatches rows={[
+  { token: 'border', label: 'Hairline' },
+  { token: 'border-strong', label: 'Form controls' },
+]} />
