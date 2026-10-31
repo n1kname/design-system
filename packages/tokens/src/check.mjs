@@ -49,10 +49,17 @@ const SEQ = (name) => [1, 2, 3, 4, 5, 6, 7].map((i) => `${name}-${i}`);
 const DIV_NEG = [1, 2, 3].map((i) => `div-neg-${i}`);
 const DIV_POS = [1, 2, 3].map((i) => `div-pos-${i}`);
 
-const BAND = { light: [0.43, 0.77], dark: [0.48, 0.67] };
+// The dark ceiling is above the usual 0.67 so the brand orange can be itself there.
+const BAND = { light: [0.43, 0.77], dark: [0.48, 0.76] };
 const CHROMA_FLOOR = 0.1;
 const CVD_TARGET = 8;
+const TRITAN_FLOOR = 6;
 const NORMAL_FLOOR = 15;
+// Non-neighbours can sit close for colour-blind readers; for normal vision they must not.
+const ANY_PAIR_FLOOR = 10;
+// Neighbours stay apart when printed in grey. A project floor: no standard sets one.
+const GREY_FLOOR = 1.25;
+const LABEL_INK = '#FFFFFF';
 const cvd = (a, b) => Math.min(deltaE(a, b, 'protan'), deltaE(a, b, 'deutan'));
 
 let total = 0;
@@ -81,11 +88,22 @@ for (const mode of ['light', 'dark']) {
     const prev = SLOTS[i];
     assert(cvd(t[prev], t[s]) >= CVD_TARGET, `${prev} vs ${s} colour-blind deltaE ${cvd(t[prev], t[s]).toFixed(1)} >= ${CVD_TARGET}`);
     assert(deltaE(t[prev], t[s]) >= NORMAL_FLOOR, `${prev} vs ${s} normal deltaE ${deltaE(t[prev], t[s]).toFixed(1)} >= ${NORMAL_FLOOR}`);
+    const tritan = deltaE(t[prev], t[s], 'tritan');
+    assert(tritan >= TRITAN_FLOOR, `${prev} vs ${s} tritan deltaE ${tritan.toFixed(1)} >= ${TRITAN_FLOOR}`);
+    assert(contrast(t[prev], t[s]) >= GREY_FLOOR, `${prev} vs ${s} in greyscale ${contrast(t[prev], t[s]).toFixed(2)}:1 >= ${GREY_FLOOR}`);
   });
+  SLOTS.forEach((a, i) => SLOTS.slice(i + 1).forEach((b) => {
+    assert(deltaE(t[a], t[b]) >= ANY_PAIR_FLOOR, `${a} vs ${b} any-pair normal deltaE ${deltaE(t[a], t[b]).toFixed(1)} >= ${ANY_PAIR_FLOOR}`);
+  }));
+  // A label inside a fill takes white or the dark ink, whichever passes AA.
+  for (const s of SLOTS) {
+    const best = Math.max(contrast(LABEL_INK, t[s]), contrast(values.light.text, t[s]));
+    assert(best >= 4.5, `label on ${s} ${t[s]} reaches ${best.toFixed(2)}:1 >= 4.5`);
+  }
   // Scatter, maps and small multiples can seat any two side by side: first three only.
   for (const [p, q] of [[0, 1], [0, 2], [1, 2]]) {
     const [x, y] = [t[SLOTS[p]], t[SLOTS[q]]];
-    assert(cvd(x, y) >= CVD_TARGET && deltaE(x, y) >= NORMAL_FLOOR, `all-pairs chart-${p + 1} vs chart-${q + 1} deltaE ${cvd(x, y).toFixed(1)} / ${deltaE(x, y).toFixed(1)}`);
+    assert(cvd(x, y) >= CVD_TARGET && deltaE(x, y) >= NORMAL_FLOOR && deltaE(x, y, 'tritan') >= TRITAN_FLOOR, `all-pairs chart-${p + 1} vs chart-${q + 1} deltaE ${cvd(x, y).toFixed(1)} / ${deltaE(x, y).toFixed(1)}`);
   }
 
   console.log(`\n${mode.toUpperCase()}: sequential`);

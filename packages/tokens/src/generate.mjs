@@ -49,35 +49,41 @@ const serious = { 600: oklch(0.56, 0.15, 55), 400: oklch(0.74, 0.14, 55) };
 const good = { light: oklch(0.62, 0.14, 150), dark: oklch(0.76, 0.14, 150) };
 const critical = { light: oklch(0.5, 0.17, 27), dark: oklch(0.62, 0.17, 27) };
 
-// Categorical: eight hues in a fixed order, selected for each mode. The order
-// came out of an enumeration against the validator with slots 1 to 3 fixed
-// (orange, blue, teal), maximising the worst adjacent colour-blind separation.
-// Never reorder one mode alone, and never cycle: a ninth series folds into Other.
-const CATEGORICAL_HUES = ['orange', 'blue', 'teal', 'green', 'magenta', 'amber', 'violet', 'red'];
+// Categorical: eight hues in a fixed order, the same hue per slot in both themes,
+// so a series keeps its colour across a theme switch. Slot 1 is the brand orange
+// as each theme uses it. Lightness alternates dark and light slot by slot, which
+// keeps neighbours apart in greyscale and for colour-blind readers; chroma is held
+// at about 0.11 so no hue shouts over the orange. Never reorder one theme alone,
+// and never cycle: a ninth series folds into Other.
+const CATEGORICAL_HUES = ['orange', 'blue', 'teal', 'plum', 'violet', 'gold', 'rose', 'sage'];
+const HUE = { blue: 255, teal: 200, plum: 345, violet: 298, gold: 85, rose: 5, sage: 145 };
+const slot = (rows) => rows.map(([name, L, C]) => oklch(L, C, HUE[name]));
 const CATEGORICAL = {
-  light: [accent['600'], ...[
-    [0.46, 0.17, 258], [0.62, 0.11, 195], [0.46, 0.17, 145], [0.66, 0.14, 345],
-    [0.5, 0.11, 78], [0.46, 0.11, 295], [0.66, 0.14, 20],
-  ].map((p) => oklch(...p))],
-  dark: [accent['600'], ...[
-    [0.54, 0.17, 258], [0.66, 0.11, 195], [0.54, 0.17, 145], [0.66, 0.17, 345],
-    [0.54, 0.11, 78], [0.54, 0.14, 295], [0.54, 0.14, 20],
-  ].map((p) => oklch(...p))],
+  light: [accent['600'], ...slot([
+    ['blue', 0.48, 0.11], ['teal', 0.6, 0.11], ['plum', 0.46, 0.11], ['violet', 0.6, 0.11],
+    ['gold', 0.5, 0.11], ['rose', 0.6, 0.11], ['sage', 0.48, 0.11],
+  ])],
+  dark: [accent['500'], ...slot([
+    ['blue', 0.6, 0.11], ['teal', 0.74, 0.11], ['plum', 0.6, 0.11], ['violet', 0.74, 0.11],
+    ['gold', 0.6, 0.11], ['rose', 0.72, 0.11], ['sage', 0.6, 0.11],
+  ])],
 };
 
-// Sequential: one hue, seven steps, equal-looking lightness. Dark mode reverses
-// the same steps so step 1 always means "little" and recedes into the surface.
-const SEQ_L = [0.93, 0.86, 0.78, 0.7, 0.61, 0.51, 0.41];
-const seqOrange = SEQ_L.map((L) => oklch(L, Math.min(0.19, 0.04 + (0.93 - L) * 0.6), ACCENT_HUE));
+// Sequential: one hue, seven steps. The orange ramp lands exactly on the brand
+// steps (accent 500, 600, 700, 800). Dark mode reverses the same steps, so step 1
+// always means "little" and recedes into the surface.
+const SEQ_L = [0.93, 0.86, 0.78, 0.686, 0.605, 0.51, 0.42];
+const SEQ_ACCENT = { 0.686: '500', 0.605: '600', 0.51: '700', 0.42: '800' };
+const seqOrange = SEQ_L.map((L) => accent[SEQ_ACCENT[L]] ?? oklch(L, 0.04 + (0.93 - L) * 0.6, ACCENT_HUE));
 const seqBlue = SEQ_L.map((L) => oklch(L, Math.min(0.14, 0.03 + (0.93 - L) * 0.4), BLUE_HUE));
 
-// Diverging: blue (below) and orange (above) around a neutral midpoint with
-// almost no chroma, because a peach midpoint would read as "a little above".
-const DIV_L = { light: [0.79, 0.64, 0.5], dark: [0.5, 0.66, 0.82] };
-const divArm = (mode, hue, c) => DIV_L[mode].map((L, i) => oklch(L, c[i], hue));
+// Diverging: the blue slot's hue below and the brand orange above, around a
+// midpoint with almost no chroma, because a peach midpoint would read as "a little above".
+const DIV_L = { light: [0.81, 0.605, 0.51], dark: [0.51, 0.686, 0.81] };
+const divNeg = (mode, c) => DIV_L[mode].map((L, i) => oklch(L, c[i], BLUE_HUE));
 const DIV = {
-  light: { neg: divArm('light', BLUE_HUE, [0.08, 0.13, 0.13]), mid: oklch(0.93, 0.004, NEUTRAL_HUE), pos: divArm('light', ACCENT_HUE, [0.1, 0.17, 0.15]) },
-  dark: { neg: divArm('dark', BLUE_HUE, [0.11, 0.12, 0.08]), mid: oklch(0.33, 0.006, NEUTRAL_HUE), pos: divArm('dark', ACCENT_HUE, [0.13, 0.17, 0.09]) },
+  light: { neg: divNeg('light', [0.1, 0.13, 0.13]), mid: oklch(0.93, 0.004, NEUTRAL_HUE), pos: [accent['300'], accent['600'], accent['700']] },
+  dark: { neg: divNeg('dark', [0.13, 0.13, 0.08]), mid: oklch(0.33, 0.006, NEUTRAL_HUE), pos: [accent['700'], accent['500'], accent['300']] },
 };
 
 const TAG_FOCUS_HUE = 200;
