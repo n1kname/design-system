@@ -31,3 +31,14 @@ export const renderPlot = (options) => {
 // Hairline, solid, one step off the surface. Never dashed.
 export const grid = (axis = 'y') =>
   (axis === 'y' ? Plot.gridY : Plot.gridX)({ stroke: chrome.grid, strokeOpacity: 1 });
+
+// Text inside an SVG shrinks with it, so one drawing is unreadable on a phone. This
+// draws the chart twice, each sized for its column, and CSS shows one. `build` takes
+// the width and whether it is the narrow drawing, and returns Plot options.
+export const WIDE = 720;
+export const NARROW = 320;
+
+export const renderResponsive = (build) => ({
+  wide: renderPlot({ width: WIDE, ...build(WIDE, false) }),
+  narrow: renderPlot({ width: NARROW, ...build(NARROW, true) }),
+});

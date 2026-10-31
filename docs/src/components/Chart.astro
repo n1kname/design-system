@@ -1,14 +1,40 @@
 ---
-/** A chart string in a panel. `alt` speaks for the SVG, and the slot holds its legend or scale. */
+/**
+ * A chart in a panel, drawn twice and shown by the width of the column, so its text
+ * stays readable on a phone. `alt` speaks for the SVG, the slot holds its legend or scale.
+ */
 interface Props {
-  svg: string;
+  chart: { wide: string; narrow: string };
   alt: string;
 }
-const { svg, alt } = Astro.props;
+const { chart, alt } = Astro.props;
 ---
 
 <div class="chart-panel not-content">
   <slot name="before" />
-  <div role="img" aria-label={alt} set:html={svg} />
+  <div role="img" aria-label={alt}>
+    <div class="wide" set:html={chart.wide} />
+    <div class="narrow" set:html={chart.narrow} />
+  </div>
   <slot />
 </div>
+
+<style>
+  .chart-panel {
+    container-type: inline-size;
+  }
+
+  .narrow {
+    display: none;
+  }
+
+  @container (max-width: 480px) {
+    .wide {
+      display: none;
+    }
+
+    .narrow {
+      display: block;
+    }
+  }
+</style>

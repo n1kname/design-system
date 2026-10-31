@@ -1,14 +1,13 @@
 // Every example chart, rendered to an SVG string at build time from synthetic data.
 
-import { Plot, categorical, chrome, diverging, grid as gridLines, renderPlot, sequential } from '@ds/charts';
+import { Plot, categorical, chrome, diverging, grid as gridLines, renderResponsive, sequential } from '@ds/charts';
 import { SERIES, STACK, deltas, grid, lines, shares, stack } from './data.mjs';
 
-const width = 720;
 const seriesDomain = (names) => ({ domain: names, range: categorical.slice(0, names.length) });
 
-export const lineChart = renderPlot({
-  width, height: 280, marginRight: 64,
-  x: { label: 'Week', line: true, tickSize: 0 },
+export const lineChart = renderResponsive((_, narrow) => ({
+  height: narrow ? 240 : 280, marginRight: 64,
+  x: { label: 'Week', line: true, tickSize: 0, ticks: narrow ? 4 : undefined },
   y: { label: 'Index', grid: false, tickSize: 0 },
   color: seriesDomain(SERIES),
   marks: [
@@ -18,39 +17,39 @@ export const lineChart = renderPlot({
     Plot.dot(lines, Plot.selectLast({ x: 'week', y: 'y', z: 'series', fill: 'series', r: 4, stroke: 'var(--c-surface)', strokeWidth: 2 })),
     Plot.text(lines, Plot.selectLast({ x: 'week', y: 'y', z: 'series', text: 'series', dx: 10, textAnchor: 'start', fill: chrome.text })),
   ],
-});
+}));
 
-export const stackChart = renderPlot({
-  width, height: 250, marginLeft: 36, marginBottom: 48,
-  x: { label: 'Share of total', labelOffset: 44, grid: false, tickSize: 0, percent: true },
+export const stackChart = renderResponsive((_, narrow) => ({
+  height: 250, marginLeft: 36, marginBottom: 48,
+  x: { label: 'Share of total', labelOffset: 44, grid: false, tickSize: 0, percent: true, ticks: narrow ? 4 : undefined },
   y: { label: null, tickSize: 0 },
   color: seriesDomain(STACK),
   marks: [
     Plot.barX(stack, Plot.stackX({ offset: 'normalize', order: null, x: 'value', y: 'period', fill: 'series', stroke: 'var(--c-surface)', strokeWidth: 2 })),
     Plot.ruleX([0], { stroke: chrome.axis }),
   ],
-});
+}));
 
-export const heatmap = renderPlot({
-  width, height: 250, marginLeft: 44, marginBottom: 48,
+export const heatmap = renderResponsive((_, narrow) => ({
+  height: 250, marginLeft: 44, marginBottom: 48,
   padding: 0.06,
-  x: { label: 'Hour', labelOffset: 44, tickSize: 0, interval: 1, ticks: [0, 6, 12, 18, 23] },
+  x: { label: 'Hour', labelOffset: 44, tickSize: 0, interval: 1, ticks: narrow ? [0, 12, 23] : [0, 6, 12, 18, 23] },
   y: { label: null, tickSize: 0, domain: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
   color: { type: 'threshold', domain: [20, 35, 50, 65, 80, 95], range: sequential },
   marks: [Plot.cell(grid, { x: 'hour', y: 'day', fill: 'value' })],
-});
+}));
 
-export const divergeChart = renderPlot({
-  width, height: 250, marginBottom: 48,
-  x: { label: 'Month', labelOffset: 44, tickSize: 0, interval: 1, ticks: [1, 3, 5, 7, 9, 11] },
+export const divergeChart = renderResponsive((_, narrow) => ({
+  height: 250, marginBottom: 48,
+  x: { label: 'Month', labelOffset: 44, tickSize: 0, interval: 1, ticks: narrow ? [1, 4, 7, 10] : [1, 3, 5, 7, 9, 11] },
   y: { label: 'Against the baseline', grid: false, tickSize: 0 },
   color: { type: 'threshold', domain: [-12, -6, -2, 2, 6, 12], range: diverging },
   marks: [
     gridLines('y'),
-    Plot.barY(deltas, { x: 'month', y: 'delta', fill: 'delta', insetLeft: 8, insetRight: 8, rx: 2 }),
+    Plot.barY(deltas, { x: 'month', y: 'delta', fill: 'delta', insetLeft: narrow ? 2 : 8, insetRight: narrow ? 2 : 8, rx: 2 }),
     Plot.ruleY([0], { stroke: chrome.axis }),
   ],
-});
+}));
 
 export const emphasisData = shares.map((d, i) => ({
   ...d,
