@@ -1,0 +1,20 @@
+{
+  "name": "@ds/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./dist/tokens.css",
+    "./tokens.json": "./dist/tokens-studio.json",
+    "./color": "./src/color.mjs"
+  },
+  "files": ["dist", "tokens", "src"],
+  "scripts": {
+    "generate": "node src/generate.mjs",
+    "build": "node src/generate.mjs && node src/build.mjs && node src/check.mjs",
+    "check": "node src/check.mjs"
+  },
+  "devDependencies": {
+    "style-dictionary": "5.7.1"
+  }
+}

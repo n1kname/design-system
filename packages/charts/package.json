@@ -1,0 +1,20 @@
+{
+  "name": "@ds/charts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./donut": "./src/donut.mjs",
+    "./plot": "./src/plot.mjs",
+    "./theme": "./src/theme.mjs"
+  },
+  "scripts": {
+    "check": "node src/donut.test.mjs"
+  },
+  "dependencies": {
+    "@observablehq/plot": "0.6.17",
+    "d3-shape": "3.2.0",
+    "linkedom": "0.18.12"
+  }
+}

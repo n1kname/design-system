@@ -1,0 +1,138 @@
+---
+/**
+ * A donut as inline SVG with its labels in a list, drawn at build time. No script
+ * reaches the browser and the data stays in this page's HTML, so no shared asset
+ * ever holds it. Colours are tokens, so it follows the theme with no
+ * light plate. Labels are HTML because text inside an SVG shrinks with the column.
+ * The ring and list are hidden from screen readers: `alt` speaks for them.
+ */
+import { donutRing, swatch } from '@ds/charts/donut';
+
+interface Slice {
+  label: string;
+  value: number;
+  valueLabel?: string;
+  /** A token, such as var(--c-chart-1). Without one, the de-emphasis tone. */
+  color?: string;
+  strong?: boolean;
+}
+
+interface Props {
+  data: Slice[];
+  /** The text in the hole, one entry per line. */
+  title?: string[];
+  alt: string;
+  caption?: string;
+}
+
+const { data, title = [], alt, caption } = Astro.props;
+---
+
+<figure class="donut">
+  <div class="plate">
+    <div class="chart" role="img" aria-label={alt}>
+      <div class="ring" aria-hidden="true" set:html={donutRing(data, { title })} />
+      <ul aria-hidden="true">
+        {
+          data.map((d) => (
+            <li class:list={{ strong: d.strong }}>
+              <span class="key" style={`background: ${swatch(d)}`} />
+              <span class="name">{d.label}</span>
+              <span class="value">{d.valueLabel ?? d.value}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .donut {
+    margin-block: var(--sp-6) var(--sp-7);
+  }
+
+  .plate {
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6);
+    display: flex;
+    justify-content: center;
+    container-type: inline-size;
+  }
+
+  .chart {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-6);
+  }
+
+  .ring {
+    flex: 0 0 300px;
+  }
+
+  .ring :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  ul {
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    gap: var(--sp-2) var(--sp-3);
+    align-items: baseline;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+  }
+
+  li.strong {
+    font-weight: 600;
+  }
+
+  .key {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    align-self: center;
+  }
+
+  .value {
+    font-family: var(--font-mono);
+    font-size: var(--text-mono);
+  }
+
+  @container (max-width: 600px) {
+    .chart {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--sp-5);
+    }
+
+    .ring {
+      flex: none;
+      width: min(100%, 280px);
+      margin-inline: auto;
+    }
+  }
+
+  figcaption {
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+    max-width: var(--layout-measure);
+  }
+</style>

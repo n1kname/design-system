@@ -1,0 +1,16 @@
+{
+  "name": "@ds/demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@ds/charts": "workspace:*",
+    "@ds/tokens": "workspace:*",
+    "@fontsource-variable/bitter": "5.2.5",
+    "@fontsource/ibm-plex-mono": "5.2.5",
+    "@fontsource/ibm-plex-sans": "5.2.5"
+  }
+}

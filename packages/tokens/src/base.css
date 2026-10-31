@@ -1,0 +1,15 @@
+/* Corner smoothing: Chromium only (~65% of users). Safari and Firefox ignore
+ * corner-shape and fall back to the plain radius, which is the intended
+ * degradation — do not add a JS squircle polyfill. */
+@supports (corner-shape: superellipse(2)) {
+    .u-smooth { corner-shape: superellipse(2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
