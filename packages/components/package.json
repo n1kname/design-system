@@ -2,9 +2,16 @@
   "name": "@ds/components",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
-  "exports": { "./Donut.astro": "./src/Donut.astro" },
+  "exports": {
+    "./Donut.astro": "./src/Donut.astro"
+  },
   "scripts": {},
-  "dependencies": { "@ds/charts": "workspace:*" },
-  "peerDependencies": { "astro": "^7.4.4" }
+  "dependencies": {
+    "@ds/charts": "workspace:*"
+  },
+  "peerDependencies": {
+    "astro": "^7.4.4"
+  }
 }

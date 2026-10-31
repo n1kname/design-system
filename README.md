@@ -45,3 +45,7 @@ Charts render at build time, so a page ships no chart JavaScript and its data st
 
 `scripts/check-public.mjs` fails on anything shaped like an email address, an IP address, coordinates or a home path.
 Set `PRIVATE_TERMS_FILE` to also check a list kept outside the repo.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).

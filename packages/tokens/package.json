@@ -2,13 +2,18 @@
   "name": "@ds/tokens",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "exports": {
     "./tokens.css": "./dist/tokens.css",
     "./tokens.json": "./dist/tokens-studio.json",
     "./color": "./src/color.mjs"
   },
-  "files": ["dist", "tokens", "src"],
+  "files": [
+    "dist",
+    "tokens",
+    "src"
+  ],
   "scripts": {
     "generate": "node src/generate.mjs",
     "build": "node src/generate.mjs && node src/build.mjs && node src/check.mjs",
