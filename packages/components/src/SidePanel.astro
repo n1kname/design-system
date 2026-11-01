@@ -53,6 +53,8 @@ const titleId = `${id}-title`;
     background: var(--c-bg);
     color: var(--c-text);
     overflow-y: auto;
+    /* Scrolling past the end stays here, instead of moving the page behind it. */
+    overscroll-behavior: contain;
     /* It leaves but stays within reach, so it uses standard easing, and leaves quicker. */
     opacity: 0;
     transform: translateX(16px);

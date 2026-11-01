@@ -60,6 +60,7 @@ export default defineConfig({
             { label: 'Timeline', link: '/components/timeline/' },
             { label: 'Outcome table', link: '/components/outcome-table/' },
             { label: 'Columns', link: '/components/columns/' },
+            { label: 'Skip link', link: '/components/skip-link/' },
           ],
         },
         { label: 'Checks', link: '/checks/' },

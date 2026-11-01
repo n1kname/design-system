@@ -1,0 +1,35 @@
+---
+/**
+ * The first stop for a keyboard: jumps past the header to the main content. Hidden until
+ * it has focus. Put it first in <body>, and give the main content a matching id.
+ */
+interface Props {
+  /** The id of the main content, with its #. */
+  target?: string;
+}
+const { target = '#main' } = Astro.props;
+---
+
+<a class="skip-link" href={target}>Skip to main content</a>
+
+<style>
+  /* No transition: it appears on a key press, and keyboard actions shouldn't animate. */
+  .skip-link {
+    position: absolute;
+    top: var(--sp-2);
+    left: var(--sp-2);
+    z-index: var(--z-panel);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-md);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text);
+    transform: translateY(calc(-100% - var(--sp-3)));
+  }
+
+  .skip-link:focus {
+    transform: none;
+  }
+</style>

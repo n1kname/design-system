@@ -1,0 +1,66 @@
+---
+title: "Skip link"
+description: "The first stop for a keyboard: jumps past the header to the main content."
+---
+
+import SkipLink from '@n1kname/components/SkipLink.astro';
+
+<div class="not-content demo-skip">
+  <SkipLink target="#what-its-for" />
+  <p>It only shows with focus. Click here, then press Tab.</p>
+</div>
+
+## What it's for
+
+So someone on a keyboard doesn't have to tab through the header on every page. Every site needs one, and it costs nothing when you don't use it.
+
+## When not to use it
+
+- **A page with nothing before the main content.** Then there's nothing to skip.
+
+## Anatomy
+
+- **Link:** goes to `target`, which is `#main` by default.
+- **Place:** first in `<body>`, so it's the first thing Tab reaches.
+
+## Variants
+
+None.
+
+## States
+
+| State | What shows |
+|---|---|
+| Rest | Moved off the screen, still in the tab order. |
+| Focus | At the top left, above everything, with the focus ring. It appears at once. |
+
+## Tokens
+
+`--c-border-strong`, `--c-surface`, `--c-text`, `--radius-md`, `--sp-2`, `--sp-3`, `--text-body-sm`, `--z-panel`.
+
+## Keyboard and screen reader
+
+- **Enter follows it,** and the next Tab carries on from the main content.
+- **It's a real link,** so screen readers list it with the page's links.
+
+## Content
+
+- **Always "Skip to main content",** so it's the same everywhere.
+
+## Status
+
+New. Used by the portfolio and a dashboard.
+
+## Code
+
+```astro wrap
+---
+import SkipLink from '@n1kname/components/SkipLink.astro';
+---
+
+<body>
+  <SkipLink />
+  <header>...</header>
+  <main id="main">...</main>
+</body>
+```

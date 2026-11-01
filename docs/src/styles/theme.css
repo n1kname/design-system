@@ -177,3 +177,12 @@ h1,
   font-size: var(--text-caption);
   color: var(--c-text);
 }
+
+.demo-skip {
+  position: relative;
+  padding: var(--sp-6) var(--sp-4) var(--sp-4);
+  border: 1px dashed var(--c-border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-size: var(--text-caption);
+}
