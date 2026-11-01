@@ -1,0 +1,31 @@
+---
+title: Quote
+description: A research quote in its own panel, with a required source.
+---
+
+import Quote from '@ds/components/Quote.astro';
+
+Quotes are evidence, so the source is required. A quote with no source is decoration.
+
+<div class="not-content">
+  <Quote from="A fictional driver, usability session">
+
+  <p>I didn't know it had stopped until I got back to the car.</p>
+
+  </Quote>
+</div>
+
+```astro wrap
+---
+import Quote from '@ds/components/Quote.astro';
+---
+
+<Quote from="Who said it, and in what setting">
+  <p>What they said.</p>
+</Quote>
+```
+
+## Keep in mind
+
+- **The text goes in a paragraph.** In MDX, leave a blank line around it so it parses as one.
+- **`from` says who and where.** A role and a setting is enough when you can't name the person.

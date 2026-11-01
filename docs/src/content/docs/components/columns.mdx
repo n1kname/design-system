@@ -1,0 +1,31 @@
+---
+title: Columns
+description: Parallel items side by side, wrapping when there is no room.
+---
+
+import Columns from '@ds/components/Columns.astro';
+
+For items that are peers, such as findings or reflections. Not for flowing argument: two columns of continuous prose make you scroll down, then back up.
+
+<div class="not-content">
+  <Columns>
+    <p><strong>A first finding.</strong> It stands by itself, so it can sit next to the others in any order.</p>
+    <p><strong>A second finding.</strong> Same size, same weight, and no reason to read it before the first.</p>
+  </Columns>
+</div>
+
+```astro wrap
+---
+import Columns from '@ds/components/Columns.astro';
+---
+
+<Columns min={280}>
+  <p>First item.</p>
+  <p>Second item.</p>
+</Columns>
+```
+
+## Keep in mind
+
+- **`min` is the width a column needs before it wraps.** Lower it for four across.
+- **In MDX, leave blank lines inside,** so the children still parse as Markdown.

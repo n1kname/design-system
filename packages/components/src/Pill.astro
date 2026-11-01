@@ -1,0 +1,86 @@
+---
+/**
+ * A pill: optional icon, then a label. Used for tags and links, so both read as
+ * the same object.
+ *
+ * The fills are meaningful rather than decorative:
+ *   accent  → this is a link you can act on, or a live state
+ *   quiet   → this is a descriptor, not something to click
+ *   role    → a warm tag: how something was done
+ *   focus   → the cool tag: what something was about
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  icon?: IconName;
+  href?: string;
+  tone?: 'accent' | 'quiet' | 'role' | 'focus';
+  small?: boolean;
+}
+
+const { icon, href, tone = 'quiet', small = false } = Astro.props;
+const Tag = href ? 'a' : 'span';
+---
+
+<Tag class:list={['pill', tone, { small }]} href={href}>
+  {icon && <Icon name={icon} size={15} />}
+  <slot />
+</Tag>
+
+<style>
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 5px var(--sp-3) 5px var(--sp-2);
+    border-radius: var(--radius-full);
+    font-size: var(--text-body-sm);
+    line-height: 1.4;
+    border: 1px solid transparent;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* No icon means no need for the tighter left padding. */
+  .pill:not(:has(svg)) {
+    padding-inline: var(--sp-3);
+  }
+
+  .quiet {
+    background: var(--c-surface);
+    border-color: var(--c-border);
+    color: var(--c-text-muted);
+  }
+
+  .accent,
+  .role {
+    background: var(--c-surface-tint);
+    color: var(--c-text-accent);
+  }
+
+  .focus {
+    background: var(--c-tag-focus-bg);
+    color: var(--c-tag-focus-text);
+  }
+
+  .pill.small {
+    padding-block: 2px;
+    font-size: var(--text-caption);
+  }
+
+  a.pill {
+    transition:
+      border-color 150ms ease-out,
+      background-color 150ms ease-out;
+  }
+
+  a.quiet:hover {
+    border-color: var(--c-border-strong);
+    color: var(--c-text);
+  }
+
+  a.accent:hover {
+    border-color: var(--c-accent-edge);
+  }
+</style>

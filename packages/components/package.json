@@ -6,7 +6,15 @@
   "type": "module",
   "exports": {
     "./Donut.astro": "./src/Donut.astro",
-    "./RankedBars.astro": "./src/RankedBars.astro"
+    "./RankedBars.astro": "./src/RankedBars.astro",
+    "./Pill.astro": "./src/Pill.astro",
+    "./Icon.astro": "./src/Icon.astro",
+    "./Quote.astro": "./src/Quote.astro",
+    "./Columns.astro": "./src/Columns.astro",
+    "./Timeline.astro": "./src/Timeline.astro",
+    "./ImpactTable.astro": "./src/ImpactTable.astro",
+    "./type.css": "./src/type.css",
+    "./icons": "./src/icons.ts"
   },
   "scripts": {},
   "dependencies": {

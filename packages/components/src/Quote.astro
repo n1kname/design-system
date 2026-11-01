@@ -1,0 +1,87 @@
+---
+/**
+ * A research quote in its own panel. The mark does the job an avatar would, which
+ * is to say "someone said this", and it needs no artwork.
+ *
+ * Quotes are evidence, so the attribution is required. A quote with no source
+ * is decoration.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  /** Who said it, and in what setting. */
+  from: string;
+}
+
+const { from } = Astro.props;
+---
+
+<figure class="quote">
+  <span class="mark" aria-hidden="true">
+    <Icon name="quote" size={18} />
+  </span>
+  <div>
+    <blockquote>
+      <slot />
+    </blockquote>
+    <figcaption>{from}</figcaption>
+  </div>
+</figure>
+
+<style>
+  .quote {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: var(--sp-5);
+    align-items: start;
+    margin-block: var(--sp-6) var(--sp-7);
+    padding: var(--sp-6);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--c-surface-tint);
+    color: var(--c-text-accent);
+  }
+
+  blockquote {
+    margin: 0;
+  }
+
+  /* Italic display. The panel does the framing, so no rule and no oversized
+     punctuation are needed. */
+  /* No measure cap: the panel already constrains the line, and capping again
+   * left the text in a narrow column inside a wide box. */
+  blockquote :global(p) {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: var(--text-h3);
+    line-height: 1.45;
+    max-width: none;
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  figcaption {
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-muted);
+  }
+
+  @media (max-width: 560px) {
+    .quote {
+      grid-template-columns: 1fr;
+      gap: var(--sp-4);
+      padding: var(--sp-5);
+    }
+  }
+</style>

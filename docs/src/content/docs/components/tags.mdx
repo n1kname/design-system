@@ -1,0 +1,41 @@
+---
+title: Tags and links
+description: A pill with an optional icon, for tags you read and links you can act on.
+---
+
+import Pill from '@ds/components/Pill.astro';
+
+A tag and a link are the same object here, so the fill says which one you're looking at.
+
+<div class="not-content demo-row">
+  <Pill href="#tone" icon="mail" tone="accent">Get in touch</Pill>
+  <Pill icon="layers" tone="quiet">Design systems</Pill>
+  <Pill tone="role">Hands on</Pill>
+  <Pill tone="focus">Fleet tools</Pill>
+  <Pill tone="focus" small>Small</Pill>
+</div>
+
+## Tone
+
+| Tone | Means |
+|---|---|
+| `accent` | A link you can act on, or a live state. |
+| `quiet` | A descriptor, not something to click. |
+| `role` | A warm tag: how something was done. |
+| `focus` | The cool tag: what something was about. It uses the same teal as the second chart colour. |
+
+```astro wrap
+---
+import Pill from '@ds/components/Pill.astro';
+---
+
+<Pill href="/contact" icon="mail" tone="accent">Get in touch</Pill>
+<Pill tone="focus" small>Fleet tools</Pill>
+```
+
+## Keep in mind
+
+- **Give it an `href` and it becomes a link.** Without one it's a plain span, so it can't look clickable by accident.
+- **Put warm tags on a page or a card, not on a sunken plate.** The tint nearly matches the plate, so the fill disappears, though the text still passes.
+- **It doesn't wrap.** A long label stays on one line, so keep labels short.
+- **Icons only where there's a real taxonomy.** Decorative icons are worse than none.

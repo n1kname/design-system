@@ -1,0 +1,33 @@
+---
+title: Timeline
+description: A project timeline, with the current state marked by the last entry.
+---
+
+import Timeline from '@ds/components/Timeline.astro';
+
+For the order things happened in. The last entry is the current state, so its marker looks different.
+
+<div class="not-content">
+  <Timeline entries={[
+    { period: '2021', label: 'First sketch', body: 'A fictional team draws the idea on a whiteboard.' },
+    { period: '2022-23', label: 'A pilot', body: 'Three fictional customers try it and tell them what breaks.' },
+    { period: 'Now', label: 'In use', body: 'It runs without anyone thinking about it, which was the point.' },
+  ]} />
+</div>
+
+```astro wrap
+---
+import Timeline from '@ds/components/Timeline.astro';
+---
+
+<Timeline entries={[
+  { period: '2021', label: 'First sketch', body: 'What happened.' },
+  { period: 'Now', label: 'In use', body: 'Where it stands.' },
+]} />
+```
+
+## Keep in mind
+
+- **Needs `type.css`.** Import `@ds/components/type.css` once per site.
+- **Keep periods short.** The column is 84px wide, about 11 characters of mono.
+- **It stacks below 560px of screen,** and the line still reaches the next marker.

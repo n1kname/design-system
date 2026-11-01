@@ -53,4 +53,4 @@ Set `PRIVATE_TERMS_FILE` to also check a list kept outside the repo.
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). Third-party notices are in [THIRD_PARTY.md](THIRD_PARTY.md).

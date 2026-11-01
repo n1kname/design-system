@@ -1,0 +1,127 @@
+---
+/**
+ * A project timeline: mono period in a fixed left column, content on the right.
+ * Needs type.css for its t-meta and t-sub classes.
+ *
+ * The final entry is the current state, so its marker is filled.
+ */
+interface Entry {
+  period: string;
+  label: string;
+  body: string;
+}
+
+interface Props {
+  entries: Entry[];
+}
+
+const { entries } = Astro.props;
+---
+
+<ol class="timeline">
+  {
+    entries.map((e, i) => (
+      <li class={i === entries.length - 1 ? 'last' : ''}>
+        <span class="rail" aria-hidden="true" />
+        <span class="period t-meta">{e.period}</span>
+        <div class="body">
+          <p class="t-sub">{e.label}</p>
+          <p class="text">{e.body}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .timeline {
+    list-style: none;
+    margin: var(--sp-5) 0 var(--sp-7);
+    padding: 0;
+  }
+
+  /* The period column fits a short range, such as 2018 to 2019 written tightly. */
+  li {
+    display: grid;
+    grid-template-columns: 20px 84px minmax(0, 1fr);
+    column-gap: var(--sp-4);
+    padding-bottom: var(--sp-6);
+    position: relative;
+  }
+
+  li:last-child {
+    padding-bottom: 0;
+  }
+
+  /* Marker plus the connecting line, drawn as one element. */
+  .rail {
+    position: relative;
+    width: 20px;
+    margin-top: 3px;
+  }
+
+  .rail::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-full);
+    border: 3px solid var(--c-accent);
+    background: var(--c-bg);
+  }
+
+  .last .rail::before {
+    border-color: var(--c-text);
+  }
+
+  .rail::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 6px;
+    top: 18px;
+    bottom: calc(var(--sp-6) * -1);
+    width: 2px;
+    background: var(--c-border);
+  }
+
+  .last .rail::after {
+    display: none;
+  }
+
+  .period {
+    padding-top: 1px;
+    white-space: nowrap;
+  }
+
+  .body p {
+    max-width: none;
+  }
+
+  .t-sub {
+    margin-bottom: var(--sp-1);
+  }
+
+  .text {
+    color: var(--c-text-muted);
+  }
+
+  /* Below the fold of a phone the three columns stop earning their keep. */
+  @media (max-width: 560px) {
+    li {
+      grid-template-columns: 20px minmax(0, 1fr);
+      row-gap: var(--sp-1);
+    }
+
+    /* Spans both rows so the connecting line still reaches the next marker. */
+    .rail {
+      grid-row: span 2;
+    }
+
+    .period,
+    .body {
+      grid-column: 2;
+    }
+  }
+</style>

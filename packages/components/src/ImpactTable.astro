@@ -1,0 +1,136 @@
+---
+/**
+ * Outcome table: dimension rows with an icon chip, outcome text, and an optional
+ * closing statement. Needs type.css for its t-label and t-sub classes.
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Item {
+  icon: IconName;
+  dimension: string;
+  outcome: string;
+}
+
+interface Props {
+  items: Item[];
+  closing?: string;
+  /** Column headings. */
+  headings?: [string, string];
+}
+
+const { items, closing, headings = ['Dimension', 'The outcome'] } = Astro.props;
+---
+
+<div class="impact">
+  <div class="head" aria-hidden="true">
+    <span class="t-label">{headings[0]}</span>
+    <span class="t-label">{headings[1]}</span>
+  </div>
+  <dl>
+    {
+      items.map((item) => (
+        <div class="row">
+          <dt class="t-sub">
+            <span class="chip">
+              <Icon name={item.icon} size={17} />
+            </span>
+            {item.dimension}
+          </dt>
+          <dd>{item.outcome}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  {closing && <p class="closing">{closing}</p>}
+</div>
+
+<style>
+  .impact {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-5) var(--sp-6);
+    margin-block: var(--sp-5) var(--sp-7);
+  }
+
+  .head,
+  .row {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: var(--sp-6);
+    align-items: start;
+  }
+
+  .head {
+    padding-block: var(--sp-2) var(--sp-3);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  dl {
+    margin: 0;
+  }
+
+  .row {
+    padding-block: var(--sp-4);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .row:last-child {
+    border-bottom: none;
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  .chip {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: var(--radius-full);
+    background: var(--c-surface-tint);
+    color: var(--c-text-accent);
+  }
+
+  dd {
+    margin: 0;
+    max-width: none;
+  }
+
+  /* A closing statement, not a call to action. A solid accent fill read as a
+   * button; the tint plus display type reads as a conclusion. Its contrast is
+   * asserted in check.mjs as "closing statement on tinted panel". */
+  .closing {
+    margin-block: var(--sp-5) var(--sp-2);
+    background: var(--c-surface-tint);
+    color: var(--c-text);
+    border-radius: var(--radius-md);
+    padding: var(--sp-5) var(--sp-6);
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    letter-spacing: var(--tracking-h3);
+    max-width: none;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 640px) {
+    .impact {
+      padding: var(--sp-4) var(--sp-5);
+    }
+
+    .head {
+      display: none;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+      gap: var(--sp-2);
+    }
+  }
+</style>

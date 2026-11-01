@@ -24,6 +24,7 @@ const PAIRS = [
   ['text-accent', 'surface-tint', 4.5, 'accent label on tinted chip'],
   ['text', 'surface-tint', 4.5, 'closing statement on tinted panel'],
   ['text-muted', 'surface-sunken', 4.5, 'caption on sunken plate'],
+  ['text-accent', 'surface-sunken', 4.5, 'warm tag on sunken plate'],
   ['text-muted', 'surface', 4.5, 'table header on card'],
   ['dg-primary-text', 'dg-primary-bg', 4.5, 'label in primary node'],
   ['dg-second-text', 'dg-second-bg', 4.5, 'label in secondary node'],

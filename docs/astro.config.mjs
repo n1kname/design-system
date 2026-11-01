@@ -9,7 +9,7 @@ export default defineConfig({
       title: 'Design system',
       description: 'Design tokens, a chart palette and chart helpers.',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/n1kname/design-system' }],
-      customCss: ['@ds/tokens/tokens.css', './src/styles/theme.css'],
+      customCss: ['@ds/tokens/tokens.css', '@ds/components/type.css', './src/styles/theme.css'],
       sidebar: [
         { label: 'Overview', link: '/' },
         {
@@ -29,6 +29,12 @@ export default defineConfig({
         {
           label: 'Components',
           items: [
+            { label: 'Tags and links', link: '/components/tags/' },
+            { label: 'Icons', link: '/components/icons/' },
+            { label: 'Quote', link: '/components/quote/' },
+            { label: 'Timeline', link: '/components/timeline/' },
+            { label: 'Outcome table', link: '/components/outcome-table/' },
+            { label: 'Columns', link: '/components/columns/' },
             { label: 'Ranked bars', link: '/components/ranked-bars/' },
             { label: 'Donut', link: '/components/donut/' },
           ],

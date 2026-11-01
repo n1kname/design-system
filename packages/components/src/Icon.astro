@@ -1,0 +1,27 @@
+---
+import { ICONS, type IconName } from './icons';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  stroke?: number;
+}
+
+const { name, size = 18, stroke } = Astro.props;
+// Lucide is drawn at 24px with stroke 2. Below ~20px that reads heavy.
+const strokeWidth = stroke ?? (size < 20 ? 1.75 : 2);
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  set:html={ICONS[name]}
+/>

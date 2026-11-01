@@ -1,0 +1,37 @@
+---
+title: Outcome table
+description: Dimension rows with an icon, the outcome beside each, and an optional closing statement.
+---
+
+import ImpactTable from '@ds/components/ImpactTable.astro';
+
+For what changed, one dimension at a time. The closing statement is a conclusion, not a call to action, so it's a tint rather than a solid fill.
+
+<div class="not-content">
+  <ImpactTable
+    items={[
+      { icon: 'users', dimension: 'Support', outcome: 'Fewer fictional tickets, because the answer is on the screen.' },
+      { icon: 'trending-up', dimension: 'Adoption', outcome: 'Most fictional teams moved over without being asked.' },
+      { icon: 'shield-check', dimension: 'Risk', outcome: 'One way to do it, so one thing to audit.' },
+    ]}
+    closing="The closing statement goes here."
+  />
+</div>
+
+```astro wrap
+---
+import ImpactTable from '@ds/components/ImpactTable.astro';
+---
+
+<ImpactTable
+  headings={['Dimension', 'The outcome']}
+  items={[{ icon: 'users', dimension: 'Support', outcome: 'What changed.' }]}
+  closing="Optional."
+/>
+```
+
+## Keep in mind
+
+- **Needs `type.css`.** Import `@ds/components/type.css` once per site.
+- **`headings` is optional,** and defaults to the ones shown.
+- **The row is the fact, not the icon.** Every row needs words that stand alone.

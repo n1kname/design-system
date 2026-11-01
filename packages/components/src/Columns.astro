@@ -1,0 +1,42 @@
+---
+/**
+ * Parallel items side by side, for lists whose entries are peers rather than
+ * a sequence (research findings, reflections). Not for flowing argument:
+ * two columns of continuous prose make the reader scroll down then back up.
+ *
+ * In MDX, leave blank lines inside so the children still parse as markdown:
+ *
+ *   <Columns>
+ *
+ *   **First item.** ...
+ *
+ *   **Second item.** ...
+ *
+ *   </Columns>
+ */
+interface Props {
+  /** Minimum column width before wrapping. Lower it for four-up. */
+  min?: number;
+}
+
+const { min = 280 } = Astro.props;
+---
+
+<div class="cols" style={`--col-min: ${min}px`}>
+  <slot />
+</div>
+
+<style>
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--col-min), 1fr));
+    gap: var(--sp-5) var(--sp-6);
+    margin-block: var(--sp-5) var(--sp-7);
+  }
+
+  /* Each child is its own column, so the reading cap does not apply. */
+  .cols :global(> p) {
+    max-width: none;
+    margin: 0;
+  }
+</style>

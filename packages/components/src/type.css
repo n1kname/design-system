@@ -1,0 +1,29 @@
+/* Type classes the components use. One rule picks the family: mono marks data, the
+ * body face marks structure inside a component. Import once, per site. */
+
+/* A sub-heading inside a component. */
+.t-sub {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-sub);
+  line-height: var(--leading-sub);
+  letter-spacing: var(--tracking-sub);
+}
+
+/* Small structural label: block titles, table column headers. */
+.t-label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--c-text-muted);
+}
+
+/* Data annotation: a year, an ID, a tariff. Never prose. */
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--c-text-muted);
+  font-variant-numeric: tabular-nums;
+}
