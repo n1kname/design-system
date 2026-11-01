@@ -1,6 +1,6 @@
 /**
  * Lucide icon paths, inlined. No npm package, no webfont, no extra request.
- * Lucide is ISC licensed; see THIRD_PARTY.md at the root of this repo.
+ * Lucide is ISC licensed; see THIRD_PARTY.md.
  * Kept in a .ts module rather than the .astro component because component
  * frontmatter cannot export types for other files to import.
  *

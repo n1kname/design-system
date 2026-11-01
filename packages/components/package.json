@@ -25,6 +25,7 @@
     "directory": "packages/components"
   },
   "files": [
-    "src"
+    "src",
+    "THIRD_PARTY.md"
   ]
 }

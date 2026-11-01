@@ -1,6 +1,7 @@
 ---
 /**
- * A project timeline: mono period in a fixed left column, content on the right.
+ * A project timeline: mono period in a left column, content on the right. The column
+ * fits the longest period, so every entry lines up, and wraps past 200px.
  * Needs type.css for its t-meta and t-sub classes.
  *
  * The final entry is the current state, so its marker is filled.
@@ -35,16 +36,19 @@ const { entries } = Astro.props;
 
 <style>
   .timeline {
+    display: grid;
+    grid-template-columns: 20px fit-content(200px) minmax(0, 1fr);
+    column-gap: var(--sp-4);
     list-style: none;
     margin: var(--sp-5) 0 var(--sp-7);
     padding: 0;
   }
 
-  /* The period column fits a short range, such as 2018 to 2019 written tightly. */
+  /* Each entry shares the list's columns, so the periods all take the same width. */
   li {
     display: grid;
-    grid-template-columns: 20px 84px minmax(0, 1fr);
-    column-gap: var(--sp-4);
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
     padding-bottom: var(--sp-6);
     position: relative;
   }
@@ -91,8 +95,8 @@ const { entries } = Astro.props;
   }
 
   .period {
+    min-width: 84px;
     padding-top: 1px;
-    white-space: nowrap;
   }
 
   .body p {
@@ -109,8 +113,11 @@ const { entries } = Astro.props;
 
   /* Below the fold of a phone the three columns stop earning their keep. */
   @media (max-width: 560px) {
-    li {
+    .timeline {
       grid-template-columns: 20px minmax(0, 1fr);
+    }
+
+    li {
       row-gap: var(--sp-1);
     }
 
