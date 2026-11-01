@@ -6,6 +6,8 @@
  * the browser, and the data stays in this page's HTML. Rows keep the order given.
  * `alt` speaks for the chart, and needs every value.
  */
+import Figure from './Figure.astro';
+
 interface Row {
   label: string;
   value: number;
@@ -25,48 +27,27 @@ const { data, title, alt, caption } = Astro.props;
 const max = Math.max(...data.map((d) => d.value));
 ---
 
-<figure class="ranked-bars">
-  <div class="plate">
-    {title && <p class="title">{title}</p>}
-    <div role="img" aria-label={alt}>
-      <ul aria-hidden="true">
-        {
-          data.map((d) => (
-            <li>
-              <span class="label">{d.label}</span>
-              <span class="track">
-                <i style={`--share: ${d.value / max}; background: ${d.color ?? 'var(--c-chart-neutral)'}`} />
-                <span class="value">{d.valueLabel ?? d.value}</span>
-              </span>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
+<Figure title={title} caption={caption}>
+  <div class="ranked-bars" role="img" aria-label={alt}>
+    <ul aria-hidden="true">
+      {
+        data.map((d) => (
+          <li>
+            <span class="label">{d.label}</span>
+            <span class="track">
+              <i style={`--share: ${d.value / max}; background: ${d.color ?? 'var(--c-chart-neutral)'}`} />
+              <span class="value">{d.valueLabel ?? d.value}</span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
   </div>
-  {caption && <figcaption>{caption}</figcaption>}
-</figure>
+</Figure>
 
 <style>
   .ranked-bars {
-    margin-block: var(--sp-6) var(--sp-7);
-  }
-
-  .plate {
-    background: var(--c-surface-sunken);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius-lg);
-    padding: var(--sp-6);
-    container-type: inline-size;
-  }
-
-  .title {
-    margin: 0 0 var(--sp-4);
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: var(--text-sub);
-    line-height: var(--leading-sub);
-    color: var(--c-text);
+    min-width: 0;
   }
 
   ul {
@@ -144,10 +125,4 @@ const max = Math.max(...data.map((d) => d.value));
     }
   }
 
-  figcaption {
-    margin-top: var(--sp-4);
-    font-size: var(--text-body-sm);
-    color: var(--c-text-muted);
-    max-width: var(--layout-measure);
-  }
 </style>

@@ -1,0 +1,186 @@
+---
+/**
+ * A table for reading figures: words in the body face, numbers in mono so they line up,
+ * units in the header, a real row height and sortable columns. Pass `rows` for data known
+ * at build time, or leave them out and fill it with setRows from datatable.js.
+ */
+interface Column {
+  label: string;
+  unit?: string;
+  /** Words are left-aligned, numbers right-aligned. */
+  align?: 'left' | 'right';
+  sortable?: boolean;
+}
+type Cell = string | number | null | { html: string; sort?: string | number };
+
+interface Props {
+  columns: Column[];
+  rows?: Cell[][];
+  caption?: string;
+  /** 40px rows by default; compact is 32px, for dense tables. */
+  density?: 'default' | 'compact';
+  id?: string;
+}
+const { columns, rows = [], caption, density = 'default', id } = Astro.props;
+const num = (v: number) => new Intl.NumberFormat('nl-NL').format(v);
+const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) : typeof c === 'string' ? c : '');
+---
+
+<div class="scroll" tabindex="0" role="region" aria-label={caption ?? 'Table'}>
+  <table class:list={['data-table', density]} id={id} data-data-table>
+    {caption && <caption>{caption}</caption>}
+    <thead>
+      <tr>
+        {
+          columns.map((c) => (
+            <th scope="col" class:list={{ left: c.align === 'left' }}>
+              {c.sortable === false ? (
+                <span class="plain">{c.label}{c.unit && <span class="unit"> {c.unit}</span>}</span>
+              ) : (
+                <button type="button">{c.label}{c.unit && <span class="unit">{c.unit}</span>}</button>
+              )}
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            {row.map((c, i) => {
+              const obj = c !== null && typeof c === 'object' ? c : null;
+              const sort = obj ? obj.sort : c;
+              return (
+                <td class:list={{ left: columns[i]?.align === 'left' }} data-sort={sort ?? undefined}>
+                  {obj ? <Fragment set:html={obj.html} /> : show(c)}
+                </td>
+              );
+            })}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<script>
+  import { makeSortable } from './datatable.js';
+  document.querySelectorAll<HTMLTableElement>('table[data-data-table]').forEach(makeSortable);
+</script>
+
+<style>
+  .scroll {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    width: 100%;
+    min-width: 440px;
+    border-collapse: collapse;
+    font-size: var(--text-body-sm);
+    color: var(--c-text);
+  }
+
+  caption {
+    padding-bottom: var(--sp-2);
+    text-align: left;
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  th {
+    padding: 0;
+    text-align: right;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+    border-bottom: 1px solid var(--c-border-strong);
+    white-space: nowrap;
+  }
+
+  th.left {
+    text-align: left;
+  }
+
+  th button,
+  .plain {
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    min-height: 32px;
+    padding-right: var(--sp-3);
+  }
+
+  th button {
+    cursor: pointer;
+  }
+
+  th:last-child button,
+  th:last-child .plain {
+    padding-right: 0;
+  }
+
+  th button:hover {
+    color: var(--c-text);
+  }
+
+  th button:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: -2px;
+  }
+
+  .unit {
+    font-weight: 400;
+    color: var(--c-text-muted);
+  }
+
+  /* Only the sorted column shows an arrow. */
+  th[aria-sort] button::after {
+    content: '↓';
+    color: var(--c-text-accent);
+  }
+
+  th[aria-sort='ascending'] button::after {
+    content: '↑';
+  }
+
+  td {
+    height: 40px;
+    padding: 0 var(--sp-3) 0 0;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: var(--text-mono);
+    font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid var(--c-border);
+    white-space: nowrap;
+  }
+
+  .compact td {
+    height: 32px;
+  }
+
+  td:last-child {
+    padding-right: 0;
+  }
+
+  td.left {
+    text-align: left;
+    font-family: var(--font-body);
+    font-size: var(--text-body-sm);
+  }
+
+  tbody tr {
+    transition: background-color var(--motion-hover) var(--ease-hover);
+  }
+
+  tbody tr:hover {
+    background: var(--c-surface-hover);
+  }
+
+  /* A row that isn't whole yet. */
+  tr:global(.faint) {
+    color: var(--c-text-muted);
+  }
+</style>

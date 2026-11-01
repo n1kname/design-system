@@ -1,5 +1,5 @@
 {
-  "name": "@ds/docs",
+  "name": "@n1kname/docs",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -12,9 +12,9 @@
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.0",
     "@astrojs/starlight": "0.42.8",
-    "@ds/charts": "workspace:*",
-    "@ds/components": "workspace:*",
-    "@ds/tokens": "workspace:*",
+    "@n1kname/charts": "workspace:*",
+    "@n1kname/components": "workspace:*",
+    "@n1kname/tokens": "workspace:*",
     "@fontsource-variable/bitter": "5.2.5",
     "@fontsource/ibm-plex-mono": "5.2.5",
     "@fontsource/ibm-plex-sans": "5.2.5",

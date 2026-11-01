@@ -119,6 +119,13 @@
         "unit": "px"
       }
     },
+    "xl": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
     "full": {
       "$type": "dimension",
       "$value": {
@@ -398,6 +405,20 @@
         "value": 260,
         "unit": "ms"
       }
+    },
+    "gentle": {
+      "$type": "duration",
+      "$value": {
+        "value": 240,
+        "unit": "ms"
+      }
+    },
+    "reveal": {
+      "$type": "duration",
+      "$value": {
+        "value": 900,
+        "unit": "ms"
+      }
     }
   },
   "ease": {
@@ -418,6 +439,34 @@
         1,
         1
       ]
+    },
+    "standard": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.2,
+        0,
+        0.38,
+        0.9
+      ]
+    },
+    "soft": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.16,
+        1,
+        0.3,
+        1
+      ]
+    }
+  },
+  "z": {
+    "sticky": {
+      "$type": "number",
+      "$value": 10
+    },
+    "panel": {
+      "$type": "number",
+      "$value": 100
     }
   }
 }

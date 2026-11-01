@@ -1,14 +1,10 @@
 ---
-title: Donut
-description: A donut as inline SVG with its labels in a list, drawn at build time.
+title: "Donut"
+description: "A donut as inline SVG with its labels in a list, drawn at build time."
 ---
 
-import Donut from '@ds/components/Donut.astro';
+import Donut from '@n1kname/components/Donut.astro';
 import { partsData } from '../../../lib/examples.mjs';
-
-For showing a few parts of a whole at a glance. For close values, or more than six, use [ranked bars](/components/ranked-bars/).
-
-Plot has no arc mark, so this one is drawn with d3-shape.
 
 <Donut
   data={partsData}
@@ -17,9 +13,52 @@ Plot has no arc mark, so this one is drawn with d3-shape.
   caption="A caption goes here. Below 600px of column, the list moves under the ring."
 />
 
+## What it's for
+
+For showing a few parts of a whole at a glance.
+
+## When not to use it
+
+- **Close values, or more than six.** Use [ranked bars](/components/ranked-bars/).
+- **Values that don't add up to a whole.**
+
+## Anatomy
+
+- **Frame:** a [figure](/components/figure/) on a plate.
+- **Ring:** drawn with d3-shape, because Plot has no arc mark. Starts at 12 o'clock and runs clockwise.
+- **Title:** in the middle of the ring.
+- **List:** the labels and values, in HTML, so they keep their real size when the column shrinks.
+
+## Variants
+
+`strong` per slice sets its label in bold.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-border`, `--c-chart-1`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--font-display`, `--font-mono`, `--layout-measure`, `--leading-body-sm`, `--leading-caption`, `--leading-sub`, `--radius-lg`, `--sp-1`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--text-body-sm`, `--text-caption`, `--text-mono`, `--text-sub`.
+
+## Keyboard and screen reader
+
+- **One image to a screen reader.** The ring and the list are hidden, so `alt` needs every value.
+
+## Content
+
+- **Every slice needs its own slot,** or you can't match a slice to its label.
+- **Slices keep the order you give them,** so sort first if you want largest first.
+
+## Status
+
+Used by the portfolio. The case it was built for now uses ranked bars. It stays for the next one that needs it.
+
+## Code
+
 ```astro wrap
 ---
-import Donut from '@ds/components/Donut.astro';
+import Donut from '@n1kname/components/Donut.astro';
 ---
 
 <Donut
@@ -32,11 +71,3 @@ import Donut from '@ds/components/Donut.astro';
   ]}
 />
 ```
-
-## Keep in mind
-
-- **Labels are HTML, not SVG text.** Text inside an SVG shrinks with the column. A list keeps its real size.
-- **`alt` speaks for the whole chart.** The ring and the list are hidden from screen readers, so `alt` needs every value.
-- **Every slice needs its own slot.** Otherwise you can't match a slice to its label. Grey slices only work when you don't need to tell them apart, and that's rarely true.
-- **Slices keep the order you give them.** It starts at 12 o'clock and runs clockwise, so sort first if you want largest first.
-- **Six slices is a good limit.** Past that, bars usually read better.

@@ -44,9 +44,9 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color var(--motion-fast) var(--ease-out),
-      border-color var(--motion-fast) var(--ease-out),
-      color var(--motion-fast) var(--ease-out),
+      background-color var(--motion-hover) var(--ease-hover),
+      border-color var(--motion-hover) var(--ease-hover),
+      color var(--motion-hover) var(--ease-hover),
       transform var(--motion-fast) var(--ease-out);
   }
 
@@ -83,7 +83,7 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
   }
 
   .quiet:hover {
-    background: var(--c-surface-tint);
+    background: var(--c-surface-hover);
     color: var(--c-text);
   }
 

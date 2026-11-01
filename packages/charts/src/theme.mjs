@@ -18,3 +18,13 @@ export const chrome = {
   text: v('text'),
   textMuted: v('text-muted'),
 };
+
+// Tooltips: instant, because hover is too frequent to animate. Set in a system font, because
+// Safari misplaces centred SVG text in a web font. Every value also needs a table.
+export const tipStyle = {
+  fill: 'var(--c-surface)',
+  stroke: 'var(--c-border-strong)',
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  fontSize: 12,
+  textPadding: 8,
+};

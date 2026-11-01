@@ -1,0 +1,81 @@
+---
+/**
+ * The top of a page: what it is, what it says, and how fresh that is, with the page's
+ * actions beside it. Actions go in the "actions" slot.
+ */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lede?: string;
+  /** How fresh the data is. Say it plainly, such as "Through 31 Oct". */
+  meta?: string;
+  /** Ids, for a page that fills these in once its data arrives. */
+  ids?: { title?: string; lede?: string; meta?: string };
+}
+const { eyebrow, title, lede, meta, ids = {} } = Astro.props;
+---
+
+<header class="page-header">
+  <div class="text">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h1 id={ids.title}>{title}</h1>
+    {(lede || ids.lede) && <p class="lede" id={ids.lede}>{lede}</p>}
+    {(meta || ids.meta) && <p class="meta t-meta" id={ids.meta}>{meta}</p>}
+  </div>
+  {Astro.slots.has('actions') && <div class="actions"><slot name="actions" /></div>}
+</header>
+
+<style>
+  .page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--sp-4) var(--sp-6);
+  }
+
+  .text {
+    flex: 1 1 420px;
+    min-width: 0;
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--sp-1);
+    font-size: var(--text-label);
+    font-weight: 600;
+    color: var(--c-text-accent);
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 24ch;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-h2);
+    line-height: var(--leading-h2);
+    letter-spacing: var(--tracking-h2);
+    text-wrap: balance;
+    /* Keeps its height while a page waits for data. */
+    min-height: 1lh;
+  }
+
+  .lede {
+    margin: var(--sp-2) 0 0;
+    max-width: 62ch;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-secondary);
+    min-height: 2lh;
+  }
+
+  .meta {
+    margin: var(--sp-2) 0 0;
+    min-height: 1lh;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+</style>

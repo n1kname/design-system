@@ -1,0 +1,58 @@
+---
+/**
+ * One number someone reads at a glance, inside a StatStrip. The value keeps its height
+ * while a page waits, so nothing jumps when it arrives. Unknown is –, never 0.
+ */
+interface Props {
+  label: string;
+  value?: string;
+  context?: string;
+  /** Id, for a page that fills the value in once its data arrives. */
+  valueId?: string;
+}
+const { label, value = '–', context, valueId } = Astro.props;
+---
+
+<div class="stat">
+  <dt>{label}</dt>
+  <dd>
+    <span class="value" id={valueId}>{value}</span>
+    {context && <small>{context}</small>}
+  </dd>
+</div>
+
+<style>
+  .stat {
+    padding: var(--sp-3) var(--sp-4);
+    border-inline-start: 1px solid var(--c-border);
+    min-width: 0;
+  }
+
+  dt {
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  dd {
+    margin: var(--sp-1) 0 0;
+  }
+
+  .value {
+    display: block;
+    min-height: 1lh;
+    font-size: var(--text-h3);
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  small {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+</style>

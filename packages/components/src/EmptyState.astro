@@ -1,0 +1,55 @@
+---
+/**
+ * What a place says when it has nothing to show. Each reason gets its own words:
+ *   empty    nothing exists yet: say when it will
+ *   filtered nothing matches: that's a result, offer a way back
+ *   error    it failed: say what still works
+ * An action goes in the slot. An error keeps showing the last good figures if there are any.
+ */
+interface Props {
+  kind?: 'empty' | 'filtered' | 'error';
+  title: string;
+  text?: string;
+}
+const { kind = 'empty', title, text } = Astro.props;
+---
+
+<div class:list={['empty-state', kind]} role={kind === 'error' ? 'alert' : undefined}>
+  <p class="title">{title}</p>
+  {text && <p class="text">{text}</p>}
+  {Astro.slots.has('default') && <div class="action"><slot /></div>}
+</div>
+
+<style>
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-5);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  .error {
+    border: 1px solid var(--c-status-critical);
+  }
+
+  .title {
+    margin: 0;
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  .text {
+    margin: 0;
+    max-width: 60ch;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-secondary);
+  }
+
+  .action {
+    margin-top: var(--sp-1);
+  }
+</style>

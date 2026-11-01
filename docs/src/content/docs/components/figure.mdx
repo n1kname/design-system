@@ -1,0 +1,72 @@
+---
+title: "Figure"
+description: "A chart or table with its title, actions and caption, on a plate or a card."
+---
+
+import Figure from '@n1kname/components/Figure.astro';
+import Button from '@n1kname/components/Button.astro';
+
+<div class="not-content">
+  <Figure variant="card" title="A chart title" sub="What it shows, and the unit." caption="A caption goes here.">
+    <Button slot="actions" variant="quiet">Table</Button>
+    <div class="demo-block" style="height: 120px">The chart</div>
+  </Figure>
+</div>
+
+## What it's for
+
+To give every chart and table the same frame. [Ranked bars](/components/ranked-bars/) and the [donut](/components/donut/) sit in one already.
+
+## When not to use it
+
+- **A picture.** Use a plain `figure`.
+- **A number on its own.** Use a [stat strip](/components/stat-strip/).
+
+## Anatomy
+
+- **Title and sub:** optional. Sub says what it shows and the unit.
+- **Actions:** optional, a slot, such as a link to the table.
+- **Body:** the chart. The field is a container, so what's inside can respond to the room it has.
+- **Caption:** optional, below the field.
+
+## Variants
+
+| Variant | For |
+|---|---|
+| `plate` | A sunken field, for long reads. The default. |
+| `card` | A surface, for dashboards. |
+
+## States
+
+It holds no state. The chart inside reserves its own height while it waits.
+
+## Tokens
+
+`--c-border`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--font-display`, `--layout-measure`, `--leading-caption`, `--leading-sub`, `--radius-lg`, `--sp-1`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--text-body-sm`, `--text-caption`, `--text-sub`.
+
+## Keyboard and screen reader
+
+- **It's a `figure` with a `figcaption`.**
+- **A chart needs its own `alt`, and a table beside it.** Every value has to be reachable without a mouse.
+
+## Content
+
+- **Titles say what's plotted.**
+- **Captions say what it means,** or how to read it.
+
+## Status
+
+Used by the portfolio. Also used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import Figure from '@n1kname/components/Figure.astro';
+---
+
+<Figure variant="card" title="CO₂ by room" sub="Parts per million, per day">
+  <Button slot="actions" variant="quiet">Table</Button>
+  <div id="chart" style="min-height: 260px"></div>
+</Figure>
+```

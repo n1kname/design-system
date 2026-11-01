@@ -1,0 +1,23 @@
+---
+/** Things in a row that wrap when they run out of room, such as tags and buttons. */
+interface Props {
+  gap?: number;
+  justify?: 'start' | 'between' | 'end';
+  as?: string;
+}
+const { gap = 2, justify = 'start', as: Tag = 'div', class: className, ...rest } = Astro.props;
+const justifyContent = { start: 'flex-start', between: 'space-between', end: 'flex-end' }[justify];
+---
+
+<Tag class:list={['cluster', className]} style={`--gap: var(--sp-${gap}); --justify: ${justifyContent}`} {...rest}><slot /></Tag>
+
+<style>
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: var(--justify);
+    gap: var(--gap);
+    min-width: 0;
+  }
+</style>

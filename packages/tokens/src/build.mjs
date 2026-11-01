@@ -90,6 +90,12 @@ ${typeScale}
     /* motion */
 ${lines(inGroup(light, 'motion'))}
 ${lines(inGroup(light, 'ease'))}
+    /* what hover uses: dashboards stay quick, a portfolio overrides these two */
+    --motion-hover: var(--motion-fast);
+    --ease-hover: var(--ease-out);
+
+    /* stacking */
+${lines(inGroup(light, 'z'))}
 
     /* colour — light */
 ${lines(inGroup(light, 'c'))}

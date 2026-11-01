@@ -1,0 +1,80 @@
+---
+title: "Side panel"
+description: "Detail that opens beside what you were reading, in a real dialog."
+---
+
+import SidePanel from '@n1kname/components/SidePanel.astro';
+import Button from '@n1kname/components/Button.astro';
+import DataTable from '@n1kname/components/DataTable.astro';
+
+<div class="not-content demo-row">
+  <Button data-panel-open="demo-panel">Open the panel</Button>
+</div>
+
+<div class="not-content">
+  <SidePanel id="demo-panel" title="All figures">
+    <p>Whatever you were looking at stays where it was. Close this and you're back.</p>
+  </SidePanel>
+</div>
+
+## What it's for
+
+To look at detail without losing your place, such as all the figures behind a chart.
+
+## When not to use it
+
+- **A decision that needs an answer.** That's a small confirmation, in the page.
+- **Content people come to read for itself.** Give it a page, so it has a link.
+- **The main content on a phone-first page,** where it takes the whole screen anyway.
+
+## Anatomy
+
+- **Dialog:** native, up to 900px wide, full height.
+- **Head:** the title and a Close button. It stays in view while the body scrolls.
+- **Body:** a slot. Add ids to sections, so a trigger can open at one.
+
+## Variants
+
+None. Any element with `data-panel-open="id"` opens it. Add `data-panel-section="id"` to open at a section, so a chart's table link goes straight to its figures.
+
+## States
+
+| State | What happens |
+|---|---|
+| Opening | Slides 24px and fades in, 260ms. The backdrop fades with it. |
+| Closing | Quicker, 180ms, and travels less: your attention has already moved on. |
+| Reduced motion | Fades only. |
+
+## Tokens
+
+`--c-bg`, `--c-border`, `--c-text`, `--ease-out`, `--ease-standard`, `--font-display`, `--leading-h3`, `--motion-base`, `--motion-slow`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--text-h3`, `--z-sticky`.
+
+## Keyboard and screen reader
+
+- **Focus moves in and is held there,** and returns to the trigger on close. That comes from `showModal()`.
+- **Escape closes it,** and so does a click on the backdrop.
+- **The title names the dialog,** through `aria-labelledby`.
+
+## Content
+
+- **Title says what's inside:** All figures.
+- **The close button says Close,** rather than a bare icon.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import SidePanel from '@n1kname/components/SidePanel.astro';
+---
+
+<Button data-panel-open="figures">All figures</Button>
+<Button data-panel-open="figures" data-panel-section="co2">Table</Button>
+
+<SidePanel id="figures" title="All figures">
+  <section id="co2">...</section>
+</SidePanel>
+```

@@ -1,0 +1,102 @@
+---
+title: "Data table"
+description: "A table for reading figures: mono numbers, units in the header, sortable columns."
+---
+
+import DataTable from '@n1kname/components/DataTable.astro';
+
+<div class="not-content">
+  <DataTable
+    caption="Fictional rooms, one week"
+    columns={[
+      { label: 'Room', align: 'left' },
+      { label: 'Average', unit: 'ppm' },
+      { label: 'Peak', unit: 'ppm' },
+      { label: 'Above 1.000', unit: 'hours' },
+    ]}
+    rows={[
+      ['Alder', 612, 1040, 3],
+      ['Birch', 580, 910, 0],
+      ['Cedar', 701, 1320, 11],
+      ['Dogwood', 544, null, null],
+    ]}
+  />
+</div>
+
+## What it's for
+
+For looking up an exact figure, and for reading every value in a chart without a mouse. Each chart that matters gets one.
+
+## When not to use it
+
+- **Words about what changed.** Use an [outcome table](/components/outcome-table/).
+- **Under three rows.** Say it in a sentence.
+- **Filters, pagination and row selection.** This reads figures. Those need a real data grid, and there's nothing here yet that needs one.
+
+## Anatomy
+
+- **Caption:** optional, what the table holds.
+- **Header:** the label and, in muted text, the unit. Sortable headers are buttons.
+- **Rows:** 40px, or 32px with `density="compact"`.
+- **Scroll area:** it scrolls sideways on its own when it doesn't fit, so the page never does.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `density` | `default` or `compact`. |
+| `align`, per column | `right` by default, for numbers. `left` for words. |
+| `sortable`, per column | On by default. `false` for a column with nothing to compare. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Hover | A tint on the row. Off the path if you never hover. |
+| Sorted | An arrow on that column only, and `aria-sort`. |
+| Empty cell | A dash. Empty rows sort last either way. |
+| Whole table empty | An [empty state](/components/empty-state/) instead of a table. |
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface-hover`, `--c-text`, `--c-text-accent`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--font-body`, `--font-mono`, `--motion-hover`, `--sp-1`, `--sp-2`, `--sp-3`, `--text-body-sm`, `--text-caption`, `--text-mono`.
+
+## Keyboard and screen reader
+
+- **A real `table`,** with `scope="col"` and `aria-sort`.
+- **Sort buttons are in the tab order,** and Enter or Space sorts: descending first, then ascending.
+- **The scroll area can take focus,** so a keyboard can scroll it.
+
+## Content
+
+- **Units go in the header,** so cells hold only the number.
+- **Numbers are right-aligned and mono, words left-aligned in the body face.** Tabular figures make columns line up.
+- **Dutch number format.**
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import DataTable from '@n1kname/components/DataTable.astro';
+---
+
+<DataTable
+  columns={[{ label: 'Room', align: 'left' }, { label: 'Peak', unit: 'ppm' }]}
+  rows={[['Alder', 1040], ['Birch', null]]}
+/>
+
+<!-- Or fill it at runtime -->
+<DataTable id="weeks" columns={columns} />
+<script>
+  import { setRows } from '@n1kname/components/datatable.js';
+  setRows(document.getElementById('weeks'), rows);
+</script>
+```
+
+## Keep in mind
+
+- **A cell can be `{ html, sort }`,** to show something other than what it sorts by. `html` is written as is, so escape anything from outside with `esc` from `datatable.js`.

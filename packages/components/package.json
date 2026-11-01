@@ -1,27 +1,30 @@
 {
-  "name": "@ds/components",
+  "name": "@n1kname/components",
   "version": "0.1.0",
-  "private": true,
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./Donut.astro": "./src/Donut.astro",
-    "./RankedBars.astro": "./src/RankedBars.astro",
-    "./Pill.astro": "./src/Pill.astro",
-    "./Icon.astro": "./src/Icon.astro",
-    "./Quote.astro": "./src/Quote.astro",
-    "./Columns.astro": "./src/Columns.astro",
-    "./Timeline.astro": "./src/Timeline.astro",
-    "./ImpactTable.astro": "./src/ImpactTable.astro",
+    "./*.astro": "./src/*.astro",
     "./type.css": "./src/type.css",
     "./icons": "./src/icons.ts",
-    "./Button.astro": "./src/Button.astro"
+    "./datatable.js": "./src/datatable.js"
   },
   "scripts": {},
   "dependencies": {
-    "@ds/charts": "workspace:*"
+    "@n1kname/charts": "workspace:*"
   },
   "peerDependencies": {
     "astro": "^7.4.4"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n1kname/design-system.git",
+    "directory": "packages/components"
+  },
+  "files": [
+    "src"
+  ]
 }

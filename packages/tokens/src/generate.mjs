@@ -132,21 +132,21 @@ const semantics = (mode) => {
     'on-accent': n('950'),
     focus: pick(a('700'), a('400')),
     // Diagram tiers: hierarchy from a tint ramp plus border weight, not one solid slab.
-    'dg-primary-bg': pick(a('100'), a('900')),
-    'dg-primary-text': pick(n('950'), n('100')),
-    'dg-primary-border': pick(a('600'), a('500')),
-    'dg-second-bg': pick(a('50'), n('900')),
-    'dg-second-text': pick(n('950'), n('100')),
-    'dg-second-border': pick(a('600'), a('700')),
-    'dg-leaf-bg': pick('#FFFFFF', n('900')),
-    'dg-leaf-text': pick(n('950'), n('100')),
-    'dg-passive-bg': pick(n('100'), n('950')),
-    'dg-passive-text': pick(n('600'), n('400')),
+    'diagram-primary-bg': pick(a('100'), a('900')),
+    'diagram-primary-text': pick(n('950'), n('100')),
+    'diagram-primary-border': pick(a('600'), a('500')),
+    'diagram-second-bg': pick(a('50'), n('900')),
+    'diagram-second-text': pick(n('950'), n('100')),
+    'diagram-second-border': pick(a('600'), a('700')),
+    'diagram-leaf-bg': pick('#FFFFFF', n('900')),
+    'diagram-leaf-text': pick(n('950'), n('100')),
+    'diagram-passive-bg': pick(n('100'), n('950')),
+    'diagram-passive-text': pick(n('600'), n('400')),
     // One edge colour for every unfilled outline and connector: 3:1 against the page.
-    'dg-edge': n('500'),
-    'dg-line': n('500'),
-    'tag-focus-bg': pick(oklch(0.955, 0.022, TAG_FOCUS_HUE), oklch(0.31, 0.045, TAG_FOCUS_HUE)),
-    'tag-focus-text': pick(oklch(0.42, 0.075, TAG_FOCUS_HUE), oklch(0.86, 0.07, TAG_FOCUS_HUE)),
+    'diagram-edge': n('500'),
+    'diagram-line': n('500'),
+    'tag-cool-bg': pick(oklch(0.955, 0.022, TAG_FOCUS_HUE), oklch(0.31, 0.045, TAG_FOCUS_HUE)),
+    'tag-cool-text': pick(oklch(0.42, 0.075, TAG_FOCUS_HUE), oklch(0.86, 0.07, TAG_FOCUS_HUE)),
     // For interfaces with three ink levels.
     'text-secondary': pick(n('700'), n('300')),
     'status-good': pick(good.light, good.dark),
@@ -159,12 +159,24 @@ const semantics = (mode) => {
     // Recedes behind the slots: low chroma, and darker than the orange on dark.
     'chart-neutral': pick(oklch(0.625, 0.015, NEUTRAL_HUE), oklch(0.57, 0.015, NEUTRAL_HUE)),
   };
+  // Hover and well on any surface.
+  out['surface-hover'] = out['surface-sunken'];
+  // The field behind a case hero: colour and grain from the leading pair, quiet in both themes.
+  out['atmosphere-a'] = pick({ ref: 'primitive.seq.2' }, a('900'));
+  out['atmosphere-b'] = pick({ ref: 'primitive.seq2.2' }, oklch(0.31, 0.045, TAG_FOCUS_HUE));
+  out['atmosphere-c'] = pick({ ref: 'primitive.seq.1' }, n('900'));
   chartRefs(mode).forEach((r, i) => (out[`chart-${i + 1}`] = r));
   seqRefs('seq', mode).forEach((r, i) => (out[`seq-${i + 1}`] = r));
   seqRefs('seq2', mode).forEach((r, i) => (out[`seq2-${i + 1}`] = r));
   DIV[mode].neg.forEach((x, i) => (out[`div-neg-${i + 1}`] = x));
   out['div-mid'] = DIV[mode].mid;
   DIV[mode].pos.forEach((x, i) => (out[`div-pos-${i + 1}`] = x));
+  // Old names, kept for the sites that still use them.
+  for (const k of Object.keys(out)) {
+    if (k.startsWith('diagram-')) out[k.replace('diagram-', 'dg-')] = { ref: `c.${k}` };
+  }
+  out['tag-focus-bg'] = { ref: 'c.tag-cool-bg' };
+  out['tag-focus-text'] = { ref: 'c.tag-cool-text' };
   return out;
 };
 
@@ -174,7 +186,7 @@ const SPACING = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 24, 6: 32, 7: 48, 8: 64, 9: 96, 1
 
 // Pair with corner-shape: superellipse(2) for smoothing. Chromium only; Safari
 // and Firefox fall back to the plain radius, which is the intended degradation.
-const RADIUS = { sm: 6, md: 10, lg: 14, full: 999, rule: 2 };
+const RADIUS = { sm: 6, md: 10, lg: 14, xl: 24, full: 999, rule: 2 };
 
 // Px, not ch, so calc() between tracks resolves predictably.
 const LAYOUT = {
@@ -193,8 +205,12 @@ const LAYOUT = {
 //   base  small things appearing, such as a chart settling in
 //   slow  a panel, the largest thing that moves
 // Enter on ease-out, which starts fast and settles. Leave on ease-exit, and quicker.
-const MOTION = { fast: 120, base: 180, slow: 260 };
-const EASE = { out: [0.23, 1, 0.32, 1], exit: [0.4, 0, 1, 1] };
+// Two modes, as Carbon has productive and expressive. Dashboards use the three above.
+// A portfolio adds these: gentle for hover and reveal for the one opening of a page.
+// ease-soft does most of its travel early, so a long duration still answers at once.
+const MOTION = { fast: 120, base: 180, slow: 260, gentle: 240, reveal: 900 };
+const EASE = { out: [0.23, 1, 0.32, 1], exit: [0.4, 0, 1, 1], standard: [0.2, 0, 0.38, 0.9], soft: [0.16, 1, 0.3, 1] };
+const Z = { sticky: 10, panel: 100 };
 
 const TYPE = {
   'display-xl': [{ fluid: 'clamp(2.5rem, 1.5rem + 3.6vw, 4.5rem)', max: 4.5 }, 1.05, -0.02, 'display'],
@@ -275,6 +291,7 @@ const scale = {
   tracking: { $description: 'In em. DTCG dimensions only allow px and rem.', ...numbers(2) },
   motion: Object.fromEntries(Object.entries(MOTION).map(([k, v]) => [k, { $type: 'duration', $value: { value: v, unit: 'ms' } }])),
   ease: Object.fromEntries(Object.entries(EASE).map(([k, v]) => [k, { $type: 'cubicBezier', $value: v }])),
+  z: Object.fromEntries(Object.entries(Z).map(([k, v]) => [k, { $type: 'number', $value: v }])),
 };
 
 const theme = (mode) => ({ c: colorGroup(semantics(mode)) });

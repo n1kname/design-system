@@ -1,7 +1,6 @@
 {
-  "name": "@ds/charts",
+  "name": "@n1kname/charts",
   "version": "0.1.0",
-  "private": true,
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -17,5 +16,16 @@
     "@observablehq/plot": "0.6.17",
     "d3-shape": "3.2.0",
     "linkedom": "0.18.12"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n1kname/design-system.git",
+    "directory": "packages/charts"
+  },
+  "files": [
+    "src"
+  ]
 }

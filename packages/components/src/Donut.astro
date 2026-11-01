@@ -6,7 +6,8 @@
  * light plate. Labels are HTML because text inside an SVG shrinks with the column.
  * The ring and list are hidden from screen readers: `alt` speaks for them.
  */
-import { donutRing, swatch } from '@ds/charts/donut';
+import { donutRing, swatch } from '@n1kname/charts/donut';
+import Figure from './Figure.astro';
 
 interface Slice {
   label: string;
@@ -28,32 +29,25 @@ interface Props {
 const { data, title = [], alt, caption } = Astro.props;
 ---
 
-<figure class="donut">
-  <div class="plate">
-    <div class="chart" role="img" aria-label={alt}>
-      <div class="ring" aria-hidden="true" set:html={donutRing(data, { title })} />
-      <ul aria-hidden="true">
-        {
-          data.map((d) => (
-            <li class:list={{ strong: d.strong }}>
-              <span class="key" style={`background: ${swatch(d)}`} />
-              <span class="name">{d.label}</span>
-              <span class="value">{d.valueLabel ?? d.value}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
+<Figure caption={caption}>
+  <div class="donut" role="img" aria-label={alt}>
+    <div class="ring" aria-hidden="true" set:html={donutRing(data, { title })} />
+    <ul aria-hidden="true">
+      {
+        data.map((d) => (
+          <li class:list={{ strong: d.strong }}>
+            <span class="key" style={`background: ${swatch(d)}`} />
+            <span class="name">{d.label}</span>
+            <span class="value">{d.valueLabel ?? d.value}</span>
+          </li>
+        ))
+      }
+    </ul>
   </div>
-  {caption && <figcaption>{caption}</figcaption>}
-</figure>
+</Figure>
 
 <style>
-  .donut {
-    margin-block: var(--sp-6) var(--sp-7);
-  }
-
-  .plate {
+.plate {
     background: var(--c-surface-sunken);
     border: 1px solid var(--c-border);
     border-radius: var(--radius-lg);
@@ -63,7 +57,7 @@ const { data, title = [], alt, caption } = Astro.props;
     container-type: inline-size;
   }
 
-  .chart {
+  .donut {
     width: 100%;
     display: flex;
     align-items: center;
@@ -116,7 +110,7 @@ const { data, title = [], alt, caption } = Astro.props;
   }
 
   @container (max-width: 600px) {
-    .chart {
+    .donut {
       flex-direction: column;
       align-items: stretch;
       gap: var(--sp-5);
@@ -129,10 +123,4 @@ const { data, title = [], alt, caption } = Astro.props;
     }
   }
 
-  figcaption {
-    margin-top: var(--sp-4);
-    font-size: var(--text-body-sm);
-    color: var(--c-text-muted);
-    max-width: var(--layout-measure);
-  }
 </style>

@@ -1,0 +1,97 @@
+---
+/**
+ * A chart or table with its title, actions and caption. `plate` sets it on a sunken
+ * field, for long reads; `card` sets it on a surface, for dashboards.
+ */
+interface Props {
+  title?: string;
+  sub?: string;
+  caption?: string;
+  variant?: 'plate' | 'card';
+  id?: string;
+}
+const { title, sub, caption, variant = 'plate', id } = Astro.props;
+---
+
+<figure class="figure" id={id}>
+  <div class:list={['field', variant]}>
+    {
+      (title || Astro.slots.has('actions')) && (
+        <div class="head">
+          <div class="titles">
+            {title && <p class="title">{title}</p>}
+            {sub && <p class="sub">{sub}</p>}
+          </div>
+          <slot name="actions" />
+        </div>
+      )
+    }
+    <slot />
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .figure {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .field {
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    container-type: inline-size;
+  }
+
+  .plate {
+    background: var(--c-surface-sunken);
+    padding: var(--sp-6);
+  }
+
+  .card {
+    background: var(--c-surface);
+    padding: var(--sp-5);
+  }
+
+  @media (max-width: 560px) {
+    .plate {
+      padding: var(--sp-5);
+    }
+
+    .card {
+      padding: var(--sp-4);
+    }
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+  }
+
+  .sub {
+    margin: var(--sp-1) 0 0;
+    max-width: 68ch;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  figcaption {
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+    max-width: var(--layout-measure);
+  }
+</style>

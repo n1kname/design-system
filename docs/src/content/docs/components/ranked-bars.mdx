@@ -1,12 +1,10 @@
 ---
-title: Ranked bars
-description: One value per category, read on a shared baseline, in plain HTML and CSS.
+title: "Ranked bars"
+description: "One value per category, read on a shared baseline, in plain HTML and CSS."
 ---
 
-import RankedBars from '@ds/components/RankedBars.astro';
+import RankedBars from '@n1kname/components/RankedBars.astro';
 import { emphasisData } from '../../../lib/examples.mjs';
-
-For comparing values, especially close ones. Reach for this before a donut.
 
 <RankedBars
   data={emphasisData}
@@ -15,9 +13,52 @@ For comparing values, especially close ones. Reach for this before a donut.
   caption="A caption goes here. Below 560px of column, the labels move above the bars."
 />
 
+## What it's for
+
+For comparing values, especially close ones. Reach for this before a donut.
+
+## When not to use it
+
+- **Things over time.** Use a line or a bar chart.
+- **Bars that are different things needing telling apart.** You probably want a stacked bar.
+
+## Anatomy
+
+- **Frame:** a [figure](/components/figure/) on a plate.
+- **Rows:** label, bar and value.
+- **`alt`:** speaks for the whole chart, so it needs every value.
+
+## Variants
+
+`color` per row. No `color` means the neutral tone. Give a colour to the rows the story is about, not to all of them.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-border`, `--c-chart-1`, `--c-chart-axis`, `--c-chart-neutral`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--font-display`, `--font-mono`, `--layout-measure`, `--leading-caption`, `--leading-label`, `--leading-sub`, `--radius-lg`, `--sp-1`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--text-body-sm`, `--text-caption`, `--text-label`, `--text-sub`.
+
+## Keyboard and screen reader
+
+- **One image to a screen reader,** with `alt` as its description.
+- **It takes no focus,** because nothing in it is interactive.
+
+## Content
+
+- **Rows keep the order you give them.** Sort first if you want the largest on top.
+- **`valueLabel` is what's shown;** `value` sets the length.
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
 ```astro wrap
 ---
-import RankedBars from '@ds/components/RankedBars.astro';
+import RankedBars from '@n1kname/components/RankedBars.astro';
 ---
 
 <RankedBars
@@ -34,7 +75,3 @@ import RankedBars from '@ds/components/RankedBars.astro';
 ## Keep in mind
 
 - **It's HTML, not SVG.** Safari positions SVG text with the fallback font's widths and then paints the web font, so right-aligned labels came out uneven. Real text doesn't have that problem.
-- **Rows keep the order you give them.** Sort first if you want the largest on top.
-- **`alt` speaks for the whole chart,** so it needs every value.
-- **No `color` means the neutral tone.** Give a colour to the rows the story is about, not to all of them.
-- **It's one series.** If the bars are different things that need telling apart, you probably want a stacked bar.

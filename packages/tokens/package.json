@@ -1,7 +1,6 @@
 {
-  "name": "@ds/tokens",
+  "name": "@n1kname/tokens",
   "version": "0.1.0",
-  "private": true,
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -23,5 +22,13 @@
   },
   "devDependencies": {
     "style-dictionary": "5.7.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n1kname/design-system.git",
+    "directory": "packages/tokens"
   }
 }

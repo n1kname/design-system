@@ -1,0 +1,76 @@
+---
+title: "Empty state"
+description: "What a place says when it has nothing to show, with different words for each reason."
+---
+
+import EmptyState from '@n1kname/components/EmptyState.astro';
+import Button from '@n1kname/components/Button.astro';
+import Stack from '@n1kname/components/Stack.astro';
+
+<div class="not-content">
+  <Stack gap={3}>
+    <EmptyState title="No figures yet" text="The first night is measured tomorrow morning." />
+    <EmptyState kind="filtered" title="No nights above 1.000 ppm" text="That's the result, not a gap in the data.">
+      <Button variant="quiet">Show all nights</Button>
+    </EmptyState>
+    <EmptyState kind="error" title="Couldn't load the figures" text="Showing the last good ones, from 08:00.">
+      <Button>Try again</Button>
+    </EmptyState>
+  </Stack>
+</div>
+
+## What it's for
+
+So that nothing just looks broken. "Nothing yet", "nothing matches" and "it failed" are three different things, and each gets its own words. See [Loading and empty](/patterns/loading/).
+
+## When not to use it
+
+- **A value inside a table or a stat.** That's a dash.
+- **While something is on its way.** Reserve the space and wait.
+- **A value of zero.** Zero is a result, so show it.
+
+## Anatomy
+
+- **Title:** what's going on.
+- **Text:** optional, what happens next.
+- **Action:** optional, a slot.
+
+## Variants
+
+| Kind | For |
+|---|---|
+| `empty` | Nothing exists yet. Say when it will. |
+| `filtered` | Nothing matches. That's a result, so offer a way back. |
+| `error` | It failed. Say what still works, and keep the last good figures on screen. |
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-border-strong`, `--c-status-critical`, `--c-text`, `--c-text-secondary`, `--leading-caption`, `--radius-md`, `--sp-1`, `--sp-2`, `--sp-5`, `--text-body-sm`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **`error` has `role="alert"`,** so it's announced when it appears.
+- **The other two are read in place.**
+
+## Content
+
+- **Say what happened and what's next,** not "No data".
+- **No apology and no illustration.** It's a data page.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import EmptyState from '@n1kname/components/EmptyState.astro';
+---
+
+<EmptyState title="No figures yet" text="The first night is measured tomorrow morning." />
+```

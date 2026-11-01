@@ -1,0 +1,81 @@
+---
+title: "Layout"
+description: "Stack, Cluster, Grid and Split: four ways to place things, so a page needs almost no layout CSS of its own."
+---
+
+import Stack from '@n1kname/components/Stack.astro';
+import Cluster from '@n1kname/components/Cluster.astro';
+import Grid from '@n1kname/components/Grid.astro';
+import Split from '@n1kname/components/Split.astro';
+
+<div class="not-content demo-stack">
+  <p class="demo-label">Stack</p>
+  <Stack gap={2}><div class="demo-block">One</div><div class="demo-block">Two</div></Stack>
+  <p class="demo-label">Cluster</p>
+  <Cluster><div class="demo-block">Tag</div><div class="demo-block">Another</div><div class="demo-block">A third one</div></Cluster>
+  <p class="demo-label">Grid</p>
+  <Grid min={180} gap={2}><div class="demo-block span-all">Takes the whole row</div><div class="demo-block">One</div><div class="demo-block">Two</div><div class="demo-block">Three</div></Grid>
+  <p class="demo-label">Split</p>
+  <Split side={160} main={240} gap={2}><div slot="side" class="demo-block">Side</div><div class="demo-block">Main</div></Split>
+</div>
+
+## What it's for
+
+To give a page its shape from spacing tokens, without a media query. They look at the room they have, so the same page works in a window, a column or a side panel.
+
+## When not to use it
+
+- **Inside an article.** For peers in running text, use [columns](/components/columns/).
+- **A one-off with a real reason.** Write the CSS. These cover the common cases, not all of them.
+
+## Anatomy
+
+- **Stack:** one above the other, one gap.
+- **Cluster:** a row that wraps.
+- **Grid:** equal columns that wrap by `min`. A child with `class="span-all"` takes the whole row.
+- **Split:** a narrow side and a wide main, which stack when both no longer fit.
+
+## Variants
+
+| Prop | On | Does |
+|---|---|---|
+| `gap` | All | A step of the spacing scale, 1 to 10. |
+| `min` | Grid | The narrowest a column can be, in px. |
+| `justify` | Cluster | `start`, `between` or `end`. |
+| `side`, `main`, `sideAt` | Split | Widths in px, and which side the narrow one is on. |
+| `as` | Stack, Cluster, Grid | The element to render. |
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--sp-1` to `--sp-10`.
+
+## Keyboard and screen reader
+
+- **They add no roles.** Pass `as` when the group means something, such as `as="ul"`.
+- **Reading order is source order.** `sideAt="end"` moves Split's side visually, so check the order still reads.
+
+## Content
+
+- **They hold no text of their own.**
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import Grid from '@n1kname/components/Grid.astro';
+---
+
+<Grid min={360}>
+  <div class="span-all">The one thing that matters most</div>
+  <div>A second thing</div>
+  <div>A third thing</div>
+</Grid>
+```

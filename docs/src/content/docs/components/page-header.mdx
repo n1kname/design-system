@@ -1,0 +1,72 @@
+---
+title: "Page header"
+description: "What a page is, what it says and how fresh that is, with the page's actions beside it."
+---
+
+import PageHeader from '@n1kname/components/PageHeader.astro';
+import Button from '@n1kname/components/Button.astro';
+
+<div class="not-content">
+  <PageHeader eyebrow="A section" title="Most rooms stayed fresh this week" lede="This line says what the page shows and why, in a sentence or two." meta="Through 31 Oct">
+    <Button slot="actions">All figures</Button>
+  </PageHeader>
+</div>
+
+## What it's for
+
+To open a page with what matters: the conclusion, then the proof below it. A data page says how fresh its figures are here.
+
+## When not to use it
+
+- **Inside a card or a panel.** A panel has its own title.
+- **A case page.** That has its own opening.
+
+## Anatomy
+
+- **Eyebrow:** optional, the section.
+- **Title:** an `h1`. A finding, where the page has one.
+- **Lede:** optional.
+- **Meta:** optional, the freshness of the data.
+- **Actions:** optional, a slot. They wrap under the text when there's no room.
+
+## Variants
+
+None.
+
+## States
+
+While a page waits for data, the title, lede and meta keep their height, so nothing jumps. See [Loading and empty](/patterns/loading/).
+
+## Tokens
+
+`--c-text-accent`, `--c-text-secondary`, `--font-display`, `--leading-body-sm`, `--leading-h2`, `--sp-1`, `--sp-2`, `--sp-4`, `--sp-6`, `--text-body-sm`, `--text-h2`, `--text-label`, `--tracking-h2`.
+
+## Keyboard and screen reader
+
+- **One per page,** because it holds the `h1`.
+- **Actions come after the title in reading order.**
+
+## Content
+
+- **Say the finding, not the topic,** where there is one.
+- **Say freshness plainly:** "Through 31 Oct".
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import PageHeader from '@n1kname/components/PageHeader.astro';
+---
+
+<PageHeader title="The finding" lede="What this shows." meta="Through 31 Oct">
+  <Button slot="actions">All figures</Button>
+</PageHeader>
+```
+
+## Keep in mind
+
+- **`ids` lets a page fill in title, lede and meta** when its data arrives at runtime.

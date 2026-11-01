@@ -1,0 +1,20 @@
+---
+/** A row of Stats between two rules. Four at most: past that, you probably want a table. */
+---
+
+<dl class="stat-strip"><slot /></dl>
+
+<style>
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 0;
+    border-block: 1px solid var(--c-border);
+    overflow: hidden;
+  }
+
+  /* The first in each row has no divider: the row's own edge does that job. */
+  .stat-strip > :global(.stat) {
+    margin-inline-start: -1px;
+  }
+</style>

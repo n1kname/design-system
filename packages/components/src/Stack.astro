@@ -1,0 +1,20 @@
+---
+/** Things one above the other, with one gap. The default layout: most of a page is a stack. */
+interface Props {
+  /** A step of the spacing scale, 1 to 10. */
+  gap?: number;
+  as?: string;
+}
+const { gap = 4, as: Tag = 'div', class: className, ...rest } = Astro.props;
+---
+
+<Tag class:list={['stack', className]} style={`--gap: var(--sp-${gap})`} {...rest}><slot /></Tag>
+
+<style>
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    min-width: 0;
+  }
+</style>

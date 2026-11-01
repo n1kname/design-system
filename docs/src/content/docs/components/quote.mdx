@@ -1,11 +1,9 @@
 ---
-title: Quote
-description: A research quote in its own panel, with a required source.
+title: "Quote"
+description: "A research quote in its own panel, with a required source."
 ---
 
-import Quote from '@ds/components/Quote.astro';
-
-Quotes are evidence, so the source is required. A quote with no source is decoration.
+import Quote from '@n1kname/components/Quote.astro';
 
 <div class="not-content">
   <Quote from="A fictional driver, usability session">
@@ -15,9 +13,50 @@ Quotes are evidence, so the source is required. A quote with no source is decora
   </Quote>
 </div>
 
+## What it's for
+
+To show what someone said, as evidence. So the source is required.
+
+## When not to use it
+
+- **Decoration.** A quote with no source is decoration.
+- **Praise for the work.** This is for what you learned.
+
+## Anatomy
+
+- **Text:** a paragraph.
+- **Source:** `from`, who said it and in what setting.
+
+## Variants
+
+None.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-border`, `--c-surface`, `--c-surface-tint`, `--c-text-accent`, `--c-text-muted`, `--font-display`, `--leading-body-sm`, `--radius-full`, `--radius-lg`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`, `--text-body-sm`, `--text-h3`.
+
+## Keyboard and screen reader
+
+- **It's a `figure` with a `blockquote` and a `figcaption`,** so the source stays tied to the words.
+
+## Content
+
+- **`from` says who and where.** A role and a setting is enough when you can't name the person.
+- **Keep their words,** and cut rather than rewrite.
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
 ```astro wrap
 ---
-import Quote from '@ds/components/Quote.astro';
+import Quote from '@n1kname/components/Quote.astro';
 ---
 
 <Quote from="Who said it, and in what setting">
@@ -27,5 +66,4 @@ import Quote from '@ds/components/Quote.astro';
 
 ## Keep in mind
 
-- **The text goes in a paragraph.** In MDX, leave a blank line around it so it parses as one.
-- **`from` says who and where.** A role and a setting is enough when you can't name the person.
+- **In MDX, leave a blank line around the text** so it parses as a paragraph.

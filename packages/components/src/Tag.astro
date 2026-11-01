@@ -6,8 +6,8 @@
  * The fills are meaningful rather than decorative:
  *   accent  → this is a link you can act on, or a live state
  *   quiet   → this is a descriptor, not something to click
- *   role    → a warm tag: how something was done
- *   focus   → the cool tag: what something was about
+ *   warm    → a warm tag: how something was done
+ *   cool    → the cool tag: what something was about
  */
 import Icon from './Icon.astro';
 import type { IconName } from './icons';
@@ -15,7 +15,7 @@ import type { IconName } from './icons';
 interface Props {
   icon?: IconName;
   href?: string;
-  tone?: 'accent' | 'quiet' | 'role' | 'focus';
+  tone?: 'accent' | 'quiet' | 'warm' | 'cool';
   small?: boolean;
 }
 
@@ -23,13 +23,13 @@ const { icon, href, tone = 'quiet', small = false } = Astro.props;
 const Tag = href ? 'a' : 'span';
 ---
 
-<Tag class:list={['pill', tone, { small }]} href={href}>
+<Tag class:list={['tag', tone, { small }]} href={href}>
   {icon && <Icon name={icon} size={15} />}
   <slot />
 </Tag>
 
 <style>
-  .pill {
+  .tag {
     display: inline-flex;
     align-items: center;
     gap: var(--sp-2);
@@ -43,7 +43,7 @@ const Tag = href ? 'a' : 'span';
   }
 
   /* No icon means no need for the tighter left padding. */
-  .pill:not(:has(svg)) {
+  .tag:not(:has(svg)) {
     padding-inline: var(--sp-3);
   }
 
@@ -54,25 +54,25 @@ const Tag = href ? 'a' : 'span';
   }
 
   .accent,
-  .role {
+  .warm {
     background: var(--c-surface-tint);
     color: var(--c-text-accent);
   }
 
-  .focus {
-    background: var(--c-tag-focus-bg);
-    color: var(--c-tag-focus-text);
+  .cool {
+    background: var(--c-tag-cool-bg);
+    color: var(--c-tag-cool-text);
   }
 
-  .pill.small {
+  .tag.small {
     padding-block: 2px;
     font-size: var(--text-caption);
   }
 
-  a.pill {
+  a.tag {
     transition:
-      border-color 150ms ease-out,
-      background-color 150ms ease-out;
+      border-color var(--motion-hover) var(--ease-hover),
+      background-color var(--motion-hover) var(--ease-hover);
   }
 
   a.quiet:hover {

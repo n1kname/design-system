@@ -1,11 +1,9 @@
 ---
-title: Columns
-description: Parallel items side by side, wrapping when there is no room.
+title: "Columns"
+description: "Parallel items side by side in running text, wrapping when there is no room."
 ---
 
-import Columns from '@ds/components/Columns.astro';
-
-For items that are peers, such as findings or reflections. Not for flowing argument: two columns of continuous prose make you scroll down, then back up.
+import Columns from '@n1kname/components/Columns.astro';
 
 <div class="not-content">
   <Columns>
@@ -14,9 +12,48 @@ For items that are peers, such as findings or reflections. Not for flowing argum
   </Columns>
 </div>
 
+## What it's for
+
+For items that are peers inside an article, such as findings or reflections. It sets its text in the reading size.
+
+## When not to use it
+
+- **Flowing argument.** Two columns of continuous prose make you scroll down, then back up.
+- **Laying out a page.** Use a [grid](/components/layout/).
+
+## Anatomy
+
+- **Items:** any number. Each wraps at `min`.
+
+## Variants
+
+`min` is the width a column needs before it wraps, 280 by default. Lower it for four across.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--sp-5`, `--sp-6`, `--sp-7`.
+
+## Keyboard and screen reader
+
+- **Reading order is source order,** so nothing depends on seeing them side by side.
+
+## Content
+
+- **Same size, same weight.** If one matters more, it isn't a peer.
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
 ```astro wrap
 ---
-import Columns from '@ds/components/Columns.astro';
+import Columns from '@n1kname/components/Columns.astro';
 ---
 
 <Columns min={280}>
@@ -27,5 +64,4 @@ import Columns from '@ds/components/Columns.astro';
 
 ## Keep in mind
 
-- **`min` is the width a column needs before it wraps.** Lower it for four across.
 - **In MDX, leave blank lines inside,** so the children still parse as Markdown.

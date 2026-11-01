@@ -1,14 +1,12 @@
 ---
-title: Icons
-description: The icon set, inlined from Lucide, sized by the Icon component.
+title: "Icons"
+description: "The icon set, inlined from Lucide, sized by the Icon component."
 ---
 
-import Icon from '@ds/components/Icon.astro';
-import { ICONS } from '@ds/components/icons';
+import Icon from '@n1kname/components/Icon.astro';
+import { ICONS } from '@n1kname/components/icons';
 
 export const names = Object.keys(ICONS);
-
-[Lucide](https://lucide.dev/) paths, inlined: no package, no webfont, no extra request. Only the icons in real use are here, and adding one is a single line in `icons.ts`.
 
 <div class="not-content icon-grid">
   {names.map((n) => (
@@ -19,15 +17,51 @@ export const names = Object.keys(ICONS);
   ))}
 </div>
 
+## What it's for
+
+To help someone find a thing they already know by name. [Lucide](https://lucide.dev/) paths, inlined: no package, no webfont, no extra request. Only the icons in real use are here, and adding one is a single line in `icons.ts`.
+
+## When not to use it
+
+- **Decoration.** Decorative icons are worse than none.
+- **On its own, without a label,** unless the control has an `aria-label`.
+
+## Anatomy
+
+- **Path:** from `icons.ts`.
+- **Size:** set by `size`, in px.
+- **Stroke:** thins to 1.75 below 20px, because Lucide is drawn at 24px and reads heavy when small.
+
+## Variants
+
+None.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+It takes the colour of the text around it, so it uses no tokens of its own.
+
+## Keyboard and screen reader
+
+- **Hidden from screen readers,** so the label beside it has to say what it means.
+
+## Content
+
+- **One icon per meaning,** so the same picture never means two things.
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
 ```astro wrap
 ---
-import Icon from '@ds/components/Icon.astro';
+import Icon from '@n1kname/components/Icon.astro';
 ---
 
 <Icon name="mail" size={18} />
 ```
-
-## Keep in mind
-
-- **Below 20px the stroke thins to 1.75.** Lucide is drawn at 24px with a stroke of 2, which reads heavy when small.
-- **It takes the colour of the text around it,** and it's hidden from screen readers, so the label beside it has to say what it means.

@@ -1,11 +1,9 @@
 ---
-title: Timeline
-description: A project timeline, with the current state marked by the last entry.
+title: "Timeline"
+description: "A project timeline, with the current state marked by the last entry."
 ---
 
-import Timeline from '@ds/components/Timeline.astro';
-
-For the order things happened in. The last entry is the current state, so its marker looks different.
+import Timeline from '@n1kname/components/Timeline.astro';
 
 <div class="not-content">
   <Timeline entries={[
@@ -15,9 +13,52 @@ For the order things happened in. The last entry is the current state, so its ma
   ]} />
 </div>
 
+## What it's for
+
+To show the order things happened in. The last entry is the current state, so its marker looks different.
+
+## When not to use it
+
+- **Steps someone has to follow.** Use a numbered list.
+- **A long history with no turning points.** Say it in a sentence.
+
+## Anatomy
+
+- **Period:** mono, in an 84px column.
+- **Label and body:** what happened.
+- **Line and marker:** the last marker is filled.
+
+## Variants
+
+None.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-accent`, `--c-bg`, `--c-border`, `--c-text`, `--c-text-muted`, `--radius-full`, `--sp-1`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`. Needs `type.css`.
+
+## Keyboard and screen reader
+
+- **It's an ordered list,** so screen readers announce how many entries there are.
+- **The line and markers are decoration,** so the period has to say when.
+
+## Content
+
+- **Keep periods short,** about 11 characters.
+- **Say what changed,** not what the team did.
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
 ```astro wrap
 ---
-import Timeline from '@ds/components/Timeline.astro';
+import Timeline from '@n1kname/components/Timeline.astro';
 ---
 
 <Timeline entries={[
@@ -28,6 +69,4 @@ import Timeline from '@ds/components/Timeline.astro';
 
 ## Keep in mind
 
-- **Needs `type.css`.** Import `@ds/components/type.css` once per site.
-- **Keep periods short.** The column is 84px wide, about 11 characters of mono.
 - **It stacks below 560px of screen,** and the line still reaches the next marker.

@@ -64,31 +64,31 @@
       "$type": "color",
       "$value": "{primitive.accent.700}"
     },
-    "dg-primary-bg": {
+    "diagram-primary-bg": {
       "$type": "color",
       "$value": "{primitive.accent.100}"
     },
-    "dg-primary-text": {
+    "diagram-primary-text": {
       "$type": "color",
       "$value": "{primitive.neutral.950}"
     },
-    "dg-primary-border": {
+    "diagram-primary-border": {
       "$type": "color",
       "$value": "{primitive.accent.600}"
     },
-    "dg-second-bg": {
+    "diagram-second-bg": {
       "$type": "color",
       "$value": "{primitive.accent.50}"
     },
-    "dg-second-text": {
+    "diagram-second-text": {
       "$type": "color",
       "$value": "{primitive.neutral.950}"
     },
-    "dg-second-border": {
+    "diagram-second-border": {
       "$type": "color",
       "$value": "{primitive.accent.600}"
     },
-    "dg-leaf-bg": {
+    "diagram-leaf-bg": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
@@ -100,27 +100,27 @@
         "hex": "#FFFFFF"
       }
     },
-    "dg-leaf-text": {
+    "diagram-leaf-text": {
       "$type": "color",
       "$value": "{primitive.neutral.950}"
     },
-    "dg-passive-bg": {
+    "diagram-passive-bg": {
       "$type": "color",
       "$value": "{primitive.neutral.100}"
     },
-    "dg-passive-text": {
+    "diagram-passive-text": {
       "$type": "color",
       "$value": "{primitive.neutral.600}"
     },
-    "dg-edge": {
+    "diagram-edge": {
       "$type": "color",
       "$value": "{primitive.neutral.500}"
     },
-    "dg-line": {
+    "diagram-line": {
       "$type": "color",
       "$value": "{primitive.neutral.500}"
     },
-    "tag-focus-bg": {
+    "tag-cool-bg": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
@@ -132,7 +132,7 @@
         "hex": "#E0F5F6"
       }
     },
-    "tag-focus-text": {
+    "tag-cool-text": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
@@ -199,6 +199,22 @@
         ],
         "hex": "#908580"
       }
+    },
+    "surface-hover": {
+      "$type": "color",
+      "$value": "{primitive.neutral.100}"
+    },
+    "atmosphere-a": {
+      "$type": "color",
+      "$value": "{primitive.seq.2}"
+    },
+    "atmosphere-b": {
+      "$type": "color",
+      "$value": "{primitive.seq2.2}"
+    },
+    "atmosphere-c": {
+      "$type": "color",
+      "$value": "{primitive.seq.1}"
     },
     "chart-1": {
       "$type": "color",
@@ -371,6 +387,62 @@
         ],
         "hex": "#A7420D"
       }
+    },
+    "dg-primary-bg": {
+      "$type": "color",
+      "$value": "{c.diagram-primary-bg}"
+    },
+    "dg-primary-text": {
+      "$type": "color",
+      "$value": "{c.diagram-primary-text}"
+    },
+    "dg-primary-border": {
+      "$type": "color",
+      "$value": "{c.diagram-primary-border}"
+    },
+    "dg-second-bg": {
+      "$type": "color",
+      "$value": "{c.diagram-second-bg}"
+    },
+    "dg-second-text": {
+      "$type": "color",
+      "$value": "{c.diagram-second-text}"
+    },
+    "dg-second-border": {
+      "$type": "color",
+      "$value": "{c.diagram-second-border}"
+    },
+    "dg-leaf-bg": {
+      "$type": "color",
+      "$value": "{c.diagram-leaf-bg}"
+    },
+    "dg-leaf-text": {
+      "$type": "color",
+      "$value": "{c.diagram-leaf-text}"
+    },
+    "dg-passive-bg": {
+      "$type": "color",
+      "$value": "{c.diagram-passive-bg}"
+    },
+    "dg-passive-text": {
+      "$type": "color",
+      "$value": "{c.diagram-passive-text}"
+    },
+    "dg-edge": {
+      "$type": "color",
+      "$value": "{c.diagram-edge}"
+    },
+    "dg-line": {
+      "$type": "color",
+      "$value": "{c.diagram-line}"
+    },
+    "tag-focus-bg": {
+      "$type": "color",
+      "$value": "{c.tag-cool-bg}"
+    },
+    "tag-focus-text": {
+      "$type": "color",
+      "$value": "{c.tag-cool-text}"
     }
   }
 }

@@ -22,7 +22,7 @@ interface Props {
 const { items, closing, headings = ['Dimension', 'The outcome'] } = Astro.props;
 ---
 
-<div class="impact">
+<div class="outcome">
   <div class="head" aria-hidden="true">
     <span class="t-label">{headings[0]}</span>
     <span class="t-label">{headings[1]}</span>
@@ -46,7 +46,7 @@ const { items, closing, headings = ['Dimension', 'The outcome'] } = Astro.props;
 </div>
 
 <style>
-  .impact {
+  .outcome {
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     border-radius: var(--radius-lg);
@@ -120,7 +120,7 @@ const { items, closing, headings = ['Dimension', 'The outcome'] } = Astro.props;
   }
 
   @media (max-width: 640px) {
-    .impact {
+    .outcome {
       padding: var(--sp-4) var(--sp-5);
     }
 

@@ -1,14 +1,12 @@
 ---
-title: Outcome table
-description: Dimension rows with an icon, the outcome beside each, and an optional closing statement.
+title: "Outcome table"
+description: "Dimension rows with an icon, the outcome beside each, and an optional closing statement."
 ---
 
-import ImpactTable from '@ds/components/ImpactTable.astro';
-
-For what changed, one dimension at a time. The closing statement is a conclusion, not a call to action, so it's a tint rather than a solid fill.
+import OutcomeTable from '@n1kname/components/OutcomeTable.astro';
 
 <div class="not-content">
-  <ImpactTable
+  <OutcomeTable
     items={[
       { icon: 'users', dimension: 'Support', outcome: 'Fewer fictional tickets, because the answer is on the screen.' },
       { icon: 'trending-up', dimension: 'Adoption', outcome: 'Most fictional teams moved over without being asked.' },
@@ -18,20 +16,57 @@ For what changed, one dimension at a time. The closing statement is a conclusion
   />
 </div>
 
+## What it's for
+
+To say what changed, one dimension at a time. For words, not figures.
+
+## When not to use it
+
+- **Figures you'd compare or sort.** Use a [data table](/components/data-table/).
+- **A call to action.** The closing statement is a conclusion, so it's a tint rather than a solid fill.
+
+## Anatomy
+
+- **Dimension:** an icon and a name.
+- **Outcome:** what changed, in a sentence.
+- **Closing statement:** optional.
+
+## Variants
+
+None.
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-border`, `--c-surface`, `--c-surface-tint`, `--c-text`, `--c-text-accent`, `--font-display`, `--leading-h3`, `--radius-full`, `--radius-lg`, `--radius-md`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`, `--text-h3`, `--tracking-h3`. Needs `type.css`.
+
+## Keyboard and screen reader
+
+- **It's a description list,** so each dimension is read with its outcome. `headings` are for the eye, so they're hidden from screen readers.
+- **The icons are hidden from screen readers.** Every row needs words that stand alone.
+
+## Content
+
+- **The row is the fact, not the icon.**
+- **One claim per row.**
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
 ```astro wrap
 ---
-import ImpactTable from '@ds/components/ImpactTable.astro';
+import OutcomeTable from '@n1kname/components/OutcomeTable.astro';
 ---
 
-<ImpactTable
+<OutcomeTable
   headings={['Dimension', 'The outcome']}
   items={[{ icon: 'users', dimension: 'Support', outcome: 'What changed.' }]}
   closing="Optional."
 />
 ```
-
-## Keep in mind
-
-- **Needs `type.css`.** Import `@ds/components/type.css` once per site.
-- **`headings` is optional,** and defaults to the ones shown.
-- **The row is the fact, not the icon.** Every row needs words that stand alone.

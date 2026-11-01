@@ -1,0 +1,43 @@
+---
+/**
+ * A narrow side beside a wide main, which stack when the two no longer fit. Works from
+ * the room it has, not the window, so it behaves the same inside a panel or a column.
+ */
+interface Props {
+  /** Width of the narrow side, in px. */
+  side?: number;
+  /** The narrowest the main can be before the two stack, in px. */
+  main?: number;
+  gap?: number;
+  /** Which side the narrow one is on. */
+  sideAt?: 'start' | 'end';
+}
+const { side = 280, main = 420, gap = 5, sideAt = 'start', class: className, ...rest } = Astro.props;
+---
+
+<div class:list={['split', sideAt, className]} style={`--side: ${side}px; --main: ${main}px; --gap: var(--sp-${gap})`} {...rest}>
+  <div class="side"><slot name="side" /></div>
+  <div class="main"><slot /></div>
+</div>
+
+<style>
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap);
+  }
+
+  .split.end {
+    flex-direction: row-reverse;
+  }
+
+  .side {
+    flex: 1 1 var(--side);
+    min-width: 0;
+  }
+
+  .main {
+    flex: 999 1 var(--main);
+    min-width: 0;
+  }
+</style>

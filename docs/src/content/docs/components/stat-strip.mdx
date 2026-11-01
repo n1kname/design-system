@@ -1,0 +1,81 @@
+---
+title: "Stat strip"
+description: "A compact row of numbers read at a glance, between two rules."
+---
+
+import StatStrip from '@n1kname/components/StatStrip.astro';
+import Stat from '@n1kname/components/Stat.astro';
+
+<div class="not-content">
+  <StatStrip>
+    <Stat label="Average" value="612 ppm" context="A fictional room" />
+    <Stat label="Peak" value="1.040 ppm" context="Tuesday night" />
+    <Stat label="Above 1.000" value="3 hours" context="This week" />
+    <Stat label="Not known" />
+  </StatStrip>
+</div>
+
+## What it's for
+
+For the few numbers that answer the page's question before you look at a chart. Dashboards often use a row of big tiles; this one takes a fifth of the height and leaves the room to the charts.
+
+## When not to use it
+
+- **More than four numbers.** You probably want a [data table](/components/data-table/).
+- **A number you can't explain.** Give it `context`, or leave it out.
+- **Comparing many values.** Use a chart.
+
+## Anatomy
+
+- **StatStrip:** the row, and the rules above and below. Wraps by the room it has.
+- **Stat label:** what it is.
+- **Stat value:** the number and its unit.
+- **Stat context:** optional, a period or a comparison.
+
+## Variants
+
+None.
+
+## States
+
+| State | What shows |
+|---|---|
+| Waiting | A dash, at full height, so nothing jumps when the value arrives. |
+| Unknown | A dash, never 0. Empty isn't zero. |
+| Known | The value. |
+
+## Tokens
+
+`--c-border`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--leading-caption`, `--sp-1`, `--sp-3`, `--sp-4`, `--text-caption`, `--text-h3`.
+
+## Keyboard and screen reader
+
+- **It's a description list,** so a label and its value are read together.
+- **A value that fills in later** doesn't announce itself: the page says what it found in its title.
+
+## Content
+
+- **Numbers use the body face here,** because they're read, not compared in a column.
+- **Dutch number format,** with the unit beside it.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import StatStrip from '@n1kname/components/StatStrip.astro';
+import Stat from '@n1kname/components/Stat.astro';
+---
+
+<StatStrip>
+  <Stat label="Average" value="612 ppm" context="This week" />
+  <Stat label="Peak" valueId="peak" />
+</StatStrip>
+```
+
+## Keep in mind
+
+- **`valueId` lets a page fill the value in** when its data arrives at runtime.

@@ -9,7 +9,7 @@ export default defineConfig({
       title: 'Design system',
       description: 'Design tokens, a chart palette and chart helpers.',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/n1kname/design-system' }],
-      customCss: ['@ds/tokens/tokens.css', '@ds/components/type.css', './src/styles/theme.css'],
+      customCss: ['@n1kname/tokens/tokens.css', '@n1kname/components/type.css', './src/styles/theme.css'],
       sidebar: [
         { label: 'Overview', link: '/' },
         {
@@ -28,6 +28,29 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Patterns',
+          items: [{ label: 'Loading and empty', link: '/patterns/loading/' }],
+        },
+        {
+          label: 'Layout',
+          items: [
+            { label: 'Stack, Cluster, Grid, Split', link: '/components/layout/' },
+            { label: 'Page header', link: '/components/page-header/' },
+            { label: 'Figure', link: '/components/figure/' },
+          ],
+        },
+        {
+          label: 'Data',
+          items: [
+            { label: 'Stat strip', link: '/components/stat-strip/' },
+            { label: 'Data table', link: '/components/data-table/' },
+            { label: 'Side panel', link: '/components/side-panel/' },
+            { label: 'Empty state', link: '/components/empty-state/' },
+            { label: 'Ranked bars', link: '/components/ranked-bars/' },
+            { label: 'Donut', link: '/components/donut/' },
+          ],
+        },
+        {
           label: 'Components',
           items: [
             { label: 'Buttons', link: '/components/buttons/' },
@@ -37,8 +60,6 @@ export default defineConfig({
             { label: 'Timeline', link: '/components/timeline/' },
             { label: 'Outcome table', link: '/components/outcome-table/' },
             { label: 'Columns', link: '/components/columns/' },
-            { label: 'Ranked bars', link: '/components/ranked-bars/' },
-            { label: 'Donut', link: '/components/donut/' },
           ],
         },
         { label: 'Checks', link: '/checks/' },

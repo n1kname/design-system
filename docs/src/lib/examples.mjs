@@ -1,6 +1,6 @@
 // Every example chart, rendered to an SVG string at build time from synthetic data.
 
-import { Plot, categorical, chrome, diverging, grid as gridLines, renderResponsive, sequential } from '@ds/charts';
+import { Plot, categorical, chrome, diverging, grid as gridLines, renderResponsive, sequential } from '@n1kname/charts';
 import { SERIES, STACK, deltas, grid, lines, shares, stack } from './data.mjs';
 
 const seriesDomain = (names) => ({ domain: names, range: categorical.slice(0, names.length) });

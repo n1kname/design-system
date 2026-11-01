@@ -1,0 +1,31 @@
+---
+/**
+ * Equal columns that wrap by the room they have, with no breakpoints. A child with
+ * class="span-all" takes the whole row, for the one thing that matters most.
+ */
+interface Props {
+  /** The narrowest a column can be, in px, before it wraps. */
+  min?: number;
+  gap?: number;
+  as?: string;
+}
+const { min = 280, gap = 4, as: Tag = 'div', class: className, ...rest } = Astro.props;
+---
+
+<Tag class:list={['grid', className]} style={`--min: ${min}px; --gap: var(--sp-${gap})`} {...rest}><slot /></Tag>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
+    gap: var(--gap);
+  }
+
+  .grid > :global(*) {
+    min-width: 0;
+  }
+
+  .grid > :global(.span-all) {
+    grid-column: 1 / -1;
+  }
+</style>

@@ -1,41 +1,74 @@
 ---
-title: Tags and links
-description: A pill with an optional icon, for tags you read and links you can act on.
+title: "Tags and links"
+description: "A pill with an optional icon, for tags you read and links you can act on."
 ---
 
-import Pill from '@ds/components/Pill.astro';
-
-A tag and a link are the same object here, so the fill says which one you're looking at.
+import Tag from '@n1kname/components/Tag.astro';
 
 <div class="not-content demo-row">
-  <Pill href="#tone" icon="mail" tone="accent">Get in touch</Pill>
-  <Pill icon="layers" tone="quiet">Design systems</Pill>
-  <Pill tone="role">Hands on</Pill>
-  <Pill tone="focus">Fleet tools</Pill>
-  <Pill tone="focus" small>Small</Pill>
+  <Tag href="#variants" icon="mail" tone="accent">Get in touch</Tag>
+  <Tag icon="layers" tone="quiet">Design systems</Tag>
+  <Tag tone="warm">Hands on</Tag>
+  <Tag tone="cool">Fleet tools</Tag>
+  <Tag tone="cool" small>Small</Tag>
 </div>
 
-## Tone
+## What it's for
+
+To label something in a word or two. A tag and a link are the same object here, so the fill says which one you're looking at.
+
+## When not to use it
+
+- **The main action in a view.** Use a [button](/components/buttons/).
+- **A state that needs attention.** A status needs an icon and words, not only a colour.
+- **Long labels.** It doesn't wrap.
+
+## Anatomy
+
+- **Icon:** optional, only where there's a real taxonomy.
+- **Label:** one line.
+- **Fill:** set by the tone.
+
+## Variants
 
 | Tone | Means |
 |---|---|
 | `accent` | A link you can act on, or a live state. |
 | `quiet` | A descriptor, not something to click. |
-| `role` | A warm tag: how something was done. |
-| `focus` | The cool tag: what something was about. It uses the same teal as the second chart colour. |
+| `warm` | How something was done. |
+| `cool` | What something was about. It uses the same teal as the second chart colour. |
+
+`small` works with any tone.
+
+## States
+
+Without `href` it has no states, so it can't look clickable by accident. With one: hover deepens the edge and the fill, and focus shows the ring.
+
+## Tokens
+
+`--c-accent-edge`, `--c-border`, `--c-border-strong`, `--c-surface`, `--c-surface-tint`, `--c-tag-cool-bg`, `--c-tag-cool-text`, `--c-text`, `--c-text-accent`, `--c-text-muted`, `--ease-hover`, `--motion-hover`, `--radius-full`, `--sp-2`, `--sp-3`, `--text-body-sm`, `--text-caption`. `--c-tag-focus-*` still works as an old name.
+
+## Keyboard and screen reader
+
+- **With `href` it's a link, without it a plain span,** so assistive tech gets the right thing.
+- **The icon is hidden from screen readers,** so the label has to say it all.
+
+## Content
+
+- **A word or two,** in sentence case.
+- **Put warm tags on a page or a card, not on a sunken plate.** The tint nearly matches the plate, so the fill disappears, though the text still passes.
+
+## Status
+
+Used by the portfolio.
+
+## Code
 
 ```astro wrap
 ---
-import Pill from '@ds/components/Pill.astro';
+import Tag from '@n1kname/components/Tag.astro';
 ---
 
-<Pill href="/contact" icon="mail" tone="accent">Get in touch</Pill>
-<Pill tone="focus" small>Fleet tools</Pill>
+<Tag href="/contact" icon="mail" tone="accent">Get in touch</Tag>
+<Tag tone="cool" small>Fleet tools</Tag>
 ```
-
-## Keep in mind
-
-- **Give it an `href` and it becomes a link.** Without one it's a plain span, so it can't look clickable by accident.
-- **Put warm tags on a page or a card, not on a sunken plate.** The tint nearly matches the plate, so the fill disappears, though the text still passes.
-- **It doesn't wrap.** A long label stays on one line, so keep labels short.
-- **Icons only where there's a real taxonomy.** Decorative icons are worse than none.

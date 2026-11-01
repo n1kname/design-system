@@ -174,15 +174,6 @@ importers:
       '@astrojs/starlight':
         specifier: 0.42.8
         version: 0.42.8(@astrojs/markdown-remark@7.3.5)(astro@7.4.4(@astrojs/markdown-remark@7.3.5)(@types/node@24.19.2)(yaml@2.9.1))
-      '@ds/charts':
-        specifier: workspace:*
-        version: link:../packages/charts
-      '@ds/components':
-        specifier: workspace:*
-        version: link:../packages/components
-      '@ds/tokens':
-        specifier: workspace:*
-        version: link:../packages/tokens
       '@fontsource-variable/bitter':
         specifier: 5.2.5
         version: 5.2.5
@@ -192,6 +183,15 @@ importers:
       '@fontsource/ibm-plex-sans':
         specifier: 5.2.5
         version: 5.2.5
+      '@n1kname/charts':
+        specifier: workspace:*
+        version: link:../packages/charts
+      '@n1kname/components':
+        specifier: workspace:*
+        version: link:../packages/components
+      '@n1kname/tokens':
+        specifier: workspace:*
+        version: link:../packages/tokens
       astro:
         specifier: 7.4.4
         version: 7.4.4(@astrojs/markdown-remark@7.3.5)(@types/node@24.19.2)(yaml@2.9.1)
@@ -210,7 +210,7 @@ importers:
 
   packages/components:
     dependencies:
-      '@ds/charts':
+      '@n1kname/charts':
         specifier: workspace:*
         version: link:../charts
       astro:

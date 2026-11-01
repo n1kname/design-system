@@ -1,0 +1,31 @@
+---
+title: Loading and empty
+description: What a page does while it waits, when it has nothing, and when something fails.
+---
+
+The goal is a page that doesn't move. People lose their place when things jump, and a spinner tells them nothing they can use.
+
+## While it waits
+
+- **Reserve the space.** Every chart, stat and heading knows its height before its data arrives. Layout shift stays well below 0.1.
+- **Under a second: nothing.** No spinner, no skeleton. The page holds its shape and the data appears.
+- **No pulsing placeholders.** A looping animation asks for attention at the moment nothing can be done.
+- **Over a few seconds: say so,** in words, in the place the data will go.
+- **Settle in once.** Data fades in over `--motion-base` when it first arrives, and doesn't move on resize or refresh.
+
+## When there's nothing
+
+| What happened | What it says | Use |
+|---|---|---|
+| A value isn't known | A dash, never 0 | The cell or stat itself |
+| Nothing exists yet | When it will | [Empty state](/components/empty-state/), `empty` |
+| Nothing matches | That's the result, plus a way back | [Empty state](/components/empty-state/), `filtered` |
+| The value is zero | 0 | The cell or stat itself |
+
+Empty isn't zero. A chart with a gap draws a gap, not a line down to the axis.
+
+## When it fails
+
+- **Keep the last good figures,** and say how old they are.
+- **Say what still works,** and offer one way to try again.
+- **Use the `error` kind** of [empty state](/components/empty-state/), which is announced to screen readers.
