@@ -1,12 +1,11 @@
 ---
 /**
- * Ranked bars as inline SVG, drawn at build time. No script reaches the browser and
- * the data stays in this page's HTML, so no shared asset ever holds it. Colours are
- * tokens, so it follows the theme. Drawn for wide and narrow columns, so its text
- * stays readable on a phone. `alt` speaks for the chart, and needs every value.
+ * Ranked bars in plain HTML and CSS, so the labels are real text. Safari lays out
+ * SVG text with the fallback font's widths and then paints the web font, so
+ * right-aligned SVG labels come out uneven and run into the bars. No script reaches
+ * the browser, and the data stays in this page's HTML. Rows keep the order given.
+ * `alt` speaks for the chart, and needs every value.
  */
-import { rankedBars } from '@ds/charts/bars';
-
 interface Row {
   label: string;
   value: number;
@@ -23,15 +22,26 @@ interface Props {
 }
 
 const { data, title, alt, caption } = Astro.props;
-const chart = rankedBars(data);
+const max = Math.max(...data.map((d) => d.value));
 ---
 
 <figure class="ranked-bars">
   <div class="plate">
     {title && <p class="title">{title}</p>}
     <div role="img" aria-label={alt}>
-      <div class="wide" set:html={chart.wide} />
-      <div class="narrow" set:html={chart.narrow} />
+      <ul aria-hidden="true">
+        {
+          data.map((d) => (
+            <li>
+              <span class="label">{d.label}</span>
+              <span class="track">
+                <i style={`--share: ${d.value / max}; background: ${d.color ?? 'var(--c-chart-neutral)'}`} />
+                <span class="value">{d.valueLabel ?? d.value}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </div>
   {caption && <figcaption>{caption}</figcaption>}
@@ -59,25 +69,78 @@ const chart = rankedBars(data);
     color: var(--c-text);
   }
 
-  div :global(svg) {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
+  ul {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-label);
+    line-height: var(--leading-label);
+    color: var(--c-text);
   }
 
-  .narrow {
-    display: none;
-    max-width: 440px;
+  li {
+    display: contents;
+  }
+
+  .label {
+    padding-right: var(--sp-3);
+    align-self: center;
+    text-align: end;
+  }
+
+  .track {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding-block: 6px;
+    border-left: 1px solid var(--c-chart-axis);
+  }
+
+  /* The room left for the value is what keeps the longest bar and its number inside. */
+  i {
+    display: block;
+    flex: none;
+    width: calc(var(--share) * (100% - 3.5rem));
+    height: 22px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
   }
 
   @container (max-width: 560px) {
-    .wide {
-      display: none;
+    ul {
+      display: block;
     }
 
-    .narrow {
+    li {
       display: block;
+      margin-bottom: var(--sp-3);
+    }
+
+    .label {
+      display: block;
+      padding: 0 0 var(--sp-1);
+      text-align: start;
+    }
+
+    .track {
+      padding-block: 0;
+      border-left: 0;
+    }
+
+    i {
+      border-radius: 4px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    i {
+      background: CanvasText !important;
     }
   }
 

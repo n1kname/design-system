@@ -18,7 +18,10 @@ export const renderPlot = (options) => {
     style: {
       background: 'transparent',
       color: chrome.textMuted,
-      fontFamily: 'var(--font-mono)',
+      // A system font on purpose. Safari lays out SVG text with the fallback font's
+      // widths and then paints the web font, which shifts anything centred or
+      // right-aligned. A font that never swaps has nothing to shift.
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       fontSize: '13px',
       overflow: 'visible',
     },

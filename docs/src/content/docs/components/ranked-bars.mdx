@@ -1,6 +1,6 @@
 ---
 title: Ranked bars
-description: One value per category, read on a shared baseline, drawn at build time.
+description: One value per category, read on a shared baseline, in plain HTML and CSS.
 ---
 
 import RankedBars from '@ds/components/RankedBars.astro';
@@ -33,6 +33,7 @@ import RankedBars from '@ds/components/RankedBars.astro';
 
 ## Keep in mind
 
+- **It's HTML, not SVG.** Safari positions SVG text with the fallback font's widths and then paints the web font, so right-aligned labels came out uneven. Real text doesn't have that problem.
 - **Rows keep the order you give them.** Sort first if you want the largest on top.
 - **`alt` speaks for the whole chart,** so it needs every value.
 - **No `color` means the neutral tone.** Give a colour to the rows the story is about, not to all of them.

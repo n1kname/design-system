@@ -8,8 +8,7 @@
     ".": "./src/index.mjs",
     "./donut": "./src/donut.mjs",
     "./plot": "./src/plot.mjs",
-    "./theme": "./src/theme.mjs",
-    "./bars": "./src/bars.mjs"
+    "./theme": "./src/theme.mjs"
   },
   "scripts": {
     "check": "node src/donut.test.mjs"

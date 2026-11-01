@@ -45,7 +45,8 @@ dark ink, whichever passes 4.5:1, and should stay large or move outside the mark
 uses, so the dark lightness ceiling sits at 0.76, not the usual 0.67.
 
 Charts render at build time, so a page ships no chart JavaScript and its data stays in that page's HTML. Text inside an
-SVG shrinks with it, so `renderResponsive` draws a chart for wide and narrow columns and CSS shows one.
+SVG shrinks with it, so `renderResponsive` draws a chart for wide and narrow columns and CSS shows one. Plot's text uses a
+system font, because Safari misplaces centred and right-aligned SVG text set in a web font. Test SVG text in Safari.
 
 `scripts/check-public.mjs` fails on anything shaped like an email address, an IP address, coordinates or a home path.
 Set `PRIVATE_TERMS_FILE` to also check a list kept outside the repo.
