@@ -14,7 +14,8 @@
     "./Timeline.astro": "./src/Timeline.astro",
     "./ImpactTable.astro": "./src/ImpactTable.astro",
     "./type.css": "./src/type.css",
-    "./icons": "./src/icons.ts"
+    "./icons": "./src/icons.ts",
+    "./Button.astro": "./src/Button.astro"
   },
   "scripts": {},
   "dependencies": {

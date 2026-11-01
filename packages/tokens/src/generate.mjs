@@ -188,6 +188,14 @@ const LAYOUT = {
 //   display marks a BOUNDARY (page title, section break, card title)
 //   body marks STRUCTURE inside a component (sub-heads, labels)
 //   mono marks DATA (years, IDs, values)
+// Motion is for feedback and orientation, never decoration. Smaller things move faster.
+//   fast  hover and press
+//   base  small things appearing, such as a chart settling in
+//   slow  a panel, the largest thing that moves
+// Enter on ease-out, which starts fast and settles. Leave on ease-exit, and quicker.
+const MOTION = { fast: 120, base: 180, slow: 260 };
+const EASE = { out: [0.23, 1, 0.32, 1], exit: [0.4, 0, 1, 1] };
+
 const TYPE = {
   'display-xl': [{ fluid: 'clamp(2.5rem, 1.5rem + 3.6vw, 4.5rem)', max: 4.5 }, 1.05, -0.02, 'display'],
   display: [{ fluid: 'clamp(2rem, 1.4rem + 2.1vw, 3rem)', max: 3 }, 1.1, -0.015, 'display'],
@@ -265,6 +273,8 @@ const scale = {
   text: Object.fromEntries(Object.entries(TYPE).map(([k, row]) => [k, size(row[0])])),
   leading: numbers(1),
   tracking: { $description: 'In em. DTCG dimensions only allow px and rem.', ...numbers(2) },
+  motion: Object.fromEntries(Object.entries(MOTION).map(([k, v]) => [k, { $type: 'duration', $value: { value: v, unit: 'ms' } }])),
+  ease: Object.fromEntries(Object.entries(EASE).map(([k, v]) => [k, { $type: 'cubicBezier', $value: v }])),
 };
 
 const theme = (mode) => ({ c: colorGroup(semantics(mode)) });

@@ -24,7 +24,8 @@ const cssValue = (token) => {
   const { $type: type, $value: value, $extensions: ext, path } = token;
   if (ext?.[EXT]) return ext[EXT];
   if (type === 'color') return value.hex;
-  if (type === 'dimension') return dimension(value);
+  if (type === 'dimension' || type === 'duration') return dimension(value);
+  if (type === 'cubicBezier') return `cubic-bezier(${value.join(', ')})`;
   if (type === 'fontFamily') return value.map((f, i) => (i === 0 ? `'${f}'` : f)).join(', ');
   if (path[0] === 'tracking') return value === 0 ? '0' : `${value}em`;
   if (path[0] === 'leading') return unitless(value);
@@ -85,6 +86,10 @@ ${lines(inGroup(light, 'layout'))}
 
     /* type scale */
 ${typeScale}
+
+    /* motion */
+${lines(inGroup(light, 'motion'))}
+${lines(inGroup(light, 'ease'))}
 
     /* colour — light */
 ${lines(inGroup(light, 'c'))}

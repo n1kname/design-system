@@ -17,6 +17,7 @@ export default defineConfig({
           items: [
             { label: 'Colour', link: '/foundations/colour/' },
             { label: 'Type and space', link: '/foundations/type-and-space/' },
+            { label: 'Motion', link: '/foundations/motion/' },
           ],
         },
         {
@@ -29,6 +30,7 @@ export default defineConfig({
         {
           label: 'Components',
           items: [
+            { label: 'Buttons', link: '/components/buttons/' },
             { label: 'Tags and links', link: '/components/tags/' },
             { label: 'Icons', link: '/components/icons/' },
             { label: 'Quote', link: '/components/quote/' },

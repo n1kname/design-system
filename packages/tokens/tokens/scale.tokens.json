@@ -376,5 +376,48 @@
       "$type": "number",
       "$value": 0
     }
+  },
+  "motion": {
+    "fast": {
+      "$type": "duration",
+      "$value": {
+        "value": 120,
+        "unit": "ms"
+      }
+    },
+    "base": {
+      "$type": "duration",
+      "$value": {
+        "value": 180,
+        "unit": "ms"
+      }
+    },
+    "slow": {
+      "$type": "duration",
+      "$value": {
+        "value": 260,
+        "unit": "ms"
+      }
+    }
+  },
+  "ease": {
+    "out": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.23,
+        1,
+        0.32,
+        1
+      ]
+    },
+    "exit": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.4,
+        0,
+        1,
+        1
+      ]
+    }
   }
 }

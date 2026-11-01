@@ -1,0 +1,29 @@
+---
+title: Motion
+description: When things move, how fast, and when they should not.
+---
+
+The best motion goes unnoticed. It's there to give feedback or to show where something came from, never to decorate.
+
+## Tokens
+
+| Token | Value | For |
+|---|---|---|
+| `--motion-fast` | 120ms | Hover and press |
+| `--motion-base` | 180ms | Small things appearing, such as a chart settling in |
+| `--motion-slow` | 260ms | A panel, the largest thing that moves |
+| `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Things arriving: fast start, soft landing |
+| `--ease-exit` | `cubic-bezier(0.4, 0, 1, 1)` | Things leaving |
+
+## Rules
+
+- **Ask how often it happens.** Something you trigger all day should be instant. Tooltips don't animate for this reason.
+- **Smaller things move faster.** A button is `fast`, a panel is `slow`.
+- **Leaving is quicker than arriving,** and travels less. Your attention has already moved on.
+- **One moment, then stop.** Charts settle in once when a page's data arrives, and not on every resize.
+- **Move `transform` and `opacity` only.** Animating width or height makes the whole page work harder.
+- **No looping motion to get attention.** No pulsing dots, no breathing buttons.
+
+## Reduced motion
+
+`tokens.css` cuts every animation and transition to almost nothing when someone asks their system for less motion. Anything that also moves, such as a press scale, turns that off in its own `prefers-reduced-motion` block, so the state still changes without the travel.

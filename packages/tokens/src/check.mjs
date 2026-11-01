@@ -17,6 +17,8 @@ const PAIRS = [
   ['text-accent', 'bg', 4.5, 'link on page'],
   ['text-accent', 'surface', 4.5, 'link on card'],
   ['on-accent', 'accent', 4.5, 'label on accent fill'],
+  ['on-accent', 'accent-hover', 4.5, 'label on a primary button, hovered'],
+  ['accent-edge', 'surface', 3, 'selected button edge on card'],
   ['accent-edge', 'bg', 3, 'accent as large type or meaningful graphic'],
   ['border-strong', 'bg', 3, 'form control boundary'],
   ['focus', 'bg', 3, 'focus ring on page'],

@@ -1,0 +1,59 @@
+---
+title: Buttons
+description: Primary, secondary and quiet buttons, with hover, press, focus, selected and disabled states.
+---
+
+import Button from '@ds/components/Button.astro';
+
+Use the real element, so focus, tab order, Enter and Space come from the browser. Give it an `href` and it becomes a link that looks like a button.
+
+<div class="not-content demo-row">
+  <Button variant="primary">Primary</Button>
+  <Button>Secondary</Button>
+  <Button variant="quiet">Quiet</Button>
+  <Button selected={true}>Selected</Button>
+  <Button selected={false}>Not selected</Button>
+  <Button disabled>Disabled</Button>
+</div>
+
+## Variants
+
+| Variant | For |
+|---|---|
+| `primary` | The one main action in a view. Two of them means neither is. |
+| `secondary` | Everything else, and the default. |
+| `quiet` | Low-emphasis actions beside content. |
+
+## States
+
+Try them above, with a mouse and with Tab.
+
+| State | What changes |
+|---|---|
+| Hover | Darker fill on primary, accent edge on secondary, a tint on quiet. |
+| Press | Scales to 97%, so you feel the click. Off with reduced motion. |
+| Focus | A 2px ring, only when focus came from the keyboard. |
+| Selected | A tint and an accent edge, and `aria-pressed="true"`. |
+| Disabled | Half opacity and no press. WCAG exempts disabled controls from contrast, so explain why elsewhere if it isn't obvious. |
+
+## Contrast and size
+
+- **Label on the primary fill:** the dark ink, 6.28:1 at rest. The hover state is also on the [Checks](/checks/) page.
+- **The primary fill against a light page is 2.92:1,** under the 3:1 for control edges. That's fine: WCAG 1.4.11 doesn't apply when the label alone identifies the button.
+- **Target size:** 40px tall, 44px on touch screens. WCAG 2.5.8 asks for 24px.
+
+```astro wrap
+---
+import Button from '@ds/components/Button.astro';
+---
+
+<Button variant="primary" id="save">Save</Button>
+<Button href="/somewhere">A link</Button>
+<Button selected={isOn} aria-label="Dark theme">Dark</Button>
+```
+
+## Keep in mind
+
+- **Never add a positive `tabindex`.** The order on the page is the tab order.
+- **A toggle needs `selected` from the start,** `true` or `false`, so screen readers announce it as a toggle.
+- **A link goes somewhere, a button does something.** Pick by what it does, not by how it looks.
