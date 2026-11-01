@@ -10,14 +10,14 @@ interface Props {
   /** How fresh the data is. Say it plainly, such as "Through 31 Oct". */
   meta?: string;
   /** Ids, for a page that fills these in once its data arrives. */
-  ids?: { title?: string; lede?: string; meta?: string };
+  ids?: { eyebrow?: string; title?: string; lede?: string; meta?: string };
 }
 const { eyebrow, title, lede, meta, ids = {} } = Astro.props;
 ---
 
 <header class="page-header">
   <div class="text">
-    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    {(eyebrow || ids.eyebrow) && <p class="eyebrow" id={ids.eyebrow}>{eyebrow}</p>}
     <h1 id={ids.title}>{title}</h1>
     {(lede || ids.lede) && <p class="lede" id={ids.lede}>{lede}</p>}
     {(meta || ids.meta) && <p class="meta t-meta" id={ids.meta}>{meta}</p>}
@@ -44,11 +44,12 @@ const { eyebrow, title, lede, meta, ids = {} } = Astro.props;
     font-size: var(--text-label);
     font-weight: 600;
     color: var(--c-text-accent);
+    min-height: 1lh;
   }
 
   h1 {
     margin: 0;
-    max-width: 24ch;
+    max-width: 32ch;
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-h2);

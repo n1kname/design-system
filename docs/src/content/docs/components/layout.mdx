@@ -16,7 +16,7 @@ import Split from '@n1kname/components/Split.astro';
   <p class="demo-label">Grid</p>
   <Grid min={180} gap={2}><div class="demo-block span-all">Takes the whole row</div><div class="demo-block">One</div><div class="demo-block">Two</div><div class="demo-block">Three</div></Grid>
   <p class="demo-label">Split</p>
-  <Split side={160} main={240} gap={2}><div slot="side" class="demo-block">Side</div><div class="demo-block">Main</div></Split>
+  <Split sideWidth={160} mainWidth={240} gap={2}><div slot="side" class="demo-block">Side</div><div class="demo-block">Main</div></Split>
 </div>
 
 ## What it's for
@@ -42,7 +42,7 @@ To give a page its shape from spacing tokens, without a media query. They look a
 | `gap` | All | A step of the spacing scale, 1 to 10. |
 | `min` | Grid | The narrowest a column can be, in px. |
 | `justify` | Cluster | `start`, `between` or `end`. |
-| `side`, `main`, `sideAt` | Split | Widths in px, and which side the narrow one is on. |
+| `sideWidth`, `mainWidth`, `sideAt` | Split | Widths in px, and which side the narrow one is on. |
 | `as` | Stack, Cluster, Grid | The element to render. |
 
 ## States

@@ -82,6 +82,7 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
     color: var(--c-text);
   }
 
+  /* Rows can arrive at runtime, without Astro's scope, so these reach them through the table. */
   caption {
     padding-bottom: var(--sp-2);
     text-align: left;
@@ -146,7 +147,7 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
     content: '↑';
   }
 
-  td {
+  .data-table :global(td) {
     height: 40px;
     padding: 0 var(--sp-3) 0 0;
     text-align: right;
@@ -157,30 +158,30 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
     white-space: nowrap;
   }
 
-  .compact td {
+  .compact :global(td) {
     height: 32px;
   }
 
-  td:last-child {
+  .data-table :global(td:last-child) {
     padding-right: 0;
   }
 
-  td.left {
+  .data-table :global(td.left) {
     text-align: left;
     font-family: var(--font-body);
     font-size: var(--text-body-sm);
   }
 
-  tbody tr {
+  .data-table :global(tbody tr) {
     transition: background-color var(--motion-hover) var(--ease-hover);
   }
 
-  tbody tr:hover {
+  .data-table :global(tbody tr:hover) {
     background: var(--c-surface-hover);
   }
 
   /* A row that isn't whole yet. */
-  tr:global(.faint) {
+  .data-table :global(tr.faint) {
     color: var(--c-text-muted);
   }
 </style>

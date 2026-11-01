@@ -5,17 +5,17 @@
  */
 interface Props {
   /** Width of the narrow side, in px. */
-  side?: number;
+  sideWidth?: number;
   /** The narrowest the main can be before the two stack, in px. */
-  main?: number;
+  mainWidth?: number;
   gap?: number;
   /** Which side the narrow one is on. */
   sideAt?: 'start' | 'end';
 }
-const { side = 280, main = 420, gap = 5, sideAt = 'start', class: className, ...rest } = Astro.props;
+const { sideWidth = 280, mainWidth = 420, gap = 5, sideAt = 'start', class: className, ...rest } = Astro.props;
 ---
 
-<div class:list={['split', sideAt, className]} style={`--side: ${side}px; --main: ${main}px; --gap: var(--sp-${gap})`} {...rest}>
+<div class:list={['split', sideAt, className]} style={`--side: ${sideWidth}px; --main: ${mainWidth}px; --gap: var(--sp-${gap})`} {...rest}>
   <div class="side"><slot name="side" /></div>
   <div class="main"><slot /></div>
 </div>

@@ -125,6 +125,11 @@ const titleId = `${id}-title`;
     background: var(--c-bg);
   }
 
+  /* A section opened from a link clears the head. */
+  .body :global([id]) {
+    scroll-margin-top: 72px;
+  }
+
   h2 {
     margin: 0;
     font-family: var(--font-display);
