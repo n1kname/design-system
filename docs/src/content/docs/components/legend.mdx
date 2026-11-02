@@ -19,6 +19,13 @@ import Stack from '@n1kname/components/Stack.astro';
         { label: 'Gap', color: 'var(--c-text)' },
       ]}
     />
+    <Legend
+      keys={[
+        { label: 'Invoiced', color: 'var(--c-text-secondary)' },
+        { label: 'Estimate', color: 'var(--c-text-secondary)', mark: 'faint' },
+        { label: 'Projection', color: 'var(--c-text-secondary)', mark: 'dashed' },
+      ]}
+    />
   </Stack>
 </div>
 
@@ -47,6 +54,8 @@ To say what each colour or mark in a chart means, in words, right under the char
 | `hollow` | A second kind of dot. |
 | `stripes` | Something known and set aside. |
 | `empty` | An outline only, for "nothing here". |
+| `faint` | A paler swatch, for an estimate, such as a [bar](/components/bars/) drawn with `fade`. |
+| `dashed` | Paler still with a dashed edge, for a projection of something still running. |
 
 ## States
 

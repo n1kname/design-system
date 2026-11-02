@@ -49,6 +49,7 @@ export default defineConfig({
             { label: 'Caveats', link: '/components/caveats/' },
             { label: 'Legend', link: '/components/legend/' },
             { label: 'Lines', link: '/components/lines/' },
+            { label: 'Bars', link: '/components/bars/' },
             { label: 'Dot rows', link: '/components/dot-rows/' },
             { label: 'Ranked bars', link: '/components/ranked-bars/' },
             { label: 'Donut', link: '/components/donut/' },

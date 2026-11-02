@@ -1,6 +1,7 @@
 // Every example chart, rendered to an SVG string at build time from synthetic data.
 
 import { Plot, categorical, chrome, diverging, grid as gridLines, renderResponsive, sequential } from '@n1kname/charts';
+import { bars as barsHelper } from '@n1kname/charts/bars';
 import { lines as linesHelper } from '@n1kname/charts/lines';
 import { SERIES, STACK, deltas, grid, lines, shares, stack } from './data.mjs';
 
@@ -83,3 +84,25 @@ export const linesSpec = {
   ],
 };
 export const linesChart = renderResponsive((width) => linesHelper(linesSpec, width));
+
+// The bars helper: three made-up parts stacked per month, the last two months not settled.
+export const monthsWide = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, i) => ({
+  month,
+  base: 40,
+  heat: Math.max(0, Math.round(45 * Math.cos((i / 11) * 2 * Math.PI) + 30)),
+  power: Math.round(25 - 18 * Math.sin((i / 11) * Math.PI)),
+  kind: i === 10 ? 'estimate' : i === 11 ? 'projection' : undefined,
+}));
+export const barsSpec = {
+  rows: monthsWide,
+  x: 'month',
+  unit: 'units per month',
+  fade: (r) => ({ estimate: 0.5, projection: 0.22 })[r.kind] ?? 1,
+  dashed: (r) => r.kind === 'projection',
+  series: [
+    { key: 'base', label: 'Base', color: 'var(--c-chart-2)' },
+    { key: 'heat', label: 'Heat', color: 'var(--c-chart-1)' },
+    { key: 'power', label: 'Power', color: 'var(--c-chart-3)' },
+  ],
+};
+export const barsChart = renderResponsive((width) => barsHelper(barsSpec, width));

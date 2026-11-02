@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/charts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -8,10 +8,11 @@
     "./donut": "./src/donut.mjs",
     "./plot": "./src/plot.mjs",
     "./theme": "./src/theme.mjs",
-    "./lines": "./src/lines.mjs"
+    "./lines": "./src/lines.mjs",
+    "./bars": "./src/bars.mjs"
   },
   "scripts": {
-    "check": "node src/donut.test.mjs && node src/lines.test.mjs"
+    "check": "node src/donut.test.mjs && node src/lines.test.mjs && node src/bars.test.mjs"
   },
   "dependencies": {
     "@observablehq/plot": "0.6.17",

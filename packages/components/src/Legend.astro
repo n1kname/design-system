@@ -9,12 +9,14 @@
  *   hollow   a ring, for a second kind of dot
  *   stripes  diagonal stripes, for something known and set aside
  *   empty    an outline only, for "nothing here"
+ *   faint    a paler swatch, for an estimate: no invoice or reading yet
+ *   dashed   paler still with a dashed edge, for a projection of something still running
  */
 interface Key {
   label: string;
   /** Any CSS colour, best a chart token such as var(--c-chart-1). Not needed for `empty`. */
   color?: string;
-  mark?: 'fill' | 'line' | 'dot' | 'hollow' | 'stripes' | 'empty';
+  mark?: 'fill' | 'line' | 'dot' | 'hollow' | 'stripes' | 'empty' | 'faint' | 'dashed';
 }
 
 interface Props {
@@ -96,5 +98,16 @@ const { keys, label = 'Legend', class: className, ...rest } = Astro.props;
 
   .empty {
     box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  }
+
+  /* The same fades as a bar chart's unsettled rows, a little stronger so a small swatch still shows. */
+  .faint {
+    background: color-mix(in oklab, var(--mark) 65%, transparent);
+  }
+
+  .dashed {
+    background: color-mix(in oklab, var(--mark) 37%, transparent);
+    outline: 1px dashed var(--mark);
+    outline-offset: -1px;
   }
 </style>

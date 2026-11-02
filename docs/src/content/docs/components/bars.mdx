@@ -1,0 +1,86 @@
+---
+title: "Bars"
+description: "One bar per step, a single value or a few parts stacked, as Observable Plot options."
+---
+
+import Chart from '../../../components/Chart.astro';
+import { barsChart } from '../../../lib/examples.mjs';
+
+<Chart chart={barsChart} alt="Twelve fictional months, each a stack of base, heat and power. Base stays at 40; heat is high in winter and gone in summer. November is fainter, an estimate; December fainter again with a dashed edge, a projection." />
+
+## What it's for
+
+For a value per step, such as a month or a year, when the size of each matters. Stacked, for a few parts of each step's total, when the bottom part holds still and the change in the others is the point.
+
+## When not to use it
+
+- **Many steps of a value that moves smoothly.** Use [lines](/components/lines/).
+- **More than three or four parts.** The middle ones can't be compared. Show the total, and the parts in a table.
+- **A ranking of things with labels.** Use [ranked bars](/components/ranked-bars/), whose labels are real text.
+
+## Anatomy
+
+- **Bars:** one per row, its parts stacked in the order of `series`, bottom to top. Square on the baseline, rounded at the top.
+- **Zero line:** positive parts stack up from it and negative ones down, so a part can be below zero.
+- **Values:** with `values`, each bar's total on top.
+- **Axis:** y with five gridlines and no tick marks; x prints only the labels you choose.
+- **Pointer:** the bar under it lit, and a tooltip with every part, from the top.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `values` | One series, where each bar's figure is what to read. |
+| `fade` | An opacity per row, for figures not settled yet. Say what each means in a [legend](/components/legend/). |
+| `dashed` | A dashed edge per row, for the least settled, such as a month still running. |
+| `title` | The tooltip's own text per row, when it needs more than the parts. |
+| `y` | Fix either end of the scale. `'auto'` always takes in zero. |
+
+## States
+
+- **Pointer over the chart:** the bar under it is lit and its tooltip shows.
+
+## Tokens
+
+`--c-chart-*`, `--c-chart-grid`, `--c-chart-axis`, `--c-surface`, `--c-surface-hover`, `--c-text`.
+
+## Keyboard and screen reader
+
+- **The SVG is hidden.** The chart's box speaks for it with `role="img"` and a label that says what the bars show.
+- **Every value also needs a table,** near the chart or behind a button, because the tooltip is pointer-only.
+
+## Content
+
+- **Put the part that holds still at the bottom,** so the others sit on a flat floor.
+- **Never tell a fade apart by fade alone** when it matters: add the dashed edge, and say both in the legend.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```js wrap
+import * as Plot from '@observablehq/plot';
+import { bars } from '@n1kname/charts/bars';
+
+const options = bars(
+  {
+    rows, // [{ month: 'Jan', base: 40, heat: 75, power: 25 }, …]
+    x: 'month',
+    unit: 'units per month',
+    fade: (r) => (r.estimate ? 0.5 : 1),
+    series: [
+      { key: 'base', label: 'Base', color: 'var(--c-chart-2)' },
+      { key: 'heat', label: 'Heat', color: 'var(--c-chart-1)' },
+    ],
+  },
+  width,
+);
+// At build time: renderPlot(options). In the browser: Plot.plot({ style, ...options }).
+```
+
+## Keep in mind
+
+- **It returns options, not a chart,** so the same bars draw at build time or in the browser, at the width the box has.
+- **Plot text needs a system font** in the style you give it. Safari lays out SVG text with the fallback font's widths.

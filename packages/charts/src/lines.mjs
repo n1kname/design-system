@@ -35,9 +35,12 @@ export const lines = (
   const domain = [y[0] === 'auto' ? Math.min(...values) : y[0], y[1] === 'auto' ? Math.max(...values) : y[1]];
 
   // The tooltip names every series with a value at that x. A silent one, such as the
-  // dashed rest of another line, only where the line it `continues` has none.
-  const told = (r) =>
-    series.filter((s) => has(r, s.key) && (!s.silent || (s.continues && !has(r, s.continues))));
+  // dashed rest of another line, only where the line it `continues` has none, and after
+  // the settled ones.
+  const told = (r) => [
+    ...series.filter((s) => !s.silent && has(r, s.key)),
+    ...series.filter((s) => s.silent && s.continues && has(r, s.key) && !has(r, s.continues)),
+  ];
   const tipped = rows.filter((r) => told(r).length);
   const title = (r) => [r[x], ...told(r).map((s) => `${s.label}  ${format(r[s.key], digits)}`), unit].join('\n');
 

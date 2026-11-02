@@ -38,6 +38,10 @@ assert.equal(title(1), 'W2\nAlder  3.0\nunits', 'a missing value is left out, no
 assert.equal(title(3), 'W4\nAlder  6.0\nBirch  8.0\nunits', 'a silent series stays out where its line has a value');
 assert.equal(title(4), 'W5\nAlder  5.0\nBirch, not settled  9.0\nunits', 'and shows where it does not');
 
+// Lines listed newest first, each with its dashed rest: the unsettled value comes last.
+const years = lines({ ...spec, series: [series[1], series[2], series[0]] }, 600).marks.at(-1);
+assert.equal(years.channels.title.value(rows[4]), 'W5\nAlder  5.0\nBirch, not settled  9.0\nunits', 'an unsettled value after the settled ones');
+
 const legend = renderPlot(lines({ ...spec, legend: true }, 600));
 assert.ok(!/>Alder</.test(legend), 'with a legend the lines carry no names');
 
