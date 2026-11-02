@@ -1,0 +1,51 @@
+---
+/**
+ * What the figures on a page rest on, and where they stop. One short point per item,
+ * read before acting on the numbers. Pass `items`, or leave them out and fill the list
+ * by `listId` once the data arrives.
+ */
+interface Props {
+  title: string;
+  items?: string[];
+  /** The title's heading level, so it fits the page's outline. */
+  level?: 2 | 3 | 4;
+  /** Id of the list, for a page that fills it in once its data arrives. */
+  listId?: string;
+}
+const { title, items = [], level = 2, listId } = Astro.props;
+const Title = `h${level}`;
+---
+
+<section class="caveats">
+  <Title class="title">{title}</Title>
+  <ul id={listId}>{items.map((item) => <li>{item}</li>)}</ul>
+</section>
+
+<style>
+  .caveats {
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+  }
+
+  ul {
+    margin: var(--sp-3) 0 0;
+    padding-left: var(--sp-5);
+    max-width: var(--layout-measure);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-secondary);
+  }
+
+  ul :global(li + li) {
+    margin-top: var(--sp-2);
+  }
+</style>

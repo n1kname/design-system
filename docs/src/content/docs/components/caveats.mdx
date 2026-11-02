@@ -1,0 +1,68 @@
+---
+title: "Caveats"
+description: "What the figures on a page rest on, and where they stop."
+---
+
+import Caveats from '@n1kname/components/Caveats.astro';
+
+<div class="not-content">
+  <Caveats
+    title="What this rests on"
+    items={[
+      'The sensor reads the room it hangs in, not the whole floor.',
+      'A day with a gap in the log is left out, not counted as zero.',
+      'Two weeks of data: a trend, not a verdict.',
+    ]}
+  />
+</div>
+
+## What it's for
+
+So a reader knows what the numbers can and can't carry before acting on them. It closes a data page, or a panel of figures.
+
+## When not to use it
+
+- **A note on one chart.** Put it in that [figure](/components/figure/)'s caption.
+- **Something going wrong right now.** That's an [empty state](/components/empty-state/) of kind `error`.
+- **A long method.** Link to it instead.
+
+## Anatomy
+
+- **Title:** a heading, at the level the page needs.
+- **List:** one point per item.
+
+## Variants
+
+It has none. `level` sets the title's heading level, 2 by default.
+
+## States
+
+It has no states of its own. Filled in later, it shows the title over an empty list until the data arrives.
+
+## Tokens
+
+`--c-border`, `--c-text`, `--c-text-secondary`, `--font-display`, `--layout-measure`, `--leading-caption`, `--leading-sub`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--text-caption`, `--text-sub`.
+
+## Keyboard and screen reader
+
+- **The title is a real heading,** so it's in the page's outline.
+- **The points are a list,** so a screen reader says how many there are.
+
+## Content
+
+- **One limit per point,** said plainly.
+- **Say what it means for the figures,** not only what's missing.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import Caveats from '@n1kname/components/Caveats.astro';
+---
+
+<Caveats title="What this rests on" items={['A day with a gap is left out, not counted as zero.']} />
+```

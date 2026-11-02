@@ -24,7 +24,7 @@ To give every chart and table the same frame. [Ranked bars](/components/ranked-b
 
 ## Anatomy
 
-- **Title and sub:** optional. Sub says what it shows and the unit.
+- **Title and sub:** optional. Sub says what it shows and the unit. With `level`, the title is a heading at that level.
 - **Actions:** optional, a slot, such as a link to the table.
 - **Body:** the chart. The field is a container, so what's inside can respond to the room it has.
 - **Caption:** optional, below the field.
@@ -47,6 +47,7 @@ It holds no state. The chart inside reserves its own height while it waits.
 ## Keyboard and screen reader
 
 - **It's a `figure` with a `figcaption`.**
+- **Give it a `level` when it is a section of the page,** so its title is in the page's outline. Without one the title is plain text.
 - **A chart needs its own `alt`, and a table beside it.** Every value has to be reachable without a mouse.
 
 ## Content

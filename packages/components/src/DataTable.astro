@@ -17,16 +17,18 @@ interface Props {
   columns: Column[];
   rows?: Cell[][];
   caption?: string;
+  /** Names the table for a screen reader without a visible caption, such as the title of the figure around it. */
+  label?: string;
   /** 40px rows by default; compact is 32px, for dense tables. */
   density?: 'default' | 'compact';
   id?: string;
 }
-const { columns, rows = [], caption, density = 'default', id } = Astro.props;
+const { columns, rows = [], caption, label, density = 'default', id } = Astro.props;
 const num = (v: number) => new Intl.NumberFormat('nl-NL').format(v);
 const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) : typeof c === 'string' ? c : '');
 ---
 
-<div class="scroll" tabindex="0" role="region" aria-label={caption ?? 'Table'}>
+<div class="scroll" tabindex="0" role="region" aria-label={caption ?? label ?? 'Table'}>
   <table class:list={['data-table', density]} id={id} data-data-table>
     {caption && <caption>{caption}</caption>}
     <thead>

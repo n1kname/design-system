@@ -8,9 +8,12 @@ interface Props {
   sub?: string;
   caption?: string;
   variant?: 'plate' | 'card';
+  /** Makes the title a heading at this level, for a figure that is a section of the page. */
+  level?: 2 | 3 | 4;
   id?: string;
 }
-const { title, sub, caption, variant = 'plate', id } = Astro.props;
+const { title, sub, caption, variant = 'plate', level, id } = Astro.props;
+const Title = level ? `h${level}` : 'p';
 ---
 
 <figure class="figure" id={id}>
@@ -19,7 +22,7 @@ const { title, sub, caption, variant = 'plate', id } = Astro.props;
       (title || Astro.slots.has('actions')) && (
         <div class="head">
           <div class="titles">
-            {title && <p class="title">{title}</p>}
+            {title && <Title class="title">{title}</Title>}
             {sub && <p class="sub">{sub}</p>}
           </div>
           <slot name="actions" />

@@ -46,6 +46,7 @@ export default defineConfig({
             { label: 'Data table', link: '/components/data-table/' },
             { label: 'Side panel', link: '/components/side-panel/' },
             { label: 'Empty state', link: '/components/empty-state/' },
+            { label: 'Caveats', link: '/components/caveats/' },
             { label: 'Ranked bars', link: '/components/ranked-bars/' },
             { label: 'Donut', link: '/components/donut/' },
           ],

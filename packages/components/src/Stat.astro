@@ -9,15 +9,17 @@ interface Props {
   context?: string;
   /** Id, for a page that fills the value in once its data arrives. */
   valueId?: string;
+  /** Id of the context line, for a page that fills it in too. It keeps a line's height meanwhile. */
+  contextId?: string;
 }
-const { label, value = '–', context, valueId } = Astro.props;
+const { label, value = '–', context, valueId, contextId } = Astro.props;
 ---
 
 <div class="stat">
   <dt>{label}</dt>
   <dd>
     <span class="value" id={valueId}>{value}</span>
-    {context && <small>{context}</small>}
+    {(context || contextId) && <small id={contextId}>{context}</small>}
   </dd>
 </div>
 
@@ -51,6 +53,7 @@ const { label, value = '–', context, valueId } = Astro.props;
   small {
     display: block;
     margin-top: 2px;
+    min-height: 1lh;
     font-size: var(--text-caption);
     line-height: var(--leading-caption);
     color: var(--c-text-muted);
