@@ -34,7 +34,8 @@ assert.deepEqual(ticks, ['M1', 'M3', 'M5'], 'only the ticks the tick function pr
 assert.ok(!/#[0-9a-f]{6}/i.test(svg), 'no hex: colours are tokens');
 
 // The pieces of a bar: each series from where the one below it stopped.
-const [, ashSolid, , beechSolid, , cedarSolid, cedarDashed] = options.marks.slice(1);
+// After the x axis, the grid and the pointer's highlight: each series, settled then dashed.
+const [ashSolid, , beechSolid, , cedarSolid, cedarDashed] = options.marks.slice(3);
 const span = (mark, i) => [mark.data[i].y1, mark.data[i].y2];
 assert.deepEqual(span(beechSolid, 0), [10, 14], 'a series stacks on the one before it');
 assert.deepEqual(span(cedarSolid, 0), [14, 16], 'and the last on top');
@@ -63,5 +64,12 @@ assert.equal(title(2), 'M3\nCedar  1.0\nAsh  10.0\nunits', 'a missing value is l
 const single = bars({ rows: rows.map((r) => ({ year: r.month, v: r.a + r.month.length })), x: 'year', series: [{ key: 'v', label: 'Value', color: 'var(--c-chart-1)' }], unit: 'units', values: true }, 400);
 const labels = [...renderPlot(single).matchAll(/<text[^>]*>(\d+)<\/text>/g)].map((m) => m[1]);
 assert.deepEqual(labels.slice(-5), ['12', '12', '12', '12', '12'], 'with values, each bar carries its total');
+
+// Long labels wrap on a narrow chart, and the y axis can carry words.
+const long = { rows: [{ k: 'Before the works', v: 3 }, { k: 'After', v: 2 }], x: 'k', series: [{ key: 'v', label: 'V', color: 'var(--c-chart-1)' }], unit: 'u', yLabel: 'units a year' };
+const wrapped = renderPlot(bars({ ...long, wrap: () => 5 }, 300));
+assert.ok(!/>Before the works</.test(wrapped) && /Before/.test(wrapped), 'a long label wraps onto more lines');
+assert.ok(/>Before the works</.test(renderPlot(bars(long, 300))), 'without wrap it stays on one line');
+assert.ok(/units a year/.test(wrapped), 'the y axis carries its words');
 
 console.log('bars: all assertions pass');

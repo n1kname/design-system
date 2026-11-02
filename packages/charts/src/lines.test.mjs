@@ -48,4 +48,38 @@ assert.ok(!/>Alder</.test(legend), 'with a legend the lines carry no names');
 const floor = lines({ ...spec, y: [0, 'auto'] }, 600);
 assert.equal(floor.y.domain[0], 0, 'a fixed end of the y domain is kept');
 
+// Dates on a time scale, labelled where asked, one series with dots and the other without,
+// a line at zero and the tooltip's own words.
+const days = ['2024-01-01', '2024-01-08', '2024-01-22', '2024-01-29'].map((d, i) => ({ date: new Date(d), a: i < 2 ? i - 0.5 : null, b: i >= 1 ? i : null }));
+const timed = lines(
+  {
+    rows: days,
+    x: 'date',
+    time: true,
+    xTicks: () => [days[0].date, days[3].date],
+    tick: (d) => d.toISOString().slice(5, 10),
+    series: [
+      { key: 'a', label: 'Ash', color: 'var(--c-chart-2)', dots: false },
+      { key: 'b', label: 'Beech', color: 'var(--c-chart-1)' },
+    ],
+    unit: 'units',
+    digits: 1,
+    dots: true,
+    zero: true,
+    yLabel: 'units a week',
+    title: (r) => `Week of ${r.date.toISOString().slice(0, 10)}`,
+    legend: true,
+  },
+  600,
+);
+const timedSvg = renderPlot(timed);
+assert.equal(timed.x.type, 'utc', 'dates go on a time scale');
+assert.deepEqual([...timedSvg.matchAll(/>(\d\d-\d\d)</g)].map((m) => m[1]), ['01-01', '01-29'], 'labelled only at the dates asked for');
+assert.equal((timedSvg.match(/<circle/g) ?? []).length, 3, 'dots only on the series that wants them');
+assert.ok(/<g stroke="var\(--c-chart-axis\)"><line y2="([\d.]+)" y1="\1"/.test(timedSvg), 'a line at zero');
+assert.ok(/units a week/.test(timedSvg), 'the y axis carries its words');
+assert.equal(timed.marks.at(-1).channels.title.value(days[1]), 'Week of 2024-01-08', "the tooltip's own words");
+
+assert.equal(lines({ ...spec, legend: true, marginRight: 24 }, 600).marginRight, 24, 'a page can give the last label room');
+
 console.log('lines: all assertions pass');

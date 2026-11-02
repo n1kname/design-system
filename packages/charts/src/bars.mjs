@@ -35,6 +35,13 @@ export const bars = (
     title,
     // The gap between bars, as a share of each bar's room.
     padding = 0.28,
+    // How many ems an x label may run before it wraps onto another line, for long labels on
+    // a narrow chart. Gets the width.
+    wrap = () => Infinity,
+    // Words on the y axis, such as its unit, when the chart has no subtitle to say it.
+    yLabel = null,
+    marginLeft = 44,
+    marginBottom = 30,
   },
   width,
 ) => {
@@ -80,17 +87,19 @@ export const bars = (
       ...(i === series.length - 1 ? { ry1: 4 } : {}),
     });
 
+  const labels = (v, i) => tick(v, i, width);
   return {
     width,
     height,
     marginTop: values ? 24 : 10,
-    marginLeft: 44,
+    marginLeft,
     marginRight: 4,
-    marginBottom: 30,
-    x: { type: 'band', domain: rows.map((r) => r[x]), padding, label: null, tickSize: 0, tickFormat: (v, i) => tick(v, i, width) },
-    y: { domain, nice: true, label: null, tickSize: 0, ticks: 5, tickFormat: (v) => format(v, 0) },
+    marginBottom,
+    x: { type: 'band', domain: rows.map((r) => r[x]), padding, label: null, tickSize: 0, tickFormat: labels, axis: null },
+    y: { domain, nice: true, label: yLabel, tickSize: 0, ticks: 5, tickFormat: (v) => format(v, 0) },
     opacity: { type: 'identity' },
     marks: [
+      Plot.axisX({ tickSize: 0, tickFormat: labels, lineWidth: wrap(width) }),
       Plot.gridY({ stroke: chrome.grid, strokeOpacity: 1, ticks: 5 }),
       // The bar under the pointer, behind the bars.
       Plot.barY(drawn, Plot.pointerX({ x, y1: () => domain[0], y2: () => domain[1], fill: 'var(--c-surface-hover)', inset: -2 })),

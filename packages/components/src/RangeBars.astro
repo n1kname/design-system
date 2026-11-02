@@ -1,0 +1,101 @@
+---
+/**
+ * One bar per thing, with the range its figure could fall in drawn over it: a line with a
+ * cap at each end, ringed in the surface so it reads over the bar. For estimates, where
+ * how sure the figure is matters as much as the figure.
+ *
+ * The rows arrive at runtime: fill them with setRangeBars from `@n1kname/components/rangebars.js`.
+ * `rows` is how many to hold room for until then, so nothing below moves when they come.
+ */
+interface Props {
+  id: string;
+  rows?: number;
+  [key: string]: unknown;
+}
+
+const { id, rows = 0, class: className, style, ...rest } = Astro.props;
+---
+
+<div id={id} class:list={['range-bars', className]} style={[rows ? `--rows: ${rows}` : '', style ?? ''].filter(Boolean).join('; ') || undefined} {...rest}></div>
+
+<style>
+  .range-bars {
+    /* A row is 22px with 6px between; a rest row 13px more for its rule. */
+    min-height: calc(var(--rows, 0) * 28px + 13px);
+    font-size: var(--text-caption);
+  }
+
+  .range-bars :global(.row) {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr) 6.5rem;
+    align-items: center;
+    gap: 0 var(--sp-3);
+  }
+
+  @media (min-width: 640px) {
+    .range-bars :global(.row) {
+      grid-template-columns: 10rem minmax(0, 1fr) 8rem;
+    }
+  }
+
+  .range-bars :global(.row + .row) {
+    margin-top: 6px;
+  }
+
+  .range-bars :global(.row.rest) {
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .range-bars :global(.name) {
+    line-height: 1.25;
+    color: var(--c-text);
+  }
+
+  .range-bars :global(.track) {
+    position: relative;
+    height: 20px;
+  }
+
+  .range-bars :global(.track i) {
+    position: absolute;
+  }
+
+  /* Rounded at the figure's end, square on the baseline. */
+  .range-bars :global(.amount) {
+    inset-block: 2px;
+    left: 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .range-bars :global(.span),
+  .range-bars :global(.cap) {
+    top: 50%;
+    background: var(--c-text);
+    box-shadow: 0 0 0 1px var(--c-surface);
+  }
+
+  .range-bars :global(.span) {
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
+  .range-bars :global(.cap) {
+    width: 2px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+  }
+
+  .range-bars :global(.right) {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .range-bars :global(.right .muted) {
+    margin-left: var(--sp-2);
+    color: var(--c-text-muted);
+  }
+</style>

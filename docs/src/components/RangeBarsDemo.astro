@@ -1,0 +1,32 @@
+---
+// The RangeBars demo, filled the way a page fills it: at runtime, from data. Synthetic.
+import RangeBars from '@n1kname/components/RangeBars.astro';
+---
+
+<div class="not-content">
+  <RangeBars id="demo-range" rows={5} />
+</div>
+
+<script>
+  import { setRangeBars } from '@n1kname/components/rangebars.js';
+
+  const parts = [
+    ['Alder', 290, 260, 320],
+    ['Birch', 160, 95, 220],
+    ['Cedar', 75, 64, 87],
+    ['Dogwood', 13, 0, 31],
+    ['Everything else', 280, 210, 355],
+  ];
+  setRangeBars(document.getElementById('demo-range'), {
+    rows: parts.map(([name, value, lo, hi], i) => ({
+      name,
+      value,
+      lo,
+      hi,
+      rest: i === parts.length - 1,
+      color: i === parts.length - 1 ? 'var(--c-chart-neutral)' : 'var(--c-chart-1)',
+      title: `${name}: ${value} (${lo} to ${hi})`,
+      right: `<strong>${value}</strong><span class="muted">${lo}–${hi}</span>`,
+    })),
+  });
+</script>

@@ -1,0 +1,156 @@
+---
+/**
+ * Every day of a long record, one strip per stream: runs of colour for the state of each day,
+ * with the gaps on top and never too thin to see. For finding where something is missing,
+ * across years at a glance.
+ *
+ * The strips arrive at runtime: fill them with setDayStrips from `@n1kname/components/daystrips.js`.
+ * `rows` is how many streams to hold room for until then, so nothing below moves when they come.
+ */
+interface Props {
+  id: string;
+  rows?: number;
+  [key: string]: unknown;
+}
+
+const { id, rows = 0, class: className, style, ...rest } = Astro.props;
+---
+
+<div id={id} class:list={['day-strips', className]} style={[rows ? `--rows: ${rows}` : '', style ?? ''].filter(Boolean).join('; ') || undefined} {...rest}></div>
+
+<style>
+  .day-strips {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 0 var(--sp-3);
+    /* A strip is 20px with 6px under it; the ticks 20px. */
+    min-height: calc(var(--rows, 0) * 26px + 20px);
+    font-size: var(--text-caption);
+  }
+
+  @media (max-width: 640px) {
+    .day-strips {
+      grid-template-columns: 7rem minmax(0, 1fr);
+    }
+
+    .day-strips :global(.wide-only) {
+      display: none;
+    }
+  }
+
+  .day-strips :global(.names div) {
+    display: flex;
+    align-items: center;
+    height: 20px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--c-text-secondary);
+  }
+
+  .day-strips :global(.area) {
+    position: relative;
+  }
+
+  .day-strips :global(.strip) {
+    position: relative;
+    height: 20px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+
+  .day-strips :global(.strip i) {
+    position: absolute;
+    inset-block: 0;
+  }
+
+  .day-strips :global(.ticks) {
+    position: relative;
+    height: 16px;
+    overflow: hidden;
+    font: 11px/16px var(--font-mono);
+    color: var(--c-text-muted);
+  }
+
+  .day-strips :global(.ticks span) {
+    position: absolute;
+    top: 0;
+    padding-left: 4px;
+    border-left: 1px solid var(--c-border-strong);
+  }
+
+  .day-strips :global(.ticks .year) {
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  .day-strips :global(.cursor) {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: calc(100% - 22px);
+    background: var(--c-text);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .day-strips :global(.tip) {
+    position: absolute;
+    top: 100%;
+    z-index: var(--z-sticky);
+    width: max-content;
+    max-width: 220px;
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+    pointer-events: none;
+  }
+
+  .day-strips :global(.tip strong) {
+    display: block;
+    font-family: var(--font-mono);
+  }
+
+  .day-strips :global(.tip .line) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-top: 2px;
+  }
+
+  .day-strips :global(.tip .line i) {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+
+  .day-strips :global(.tip em) {
+    margin-left: auto;
+    padding-left: var(--sp-3);
+    font-style: normal;
+    color: var(--c-text-muted);
+  }
+
+  .day-strips :global(.tip .quiet) {
+    color: var(--c-text-muted);
+  }
+
+  /* The marks, the same as a Legend's, so a strip and its key look alike. */
+  .day-strips :global(.mark.fill) {
+    background: var(--mark);
+  }
+
+  .day-strips :global(.mark.stripes) {
+    background: repeating-linear-gradient(135deg, var(--mark) 0 2px, transparent 2px 5px);
+    box-shadow: inset 0 0 0 1px var(--mark);
+  }
+
+  .day-strips :global(.mark.empty) {
+    box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  }
+</style>

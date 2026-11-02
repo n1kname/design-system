@@ -17,6 +17,7 @@ For a value per step, such as a month or a year, when the size of each matters. 
 - **Many steps of a value that moves smoothly.** Use [lines](/components/lines/).
 - **More than three or four parts.** The middle ones can't be compared. Show the total, and the parts in a table.
 - **A ranking of things with labels.** Use [ranked bars](/components/ranked-bars/), whose labels are real text.
+- **Estimates with a range.** Use [range bars](/components/range-bars/).
 
 ## Anatomy
 
@@ -35,6 +36,8 @@ For a value per step, such as a month or a year, when the size of each matters. 
 | `dashed` | A dashed edge per row, for the least settled, such as a month still running. |
 | `title` | The tooltip's own text per row, when it needs more than the parts. |
 | `y` | Fix either end of the scale. `'auto'` always takes in zero. |
+| `wrap` | Long labels, such as the name of a period, onto more lines on a narrow chart: how many ems a line may run. |
+| `yLabel` | Words on the y axis, when there is no subtitle to say the unit. |
 
 ## States
 

@@ -1,0 +1,87 @@
+---
+title: "Range bars"
+description: "One bar per thing with the range its figure could fall in, filled at runtime."
+---
+
+import RangeBarsDemo from '../../../components/RangeBarsDemo.astro';
+
+<RangeBarsDemo />
+
+## What it's for
+
+For estimates, one per thing, where how sure each figure is matters as much as the figure: a cost per room from a fitted model, or a share with its margin.
+
+## When not to use it
+
+- **Figures that are known exactly.** The range says nothing; use [ranked bars](/components/ranked-bars/).
+- **Many things.** Past eight or so, the ranges blur. Show the top few and the rest in a table.
+- **Values over time.** Use [bars](/components/bars/) or [lines](/components/lines/).
+
+## Anatomy
+
+- **Name:** what the row is.
+- **Bar:** the figure, from zero, rounded at its end.
+- **Range:** a line from the lowest to the highest the figure could be, with a cap at each end, ringed in the surface so it reads over the bar.
+- **Right column:** the figure in words or figures, and the range in muted text.
+- **Rest:** a last row under a rule, for what no row explains.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `rest`, per row | The last row, set apart under a rule, often in the neutral colour. |
+| `color`, per row | The subject's colour, or the neutral one for context. |
+| `max` | A shared scale for several sets of bars. By default a little past the highest range. |
+
+## States
+
+- **Before the data arrives:** empty, holding the height of `rows` rows, so nothing below moves.
+
+## Tokens
+
+`--c-border`, `--c-surface`, `--c-text`, `--c-text-muted`, `--font-mono`, `--sp-2`, `--sp-3`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **Each bar is an image with a label,** the row's `title`, which says the figure and its range in words. Write it as a sentence.
+- **Nothing to focus.** The title also shows on hover, for a pointer.
+
+## Content
+
+- **Order the rows by the figure,** highest first, with the rest last.
+- **Put the range in the right column too,** so it can be read without measuring.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import RangeBars from '@n1kname/components/RangeBars.astro';
+---
+
+<RangeBars id="costs" rows={7} />
+<script>
+  import { setRangeBars } from '@n1kname/components/rangebars.js';
+  setRangeBars(document.getElementById('costs'), {
+    rows: [
+      {
+        name: 'Alder',
+        value: 290,
+        lo: 260,
+        hi: 320,
+        color: 'var(--c-chart-1)',
+        title: 'Alder: 290 (260 to 320)',
+        right: '<strong>290</strong><span class="muted">260–320</span>',
+      },
+    ],
+  });
+</script>
+```
+
+## Keep in mind
+
+- **`right` is HTML,** written as is: escape anything from outside with `esc` from `datatable.js`.
+- **The class names are the component's own** (`amount`, not `bar`), so a page's `.bar`, such as a navigation bar, can't reach in.

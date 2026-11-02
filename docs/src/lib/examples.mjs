@@ -2,6 +2,7 @@
 
 import { Plot, categorical, chrome, diverging, grid as gridLines, renderResponsive, sequential } from '@n1kname/charts';
 import { bars as barsHelper } from '@n1kname/charts/bars';
+import { heatmap as heatmapHelper } from '@n1kname/charts/heatmap';
 import { lines as linesHelper } from '@n1kname/charts/lines';
 import { SERIES, STACK, deltas, grid, lines, shares, stack } from './data.mjs';
 
@@ -106,3 +107,24 @@ export const barsSpec = {
   ],
 };
 export const barsChart = renderResponsive((width) => barsHelper(barsSpec, width));
+
+// The heatmap helper: a made-up level for each evening hour over eight days, in four steps.
+export const HEAT_HOURS = [18, 19, 20, 21, 22, 23];
+export const heatDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon 2'];
+export const heatCells = heatDays.flatMap((day, d) =>
+  HEAT_HOURS.map((hour, h) => ({ day, hour, level: d === 5 && h === 2 ? null : Math.round(40 + 12 * h + 9 * Math.sin(d * 1.7) + (d % 3) * 6) })),
+);
+export const heatmapSpec = {
+  cells: heatCells,
+  x: 'hour',
+  y: 'day',
+  value: 'level',
+  xDomain: HEAT_HOURS,
+  yDomain: heatDays,
+  steps: [60, 80, 100],
+  colors: sequential.slice(1, 5),
+  marginLeft: 48,
+  title: (c) => `${c.day}, ${c.hour}:00\n${c.level} units`,
+  xTick: (h, _i, width) => (width < 400 && h % 2 ? '' : `${h}:00`),
+};
+export const heatmapChart = renderResponsive((width) => heatmapHelper(heatmapSpec, width));

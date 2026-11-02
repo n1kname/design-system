@@ -1,0 +1,84 @@
+---
+title: "Heatmap"
+description: "A grid of cells coloured by a value in steps, as Observable Plot options."
+---
+
+import Chart from '../../../components/Chart.astro';
+import { heatmapChart } from '../../../lib/examples.mjs';
+
+<Chart chart={heatmapChart} alt="A fictional level for each evening hour from 18:00 to 23:00 over eight days. It rises through each evening, from the lowest step at 18:00 to the highest by 23:00. One cell, Saturday at 20:00, has no value." />
+
+## What it's for
+
+For a value at every combination of two things, such as each hour of each night, when the pattern across both is the point: when it rises, and on which days.
+
+## When not to use it
+
+- **Exact values to compare.** Steps of colour hide small differences. Use a table, or [lines](/components/lines/) for a few rows.
+- **One row.** Use [bars](/components/bars/) or lines.
+- **A value that runs both ways from a middle.** Use the diverging palette, not these steps.
+
+## Anatomy
+
+- **Cells:** one per x and y, in the colour of the step its value falls in. A cell with no value stays empty, never the lowest colour.
+- **Axes:** labels only, no lines or ticks. The rows set the height, so more rows make a taller chart, not thinner cells.
+- **Pointer:** a tooltip on the cell under it.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `steps` | Where each colour starts. A step at a limit people know, such as 1000 ppm, makes the colours mean something. |
+| `colors` | One more than the steps. The sequential palette by default. |
+| `rowHeight` | Thinner rows for many rows. `heatmapHeight` gives the height, so a page can hold the space. |
+| `xTick` | Fewer labels on a narrow chart. |
+
+## States
+
+- **Pointer over a cell:** its tooltip.
+- **Before the data arrives:** hold `heatmapHeight(rows)` of space, so nothing below moves.
+
+## Tokens
+
+`--c-seq-*`, `--c-surface`, `--c-border-strong`, `--c-text-muted`.
+
+## Keyboard and screen reader
+
+- **The SVG is hidden.** The chart's box speaks for it with `role="img"` and a label that says what the cells show.
+- **Every value also needs a table,** near the chart or behind a button, because the tooltip is pointer-only.
+
+## Content
+
+- **Say what the steps mean** in a [legend](/components/legend/) with the step values, under the chart.
+- **Order the rows by time,** oldest at the top, unless the point is a ranking.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```js wrap
+import * as Plot from '@observablehq/plot';
+import { heatmap, heatmapHeight } from '@n1kname/charts/heatmap';
+
+const options = heatmap(
+  {
+    cells, // [{ night: 'Mon', hour: 20, level: 640 }, …]
+    x: 'hour',
+    y: 'night',
+    value: 'level',
+    xDomain: [20, 21, 22, 23],
+    yDomain: nights,
+    steps: [600, 800, 1000],
+    title: (c) => `${c.night}, ${c.hour}:00\n${c.level} ppm`,
+  },
+  width,
+);
+// At build time: renderPlot(options). In the browser: Plot.plot({ style, ...options }).
+```
+
+## Keep in mind
+
+- **It returns options, not a chart,** so the same grid draws at build time or in the browser, at the width the box has.
+- **Plot text needs a system font** in the style you give it. Safari lays out SVG text with the fallback font's widths.

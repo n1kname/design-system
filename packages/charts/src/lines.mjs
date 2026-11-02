@@ -4,7 +4,8 @@
 // end together, they don't, and a Legend above the chart names them instead.
 //
 // Rows are wide: one object per x, a number (or null for no value) per series key. A null
-// breaks the line rather than joining across it.
+// breaks the line rather than joining across it. With `time`, x is a Date per row and the
+// steps need not be even, such as weeks with one missing.
 
 import * as Plot from '@observablehq/plot';
 import { chrome, tipStyle } from './theme.mjs';
@@ -27,6 +28,20 @@ export const lines = (
     // A mark on every point. Leave off for long, dense series.
     dots = true,
     legend = false,
+    // x as dates on a time scale, labelled at the dates `xTicks` gives for a width.
+    time = false,
+    xTicks,
+    // A line at zero, for values that can fall below it.
+    zero = false,
+    // Words on the y axis, such as its unit, and the decimals its labels show.
+    yLabel = null,
+    yDigits = 0,
+    // The tooltip's text per row. By default the label, each series with a value, and the unit.
+    title: says,
+    marginLeft = 44,
+    marginTop = 10,
+    // Room on the right: by default for the end labels, or a little for the last x label with a legend.
+    marginRight = legend ? 8 : 58,
   },
   width,
 ) => {
@@ -42,7 +57,7 @@ export const lines = (
     ...series.filter((s) => s.silent && s.continues && has(r, s.key) && !has(r, s.continues)),
   ];
   const tipped = rows.filter((r) => told(r).length);
-  const title = (r) => [r[x], ...told(r).map((s) => `${s.label}  ${format(r[s.key], digits)}`), unit].join('\n');
+  const title = says ?? ((r) => [r[x], ...told(r).map((s) => `${s.label}  ${format(r[s.key], digits)}`), unit].join('\n'));
 
   const named = series
     .map((s) => ({ s, name: s.endLabel ?? (s.silent ? false : s.label) }))
@@ -51,14 +66,17 @@ export const lines = (
   return {
     width,
     height,
-    marginTop: 10,
-    marginLeft: 44,
-    marginRight: legend ? 8 : 58,
+    marginTop,
+    marginLeft,
+    marginRight,
     marginBottom: 30,
-    x: { type: 'point', domain: rows.map((r) => r[x]), label: null, tickSize: 0, tickFormat: (v, i) => tick(v, i, width) },
-    y: { domain, nice: true, label: null, tickSize: 0, ticks: 5, tickFormat: (v) => format(v, 0) },
+    x: time
+      ? { type: 'utc', label: null, tickSize: 0, ticks: xTicks?.(width), tickFormat: (v, i) => tick(v, i, width) }
+      : { type: 'point', domain: rows.map((r) => r[x]), label: null, tickSize: 0, tickFormat: (v, i) => tick(v, i, width) },
+    y: { domain, nice: true, label: yLabel, tickSize: 0, ticks: 5, tickFormat: (v) => format(v, yDigits) },
     marks: [
       Plot.gridY({ stroke: chrome.grid, strokeOpacity: 1, ticks: 5 }),
+      ...(zero ? [Plot.ruleY([0], { stroke: chrome.axis })] : []),
       ...series.map((s) =>
         Plot.line(rows, {
           x,
@@ -68,18 +86,19 @@ export const lines = (
           strokeDasharray: s.dashed ? '4 3' : undefined,
         }),
       ),
-      ...(dots
-        ? series.map((s) =>
-            Plot.dot(rows.filter((r) => has(r, s.key)), {
-              x,
-              y: s.key,
-              r: 2.5,
-              fill: s.dashed ? 'var(--c-surface)' : s.color,
-              stroke: s.color,
-              strokeWidth: s.dashed ? 1.5 : 0,
-            }),
-          )
-        : []),
+      // A series' own `dots` wins over the chart's.
+      ...series
+        .filter((s) => s.dots ?? dots)
+        .map((s) =>
+          Plot.dot(rows.filter((r) => has(r, s.key)), {
+            x,
+            y: s.key,
+            r: 2.5,
+            fill: s.dashed ? 'var(--c-surface)' : s.color,
+            stroke: s.color,
+            strokeWidth: s.dashed ? 1.5 : 0,
+          }),
+        ),
       ...named.map(({ s, name }) => {
         const last = rows.findLast((r) => has(r, s.key));
         return Plot.text(last ? [last] : [], {

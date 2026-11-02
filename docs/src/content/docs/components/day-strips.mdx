@@ -1,0 +1,85 @@
+---
+title: "Day strips"
+description: "Every day of a long record, one strip per stream, coloured by state, filled at runtime."
+---
+
+import DayStripsDemo from '../../../components/DayStripsDemo.astro';
+
+<DayStripsDemo />
+
+## What it's for
+
+For a record kept every day over years, in a few streams, when the question is where something is missing: which days, in which stream, and whether anyone wrote down why.
+
+## When not to use it
+
+- **A value per day.** Use [lines](/components/lines/) or [bars](/components/bars/); a strip shows a state, not an amount.
+- **A few weeks.** A table or a calendar says more.
+- **Many states.** Past four or five, they can't be told apart at a pixel a day.
+
+## Anatomy
+
+- **Names:** one per stream, with a title for what complete means.
+- **Strips:** runs of days in the same state. Gaps go on top and are never thinner than 4px, so a one-day gap shows across years.
+- **Ticks:** the first of each quarter, the year at each January. Half years on a phone.
+- **Pointer:** a line on the day under it, and a tooltip with the date and every stream that wasn't quiet that day.
+
+## Variants
+
+| State option | For |
+|---|---|
+| `mark: 'fill'` | A solid colour, for the usual state and for the one that asks for something. |
+| `mark: 'stripes'` | Something known and set aside, such as a documented gap. |
+| `mark: 'empty'` | Not drawn on the strip, only in the tooltip and the legend, such as "not recorded yet". |
+| `gap: true` | On top and at least 4px wide. |
+
+## States
+
+- **Pointer over the strips:** the line and tooltip follow it.
+- **Before the data arrives:** empty, holding the height of `rows` streams, so nothing below moves.
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-surface`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--font-mono`, `--radius-md`, `--sp-2`, `--sp-3`, `--text-caption`, `--z-sticky`.
+
+## Keyboard and screen reader
+
+- **Each strip is an image with a label,** the stream's `summary`, which says how many days of each kind of gap it has. Write it as a sentence.
+- **The day-by-day detail is pointer-only.** Put the gaps that matter in a table beside it.
+
+## Content
+
+- **Make one state the ink one,** the mark that asks for something, and keep the usual state soft.
+- **Use the same marks in the legend,** from [Legend](/components/legend/), so the key looks like the strips.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import DayStrips from '@n1kname/components/DayStrips.astro';
+---
+
+<DayStrips id="strips" rows={7} />
+<script>
+  import { setDayStrips } from '@n1kname/components/daystrips.js';
+  setDayStrips(document.getElementById('strips'), {
+    from: '2024-01-01',
+    quiet: 'ok',
+    quietText: 'Everything complete',
+    states: {
+      ok: { label: 'complete', mark: 'fill', color: 'var(--c-status-good)' },
+      gap: { label: 'gap', mark: 'fill', color: 'var(--c-text)', gap: true },
+    },
+    streams: [{ label: 'Meter', days: ['ok', 'ok', 'gap', 'ok'], summary: 'Meter: 1 day with a gap' }],
+  });
+</script>
+```
+
+## Keep in mind
+
+- **One place per day,** so a strip of three years is about a thousand places; runs of the same state are drawn as one.
+- **`date` and `month`** format the tooltip's date and the tick labels, for a page with its own date style.
