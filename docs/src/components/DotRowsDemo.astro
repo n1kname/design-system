@@ -1,0 +1,42 @@
+---
+// The DotRows demo, filled the way a page fills it: at runtime, from data. Synthetic.
+import DotRows from '@n1kname/components/DotRows.astro';
+import Legend from '@n1kname/components/Legend.astro';
+---
+
+<div class="not-content">
+  <Legend
+    keys={[
+      { label: 'on hot days', color: 'var(--c-chart-1)', mark: 'dot' },
+      { label: 'all summer', color: 'var(--c-chart-2)', mark: 'hollow' },
+      { label: 'warmest day', color: 'var(--c-chart-3)', mark: 'hollow' },
+    ]}
+  />
+  <DotRows id="demo-dots" rows={5} style="margin-top: var(--sp-3)" />
+</div>
+
+<script>
+  import { setDotRows } from '@n1kname/components/dotrows.js';
+
+  const rooms = [
+    ['Alder', 23.1, 26.4, 27.9],
+    ['Birch', 22.6, 25.8, 27.2],
+    ['Cedar', 22.0, 24.9, 26.5],
+    ['Dogwood', 21.4, 23.7, 25.1],
+    ['Elm', 20.8, 22.6, 23.9],
+  ];
+  setDotRows(document.getElementById('demo-dots'), {
+    scale: [20, 29],
+    ticks: [20, 22, 24, 26, 28],
+    rows: rooms.map(([name, mean, hot, max]) => ({
+      name,
+      title: `${name}: ${mean} °C over the summer, ${hot} °C on hot days, ${max} °C on its warmest day`,
+      dots: [
+        { v: mean, color: 'var(--c-chart-2)', hollow: true },
+        { v: max, color: 'var(--c-chart-3)', hollow: true },
+        { v: hot, color: 'var(--c-chart-1)' },
+      ],
+      right: `<strong>${hot} °C</strong><span class="muted">max ${max}</span>`,
+    })),
+  });
+</script>

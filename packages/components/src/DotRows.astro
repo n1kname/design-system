@@ -1,0 +1,134 @@
+---
+/**
+ * One row per thing, a few marks on a shared scale: where each room or item sits, read
+ * across. Marks need no zero baseline, which is why this isn't a bar chart.
+ *
+ * The rows arrive at runtime: fill them with setDotRows from `@n1kname/components/dotrows.js`.
+ * `rows` is how many to hold room for until then, so nothing below moves when they come.
+ */
+interface Props {
+  id: string;
+  rows?: number;
+  [key: string]: unknown;
+}
+
+const { id, rows = 0, class: className, style, ...rest } = Astro.props;
+---
+
+<div id={id} class:list={['dot-rows', className]} style={[rows ? `--rows: ${rows}` : '', style ?? ''].filter(Boolean).join('; ') || undefined} {...rest}></div>
+
+<style>
+  .dot-rows {
+    /* A row is 28px; the axis under them 20px. */
+    min-height: calc(var(--rows, 0) * 28px + 20px);
+    font-size: var(--text-caption);
+  }
+
+  .dot-rows :global(.row) {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0 var(--sp-3);
+  }
+
+  @media (min-width: 640px) {
+    .dot-rows :global(.row) {
+      grid-template-columns: 10rem minmax(0, 1fr) 9rem;
+    }
+  }
+
+  .dot-rows :global(.name) {
+    padding-block: 6px;
+    line-height: 1.25;
+    color: var(--c-text);
+  }
+
+  .dot-rows :global(.tag) {
+    margin-left: var(--sp-2);
+    padding: 0 var(--sp-1);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    color: var(--c-text-muted);
+  }
+
+  .dot-rows :global(.track) {
+    position: relative;
+    height: 28px;
+    border-inline: 1px solid var(--c-chart-grid);
+  }
+
+  .dot-rows :global(.track i) {
+    position: absolute;
+    top: 50%;
+  }
+
+  .dot-rows :global(.range) {
+    height: 1px;
+    background: var(--c-border-strong);
+  }
+
+  .dot-rows :global(.rule) {
+    top: 0 !important;
+    bottom: 0;
+    width: 1px;
+    background: var(--c-text);
+    opacity: 0.6;
+  }
+
+  /* A ring of the surface around each dot keeps overlapping dots apart. */
+  .dot-rows :global(.dot) {
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--dot);
+    border-radius: 50%;
+    background: var(--dot);
+    box-shadow: 0 0 0 2px var(--c-surface);
+    transform: translate(-50%, -50%);
+  }
+
+  .dot-rows :global(.dot.hollow) {
+    background: var(--c-surface);
+  }
+
+  .dot-rows :global(.right) {
+    display: none;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 640px) {
+    .dot-rows :global(.right) {
+      display: block;
+    }
+  }
+
+  .dot-rows :global(.right .muted) {
+    margin-left: var(--sp-2);
+    color: var(--c-text-muted);
+  }
+
+  .dot-rows :global(.ticks) {
+    position: relative;
+    height: 20px;
+    font: 11px/20px var(--font-mono);
+    color: var(--c-text-muted);
+  }
+
+  .dot-rows :global(.ticks span) {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .dot-rows :global(.ticks .line-label) {
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  @media (max-width: 639px) {
+    .dot-rows :global(.ticks .crowded) {
+      display: none;
+    }
+  }
+</style>

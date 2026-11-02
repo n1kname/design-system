@@ -1,0 +1,85 @@
+---
+title: "Lines"
+description: "A few series on one axis, each ending in its name, as Observable Plot options."
+---
+
+import Chart from '../../../components/Chart.astro';
+import { linesChart } from '../../../lib/examples.mjs';
+
+<Chart chart={linesChart} alt="Two fictional series over 26 weeks. Outside swings between about 1 and 15 °C; inside stays between about 16 and 22 °C, with one week missing." />
+
+## What it's for
+
+For a few series in the same unit over the same steps, such as weeks or hours, when how they move together is the point.
+
+## When not to use it
+
+- **More than four or five lines.** They tangle. Show one and grey the rest, or split them.
+- **Values that are parts of a whole.** Use a stack or a [donut](/components/donut/).
+- **A handful of values to compare.** Use [ranked bars](/components/ranked-bars/).
+
+## Anatomy
+
+- **Lines:** one per series, 2px, in the series' colour. A missing value breaks the line, it never joins across a gap.
+- **End labels:** the series' name at its last value, so there's nothing to look up.
+- **Axis:** y with five gridlines and no tick marks; x prints only the labels you choose.
+- **Pointer:** a rule, a dot on each line and a tooltip with every value at that step and the unit.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `legend` | Lines that end together, where their names would collide. Put a [legend](/components/legend/) with `line` marks above the chart. |
+| `dots` | A mark on every value. On by default; off for long, dense series. |
+| `dashed` | Not settled yet: an estimate or a projection. |
+| `silent` | Left out of the tooltip, such as the dashed rest of a line. With `continues`, shown only where that line has no value. |
+| `y` | Fix either end of the scale, such as `[0, 'auto']`. |
+
+## States
+
+- **Pointer over the chart:** the rule, dots and tooltip follow it.
+
+## Tokens
+
+`--c-chart-*`, `--c-chart-grid`, `--c-chart-axis`, `--c-surface`, `--c-text`.
+
+## Keyboard and screen reader
+
+- **The SVG is hidden.** The chart's box speaks for it with `role="img"` and a label that says what the lines show.
+- **Every value also needs a table,** near the chart or behind a button, because the tooltip is pointer-only.
+
+## Content
+
+- **Say the unit once,** in the subtitle; the tooltip repeats it.
+- **Name lines by what they are,** such as "Outside", not by a column name.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```js wrap
+import * as Plot from '@observablehq/plot';
+import { lines } from '@n1kname/charts/lines';
+
+const options = lines(
+  {
+    rows, // [{ week: 'W1', outside: 4.2, inside: 19.1 }, …]
+    x: 'week',
+    unit: '°C, weekly mean',
+    digits: 1,
+    series: [
+      { key: 'outside', label: 'Outside', color: 'var(--c-chart-2)' },
+      { key: 'inside', label: 'Inside', color: 'var(--c-chart-1)' },
+    ],
+  },
+  width,
+);
+// At build time: renderPlot(options). In the browser: Plot.plot({ style, ...options }).
+```
+
+## Keep in mind
+
+- **It returns options, not a chart,** so the same lines draw at build time or in the browser, at the width the box has.
+- **Plot text needs a system font** in the style you give it. Safari lays out SVG text with the fallback font's widths.

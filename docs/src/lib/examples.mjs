@@ -1,6 +1,7 @@
 // Every example chart, rendered to an SVG string at build time from synthetic data.
 
 import { Plot, categorical, chrome, diverging, grid as gridLines, renderResponsive, sequential } from '@n1kname/charts';
+import { lines as linesHelper } from '@n1kname/charts/lines';
 import { SERIES, STACK, deltas, grid, lines, shares, stack } from './data.mjs';
 
 const seriesDomain = (names) => ({ domain: names, range: categorical.slice(0, names.length) });
@@ -62,3 +63,23 @@ export const emphasisData = shares.map((d, i) => ({
 export const partsData = shares.slice(0, 5).map((d, i) => ({ ...d, valueLabel: `${d.value}%`, color: categorical[i] }));
 
 export { SERIES, STACK, deltas, lines, categorical, sequential, diverging };
+
+// The lines helper, on two made-up series that move together and one gap.
+export const weeksWide = Array.from({ length: 26 }, (_, i) => ({
+  week: `W${i + 1}`,
+  outside: Math.round((8 + 7 * Math.sin((i - 6) / 4)) * 10) / 10,
+  inside: i === 12 ? null : Math.round((19 + 2.5 * Math.sin((i - 8) / 4)) * 10) / 10,
+}));
+export const linesSpec = {
+  rows: weeksWide,
+  x: 'week',
+  unit: '°C, weekly mean',
+  digits: 1,
+  dots: false,
+  tick: (v, i, width) => (i % (width < 480 ? 8 : 4) ? '' : v),
+  series: [
+    { key: 'outside', label: 'Outside', color: 'var(--c-chart-2)' },
+    { key: 'inside', label: 'Inside', color: 'var(--c-chart-1)' },
+  ],
+};
+export const linesChart = renderResponsive((width) => linesHelper(linesSpec, width));

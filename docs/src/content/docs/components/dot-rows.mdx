@@ -1,0 +1,88 @@
+---
+title: "Dot rows"
+description: "One row per thing, a few marks on a shared scale, filled at runtime."
+---
+
+import DotRowsDemo from '../../../components/DotRowsDemo.astro';
+
+<DotRowsDemo />
+
+## What it's for
+
+For comparing a few values per thing across many things, such as three temperatures per room, where where they sit matters more than how far they are from zero.
+
+## When not to use it
+
+- **One value per thing, measured from zero.** Use [ranked bars](/components/ranked-bars/).
+- **Many marks per row.** More than three or four and they cover each other.
+
+## Anatomy
+
+- **Name:** what the row is, with an optional tag.
+- **Track:** the scale, with a thin line from the lowest mark to the highest and the marks on it. Drawn in order, so the subject goes last and lands on top.
+- **Right column:** the value to read, in words or figures. Hidden on a phone, where the row's label still says it all.
+- **Axis:** the ticks under the rows, and the line's value when there is one.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `hollow`, per dot | A second or third kind of mark, against the solid subject. |
+| `line` | A value every row is read against, such as a limit, drawn across the rows with its label on the axis. |
+| `crowded` | Ticks a phone leaves out, where they would touch the line's label. |
+| `tag`, per row | A word next to the name, such as "over". |
+
+## States
+
+- **Before the data arrives:** empty, holding the height of `rows` rows, so nothing below moves.
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-chart-grid`, `--c-surface`, `--c-text`, `--c-text-muted`, `--font-mono`, `--radius-sm`, `--sp-1`, `--sp-2`, `--sp-3`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **Each row's marks are an image with a label,** the row's `title`, which says every value in words. Write it as a sentence.
+- **Nothing to focus.** The title also shows on hover, for a pointer.
+
+## Content
+
+- **Put the subject's value in the right column,** and one more in muted text if it helps, such as the maximum.
+- **Keep the scale fixed** across pages that compare the same thing, so a row reads the same everywhere.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import DotRows from '@n1kname/components/DotRows.astro';
+---
+
+<DotRows id="rooms" rows={8} />
+<script>
+  import { setDotRows } from '@n1kname/components/dotrows.js';
+  setDotRows(document.getElementById('rooms'), {
+    scale: [20, 29],
+    ticks: [20, 22, 24, 26, 28],
+    rows: [
+      {
+        name: 'Alder',
+        title: 'Alder: 23,1 °C over the summer, 26,4 °C on hot days',
+        dots: [
+          { v: 23.1, color: 'var(--c-chart-2)', hollow: true },
+          { v: 26.4, color: 'var(--c-chart-1)' },
+        ],
+        right: '<strong>26,4 °C</strong>',
+      },
+    ],
+  });
+</script>
+```
+
+## Keep in mind
+
+- **`right` is HTML,** written as is: escape anything from outside with `esc` from `datatable.js`. A `<span class="muted">` in it is set in the muted colour.
+- **Values outside the scale sit at its edge.** Choose a scale that holds them.

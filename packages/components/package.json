@@ -1,13 +1,14 @@
 {
   "name": "@n1kname/components",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "license": "MIT",
   "type": "module",
   "exports": {
     "./*.astro": "./src/*.astro",
     "./type.css": "./src/type.css",
     "./icons": "./src/icons.ts",
-    "./datatable.js": "./src/datatable.js"
+    "./datatable.js": "./src/datatable.js",
+    "./dotrows.js": "./src/dotrows.js"
   },
   "scripts": {},
   "dependencies": {
