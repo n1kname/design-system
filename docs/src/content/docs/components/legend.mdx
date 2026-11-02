@@ -1,0 +1,82 @@
+---
+title: "Legend"
+description: "What each colour or mark in a chart stands for."
+---
+
+import Legend from '@n1kname/components/Legend.astro';
+import Stack from '@n1kname/components/Stack.astro';
+
+<div class="not-content">
+  <Stack gap={4}>
+    <Legend keys={[{ label: 'Last year', color: 'var(--c-chart-2)' }, { label: 'This year', color: 'var(--c-chart-1)' }]} />
+    <Legend keys={[{ label: 'Outside', color: 'var(--c-chart-2)', mark: 'line' }, { label: 'Inside', color: 'var(--c-chart-1)', mark: 'line' }]} />
+    <Legend keys={[{ label: 'Measured', color: 'var(--c-chart-1)', mark: 'dot' }, { label: 'Estimated', color: 'var(--c-chart-3)', mark: 'hollow' }]} />
+    <Legend
+      keys={[
+        { label: 'Complete', color: 'var(--c-status-good)' },
+        { label: 'Not recorded yet', mark: 'empty' },
+        { label: 'Known gap', color: 'var(--c-chart-neutral)', mark: 'stripes' },
+        { label: 'Gap', color: 'var(--c-text)' },
+      ]}
+    />
+  </Stack>
+</div>
+
+## What it's for
+
+To say what each colour or mark in a chart means, in words, right under the chart.
+
+## When not to use it
+
+- **One series.** The chart's title already says what it is.
+- **A few lines that can be labelled at their ends.** A direct label is read faster than a key.
+- **A colour scale.** A scale with steps needs its values, not names.
+
+## Anatomy
+
+- **Keys:** a mark, then its label, in a row that wraps.
+- **Mark:** drawn the way the chart draws it, in the same colour.
+
+## Variants
+
+| Mark | For |
+|---|---|
+| `fill` | Bars, areas and cells. The default. |
+| `line` | A line chart. |
+| `dot` | A dot plot. |
+| `hollow` | A second kind of dot. |
+| `stripes` | Something known and set aside. |
+| `empty` | An outline only, for "nothing here". |
+
+## States
+
+It has no states.
+
+## Tokens
+
+`--c-border-strong`, `--c-text-secondary`, `--leading-caption`, `--sp-2`, `--sp-3`, `--sp-4`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **It's a list with a label,** "Legend" unless you name it, so a screen reader says how many keys there are.
+- **The marks are decoration;** the words carry the meaning.
+- **Hide it with `aria-hidden`** when the chart's text alternative already says what each colour is.
+
+## Content
+
+- **Name what the reader sees,** such as "This year", not a column name.
+- **Keep the order of the chart:** left to right, or bottom to top.
+
+## Status
+
+New. Used by a dashboard.
+
+## Code
+
+```astro wrap
+---
+import Legend from '@n1kname/components/Legend.astro';
+---
+
+<Legend keys={[{ label: 'Last year', color: 'var(--c-chart-2)' }, { label: 'This year', color: 'var(--c-chart-1)' }]} />
+```

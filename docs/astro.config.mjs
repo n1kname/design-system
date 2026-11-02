@@ -47,6 +47,7 @@ export default defineConfig({
             { label: 'Side panel', link: '/components/side-panel/' },
             { label: 'Empty state', link: '/components/empty-state/' },
             { label: 'Caveats', link: '/components/caveats/' },
+            { label: 'Legend', link: '/components/legend/' },
             { label: 'Ranked bars', link: '/components/ranked-bars/' },
             { label: 'Donut', link: '/components/donut/' },
           ],

@@ -1,0 +1,100 @@
+---
+/**
+ * What each colour or mark in a chart stands for. Put it under the chart it explains.
+ *
+ * A key's `mark` says how it is drawn:
+ *   fill     a solid swatch, for bars, areas and cells (the default)
+ *   line     a short stroke, for a line chart
+ *   dot      a filled dot, for a dot plot
+ *   hollow   a ring, for a second kind of dot
+ *   stripes  diagonal stripes, for something known and set aside
+ *   empty    an outline only, for "nothing here"
+ */
+interface Key {
+  label: string;
+  /** Any CSS colour, best a chart token such as var(--c-chart-1). Not needed for `empty`. */
+  color?: string;
+  mark?: 'fill' | 'line' | 'dot' | 'hollow' | 'stripes' | 'empty';
+}
+
+interface Props {
+  keys: Key[];
+  /** Read out before the keys. Hide the legend with aria-hidden when the chart's own text already says it all. */
+  label?: string;
+  [key: string]: unknown;
+}
+
+const { keys, label = 'Legend', class: className, ...rest } = Astro.props;
+---
+
+<ul class:list={['legend', className]} aria-label={label} {...rest}>
+  {
+    keys.map((k) => (
+      <li>
+        <i class:list={['mark', k.mark ?? 'fill']} style={k.color ? `--mark: ${k.color}` : undefined} />
+        {k.label}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-4);
+    margin: var(--sp-3) 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-secondary);
+  }
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  .mark {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .fill {
+    background: var(--mark);
+  }
+
+  .line {
+    height: 2px;
+    border-radius: 1px;
+    background: var(--mark);
+  }
+
+  .dot,
+  .hollow {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot {
+    background: var(--mark);
+  }
+
+  .hollow {
+    border: 2px solid var(--mark);
+  }
+
+  .stripes {
+    background: repeating-linear-gradient(135deg, var(--mark) 0 2px, transparent 2px 5px);
+    box-shadow: inset 0 0 0 1px var(--mark);
+  }
+
+  .empty {
+    box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  }
+</style>
