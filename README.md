@@ -51,6 +51,12 @@ system font, because Safari misplaces centred and right-aligned SVG text set in 
 `scripts/check-public.mjs` fails on anything shaped like an email address, an IP address, coordinates or a home path.
 Set `PRIVATE_TERMS_FILE` to also check a list kept outside the repo.
 
+## Release
+
+Raise the version in a package's `package.json` and push to `main`. When the checks pass, `.github/workflows/publish.yml`
+publishes every package whose version isn't on npm yet, with provenance. npm trusts that workflow (trusted publishing),
+so there is no token. `node scripts/publish-new.mjs --dry-run` says what it would publish.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE). Third-party notices are in [THIRD_PARTY.md](THIRD_PARTY.md).
