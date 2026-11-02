@@ -65,14 +65,16 @@ const titleId = `${id}-title`;
       display var(--motion-base) allow-discrete;
   }
 
+  /* It arrives on the spring, so it settles instead of stopping. Tokens before 0.3.0 have no
+     spring, and it falls back to ease-out. */
   .side-panel[open] {
     opacity: 1;
     transform: none;
     transition:
       opacity var(--motion-slow) var(--ease-out),
-      transform var(--motion-slow) var(--ease-out),
-      overlay var(--motion-slow) allow-discrete,
-      display var(--motion-slow) allow-discrete;
+      transform var(--motion-spring, var(--motion-slow)) var(--ease-spring, var(--ease-out)),
+      overlay var(--motion-spring, var(--motion-slow)) allow-discrete,
+      display var(--motion-spring, var(--motion-slow)) allow-discrete;
   }
 
   @starting-style {
