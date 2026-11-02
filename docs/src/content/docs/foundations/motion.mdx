@@ -3,6 +3,9 @@ title: Motion
 description: When things move, how fast, and when they should not.
 ---
 
+import SidePanel from '@n1kname/components/SidePanel.astro';
+import Button from '@n1kname/components/Button.astro';
+
 The best motion goes unnoticed. It's there to give feedback or to show where something came from, never to decorate.
 
 ## Tokens
@@ -18,7 +21,30 @@ The best motion goes unnoticed. It's there to give feedback or to show where som
 | `--ease-exit` | `cubic-bezier(0.4, 0, 1, 1)` | Things leaving for good |
 | `--ease-standard` | `cubic-bezier(0.2, 0, 0.38, 0.9)` | Things leaving that stay within reach, such as a side panel |
 | `--ease-soft` | `cubic-bezier(0.16, 1, 0.3, 1)` | Long reveals: most of the travel comes early, so it answers at once |
+| `--motion-spring`, `--ease-spring` | 340ms, a sampled spring | Experimental. Something arriving that should settle rather than stop, such as a panel |
 | `--motion-hover`, `--ease-hover` | Fast and out, by default | What every hover uses. A site overrides these two, not each component |
+
+## Spring, on trial
+
+`--ease-spring` is a spring (stiffness 380, damping 24, mass 0.6) sampled into CSS `linear()`, so it needs no script. It covers most of the distance early, goes about 1.6% past the end and settles back, over `--motion-spring`. On a 24px slide that overshoot is under half a pixel: you feel it more than see it.
+
+Open each panel and compare. The first is the side panel as it ships, on `--ease-out` over `--motion-slow`. The second only swaps in the spring for its opening.
+
+<div class="not-content demo-row">
+  <Button data-panel-open="ease-out-panel">Open on ease-out</Button>
+  <Button data-panel-open="spring-panel">Open on the spring</Button>
+</div>
+
+<div class="not-content">
+  <SidePanel id="ease-out-panel" title="On ease-out">
+    <p>260ms, <code>cubic-bezier(0.23, 1, 0.32, 1)</code>. Fast start, soft landing, and then it stops.</p>
+  </SidePanel>
+  <div style="--ease-out: var(--ease-spring); --motion-slow: var(--motion-spring);">
+    <SidePanel id="spring-panel" title="On the spring">
+      <p>340ms, the sampled spring. It lands a touch past where it stops, and settles.</p>
+    </SidePanel>
+  </div>
+</div>
 
 ## Two modes
 

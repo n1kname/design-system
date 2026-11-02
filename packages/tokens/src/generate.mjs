@@ -217,8 +217,52 @@ const LAYOUT = {
 // Two modes, as Carbon has productive and expressive. Dashboards use the three above.
 // A portfolio adds these: gentle for hover and reveal for the one opening of a page.
 // ease-soft does most of its travel early, so a long duration still answers at once.
+// spring settles instead of stopping: a mass on a spring, sampled into CSS linear(). It takes its own
+// duration, motion-spring, which is how long that spring takes to come to rest. Experimental.
+const SPRING = { stiffness: 380, damping: 24, mass: 0.6 };
 const MOTION = { fast: 120, base: 180, slow: 260, gentle: 240, reveal: 900 };
 const EASE = { out: [0.23, 1, 0.32, 1], exit: [0.4, 0, 1, 1], standard: [0.2, 0, 0.38, 0.9], soft: [0.16, 1, 0.3, 1] };
+
+// Position from 0 to 1 at t seconds, starting at rest. Underdamped, or critically damped and over.
+const springAt = ({ stiffness, damping, mass }) => {
+  const w0 = Math.sqrt(stiffness / mass);
+  const zeta = damping / (2 * Math.sqrt(stiffness * mass));
+  if (zeta < 1) {
+    const wd = w0 * Math.sqrt(1 - zeta * zeta);
+    return (t) => 1 - Math.exp(-zeta * w0 * t) * (Math.cos(wd * t) + ((zeta * w0) / wd) * Math.sin(wd * t));
+  }
+  return (t) => 1 - Math.exp(-w0 * t) * (1 + w0 * t);
+};
+
+// At rest once it stays within 0.1% of the end, which is under a pixel on anything that moves.
+const springSettle = (spring) => {
+  const x = springAt(spring);
+  let rest = 0;
+  for (let t = 0; t < 5; t += 0.001) if (Math.abs(1 - x(t)) > 0.001) rest = t;
+  return Math.ceil((rest * 1000) / 10) * 10;
+};
+
+// Sample every 1% of the duration, then keep only the points a straight line would miss by more
+// than 0.002 (Ramer-Douglas-Peucker), so the value stays short.
+const springLinear = (spring) => {
+  const x = springAt(spring);
+  const end = springSettle(spring) / 1000;
+  const pts = Array.from({ length: 101 }, (_, i) => [i / 100, i === 100 ? 1 : x((i / 100) * end)]);
+  const thin = (from, to) => {
+    const [a, c] = [pts[from], pts[to]];
+    let [far, worst] = [-1, 0.002];
+    for (let i = from + 1; i < to; i++) {
+      const miss = Math.abs(a[1] + ((c[1] - a[1]) * (pts[i][0] - a[0])) / (c[0] - a[0]) - pts[i][1]);
+      if (miss > worst) [far, worst] = [i, miss];
+    }
+    return far < 0 ? [a] : [...thin(from, far), ...thin(far, to)];
+  };
+  const keep = [...thin(0, 100), pts[100]];
+  const stops = keep.map(([p, v], i) => (i === 0 || i === keep.length - 1 ? `${v}` : `${+v.toFixed(3)} ${+(p * 100).toFixed(1)}%`));
+  return `linear(${stops.join(', ')})`;
+};
+
+MOTION.spring = springSettle(SPRING);
 const Z = { sticky: 10, panel: 100 };
 
 const TYPE = {
@@ -299,7 +343,16 @@ const scale = {
   leading: numbers(1),
   tracking: { $description: 'In em. DTCG dimensions only allow px and rem.', ...numbers(2) },
   motion: Object.fromEntries(Object.entries(MOTION).map(([k, v]) => [k, { $type: 'duration', $value: { value: v, unit: 'ms' } }])),
-  ease: Object.fromEntries(Object.entries(EASE).map(([k, v]) => [k, { $type: 'cubicBezier', $value: v }])),
+  ease: {
+    ...Object.fromEntries(Object.entries(EASE).map(([k, v]) => [k, { $type: 'cubicBezier', $value: v }])),
+    // DTCG has no type for linear(), so tools that only read $value get ease-out.
+    spring: {
+      $type: 'cubicBezier',
+      $value: EASE.out,
+      $description: `Spring: stiffness ${SPRING.stiffness}, damping ${SPRING.damping}, mass ${SPRING.mass}. Use with --motion-spring.`,
+      $extensions: { [EXT]: springLinear(SPRING) },
+    },
+  },
   z: Object.fromEntries(Object.entries(Z).map(([k, v]) => [k, { $type: 'number', $value: v }])),
 };
 
