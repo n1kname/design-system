@@ -46,6 +46,7 @@ For looking up an exact figure, and for reading every value in a chart without a
 |---|---|
 | `density` | `default` or `compact`. |
 | `align`, per column | `right` by default, for numbers. `left` for words. |
+| `wrap`, per column | Off by default. On for words that can run long, such as a name or a description, so the figures stay in view on a phone. |
 | `sortable`, per column | On by default. `false` for a column with nothing to compare. |
 
 ## States
@@ -73,6 +74,7 @@ For looking up an exact figure, and for reading every value in a chart without a
 - **Units go in the header,** so cells hold only the number.
 - **Numbers are right-aligned and mono, words left-aligned in the body face.** Tabular figures make columns line up.
 - **Dutch number format.**
+- **Only words wrap.** A figure on two lines is misread, so number columns never do.
 
 ## Status
 

@@ -9,6 +9,8 @@ interface Column {
   unit?: string;
   /** Words are left-aligned, numbers right-aligned. */
   align?: 'left' | 'right';
+  /** Words that can run long, such as a name or a description: they wrap, so the figures stay in view. */
+  wrap?: boolean;
   sortable?: boolean;
 }
 type Cell = string | number | null | { html: string; sort?: string | number };
@@ -35,7 +37,7 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
       <tr>
         {
           columns.map((c) => (
-            <th scope="col" class:list={{ left: c.align === 'left' }}>
+            <th scope="col" class:list={{ left: c.align === 'left', wrap: c.wrap }}>
               {c.sortable === false ? (
                 <span class="plain">{c.label}{c.unit && <span class="unit"> {c.unit}</span>}</span>
               ) : (
@@ -54,7 +56,7 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
               const obj = c !== null && typeof c === 'object' ? c : null;
               const sort = obj ? obj.sort : c;
               return (
-                <td class:list={{ left: columns[i]?.align === 'left' }} data-sort={sort ?? undefined}>
+                <td class:list={{ left: columns[i]?.align === 'left', wrap: columns[i]?.wrap }} data-sort={sort ?? undefined}>
                   {obj ? <Fragment set:html={obj.html} /> : show(c)}
                 </td>
               );
@@ -172,6 +174,14 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
     text-align: left;
     font-family: var(--font-body);
     font-size: var(--text-body-sm);
+  }
+
+  /* Long words wrap, and keep enough room to read. Figures never wrap. */
+  .data-table :global(td.wrap) {
+    min-width: 16ch;
+    padding-block: var(--sp-2);
+    line-height: var(--leading-caption);
+    white-space: normal;
   }
 
   .data-table :global(tbody tr) {

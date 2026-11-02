@@ -10,9 +10,9 @@ export const setRows = (table, rows, rowClass = () => '') => {
     .map((cells, r) => {
       const tds = cells.map((c, i) => {
         const v = c !== null && typeof c === 'object' ? c : { html: esc(c ?? '–'), sort: c };
-        const left = head[i]?.classList.contains('left') ? 'left' : '';
+        const from = ['left', 'wrap'].filter((c) => head[i]?.classList.contains(c));
         const sort = v.sort === null || v.sort === undefined ? '' : ` data-sort="${esc(v.sort)}"`;
-        return `<td class="${[left, v.class].filter(Boolean).join(' ')}"${sort}>${v.html}</td>`;
+        return `<td class="${[...from, v.class].filter(Boolean).join(' ')}"${sort}>${v.html}</td>`;
       });
       return `<tr class="${rowClass(rows[r], r)}">${tds.join('')}</tr>`;
     })
