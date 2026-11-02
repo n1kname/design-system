@@ -1,0 +1,36 @@
+name: Publish
+
+# A raised version in a package.json, pushed to main and passing the checks, goes to npm.
+# Nothing else is published. npm trusts this file in this repository (trusted publishing,
+# set per package on npmjs.com), so GitHub holds no npm token. Renaming this file breaks
+# that trust until the setting on npmjs.com is changed too.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "22"
+          cache: pnpm
+      # Trusted publishing needs npm 11.5.1 or later; Node 22 comes with npm 10.
+      - run: npm install -g npm@11.12.1
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run check
+      - run: node scripts/publish-new.mjs
