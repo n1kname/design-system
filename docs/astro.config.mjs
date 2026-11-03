@@ -36,6 +36,7 @@ export default defineConfig({
           items: [
             { label: 'Stack, Cluster, Grid, Split', link: '/components/layout/' },
             { label: 'Page header', link: '/components/page-header/' },
+            { label: 'Page nav', link: '/components/page-nav/' },
             { label: 'Figure', link: '/components/figure/' },
           ],
         },
@@ -69,6 +70,7 @@ export default defineConfig({
             { label: 'Outcome table', link: '/components/outcome-table/' },
             { label: 'Columns', link: '/components/columns/' },
             { label: 'Skip link', link: '/components/skip-link/' },
+            { label: 'Theme toggle', link: '/components/theme-toggle/' },
           ],
         },
         { label: 'Checks', link: '/checks/' },

@@ -1,0 +1,105 @@
+---
+/**
+ * The row of links across a site's pages, with the current page marked by a pill. The pill is
+ * an empty shape behind the link's text, so that with page-change.css it can glide to the next
+ * page's link while the words cross-fade, without stretching them. Without page-change.css, or
+ * in a browser without cross-document view transitions, the page simply changes.
+ *
+ * One per page: the pill's transition name must be unique.
+ */
+interface Item {
+  href: string;
+  label: string;
+  current?: boolean;
+}
+
+interface Props {
+  items: Item[];
+  /** Names the navigation for a screen reader. */
+  label?: string;
+}
+
+const { items, label = 'Pages' } = Astro.props;
+---
+
+<nav class="page-nav" aria-label={label}>
+  <ul>
+    {
+      items.map((item) => (
+        <li>
+          <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+            {item.current && <span class="pill" aria-hidden="true" />}
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    position: relative;
+    isolation: isolate;
+    display: block;
+    padding: var(--sp-1) var(--sp-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-secondary);
+    text-decoration: none;
+    transition:
+      color var(--motion-hover) var(--ease-hover),
+      background-color var(--motion-hover) var(--ease-hover);
+  }
+
+  a:hover {
+    color: var(--c-text);
+  }
+
+  a:not([aria-current]):hover {
+    background: var(--c-surface-hover);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  a[aria-current='page'] {
+    color: var(--c-text);
+    font-weight: 600;
+  }
+
+  .pill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 1px solid var(--c-border);
+    border-radius: inherit;
+    background: var(--c-surface);
+    view-transition-name: page-nav-current;
+  }
+
+  /* A fingertip needs more room than a pointer. */
+  @media (pointer: coarse) {
+    a {
+      padding-block: var(--sp-2);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .pill {
+      border-color: CanvasText;
+    }
+  }
+</style>

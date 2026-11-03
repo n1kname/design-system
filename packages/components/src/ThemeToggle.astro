@@ -1,0 +1,180 @@
+---
+/**
+ * The light and dark switch: a round button whose icon shows the theme it goes to, the moon
+ * in light and the sun in dark. The two icons share a cell and cross-fade. The choice is kept
+ * under `theme` in localStorage, and the page's own head script applies it before paint (see
+ * the docs page), so nothing flashes. Without that, it follows the system, as tokens.css does.
+ *
+ * Where the browser has view transitions, the whole page eases into the new colours over
+ * --motion-base instead of snapping. Not under reduced motion.
+ *
+ * The label names the theme it goes to, without waiting for a script.
+ */
+interface Props {
+  /** What the button says to a screen reader, in each direction. */
+  labels?: { toDark: string; toLight: string };
+  id?: string;
+  class?: string;
+}
+
+const { labels = { toDark: 'Switch to dark', toLight: 'Switch to light' }, id, class: className } = Astro.props;
+---
+
+<button type="button" class:list={['theme-toggle', className]} id={id} data-theme-toggle>
+  <span class="sr to-dark">{labels.toDark}</span><span class="sr to-light">{labels.toLight}</span>
+  <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+  </svg>
+  <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+  </svg>
+</button>
+
+<script>
+  const apply = (next: string) => {
+    document.documentElement.dataset.theme = next;
+    // The browser bar follows the choice too, where the page marks its two theme-colors.
+    document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"][data-for]').forEach((m) => {
+      m.media = m.dataset.for === next ? 'all' : 'not all';
+    });
+    try {
+      localStorage.setItem('theme', next);
+    } catch {}
+  };
+
+  document.querySelectorAll('[data-theme-toggle]').forEach((button) =>
+    button.addEventListener('click', () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      const next = dark ? 'light' : 'dark';
+      // The page eases into its new colours: one cross-fade of the whole page, which costs far
+      // less than a transition on every element.
+      if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return apply(next);
+      root.dataset.themeChange = '';
+      document.startViewTransition(() => apply(next)).finished.finally(() => delete root.dataset.themeChange);
+    }),
+  );
+</script>
+
+<style>
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-hover) var(--ease-hover),
+      transform var(--motion-fast) var(--ease-out);
+  }
+
+  @media (pointer: coarse) {
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--c-border-strong);
+  }
+
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .theme-toggle:active {
+    transform: scale(0.94);
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  svg {
+    grid-area: 1 / 1;
+    transition:
+      opacity var(--motion-base) var(--ease-out),
+      transform var(--motion-gentle) var(--ease-soft);
+  }
+
+  /* In light: the moon, and the label for dark. */
+  .sun {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.8);
+  }
+
+  .to-light {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .sun {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(:root[data-theme='dark']) .moon {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.8);
+  }
+
+  :global(:root[data-theme='dark']) .to-light {
+    display: inline;
+  }
+
+  :global(:root[data-theme='dark']) .to-dark {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .sun {
+      opacity: 1;
+      transform: none;
+    }
+
+    :global(:root:not([data-theme='light'])) .moon {
+      opacity: 0;
+      transform: rotate(45deg) scale(0.8);
+    }
+
+    :global(:root:not([data-theme='light'])) .to-light {
+      display: inline;
+    }
+
+    :global(:root:not([data-theme='light'])) .to-dark {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle:active {
+      transform: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .theme-toggle {
+      border-color: ButtonText;
+    }
+  }
+
+  /* The page's cross-fade into the new theme. The icons turn inside it. */
+  :global(:root[data-theme-change]::view-transition-old(root)),
+  :global(:root[data-theme-change]::view-transition-new(root)) {
+    animation-duration: var(--motion-base);
+    animation-timing-function: var(--ease-out);
+  }
+</style>

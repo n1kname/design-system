@@ -51,6 +51,15 @@ enterAll('.chart-panel'); // charts drawn at build time
 
 Nothing is hidden until the helper runs, so without script a chart is simply there. Under reduced motion it does nothing. A drawing that isn't shown, such as the narrow one of a pair, is left alone.
 
+## Changing page and theme
+
+Both are one cross-fade of the whole page, through view transitions, so nothing else on the page has to animate.
+
+- **Page change:** `page-change.css` cross-fades over `--motion-base`, and [Page nav](/components/page-nav/)'s pill glides to the new page's link on the spring. Your eye follows the pill, so you know where you landed.
+- **Theme change:** [Theme toggle](/components/theme-toggle/) eases the page into its new colours over `--motion-base`.
+
+A browser without view transitions changes at once, and so does everyone who asks for reduced motion.
+
 ## Two modes
 
 Carbon calls these productive and expressive, and that split works here too.
@@ -59,8 +68,8 @@ Carbon calls these productive and expressive, and that split works here too.
 |---|---|---|
 | **Job** | Get out of the way | Set a mood, once |
 | **Hover** | `fast`, `out` | `gentle`, `soft` |
-| **Opening** | Charts arrive once, about a second | `reveal`, `soft`, about 70ms apart |
-| **Page change** | Instant | A 180ms cross-fade |
+| **Opening** | Charts arrive once, about a second, and the answer's highlight sweeps in | `reveal`, `soft`, about 70ms apart |
+| **Page change** | A 180ms cross-fade, the nav pill glides | A 180ms cross-fade |
 | **Ambient** | None | Colour and grain on case heroes only, still |
 
 A portfolio sets these once, and every component follows:

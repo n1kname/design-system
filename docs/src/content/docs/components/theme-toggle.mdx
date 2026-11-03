@@ -1,0 +1,87 @@
+---
+title: "Theme toggle"
+description: "A round button that switches between light and dark, and keeps the choice."
+---
+
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+
+<div class="not-content demo-row">
+  <ThemeToggle />
+  <p>It switches this page too.</p>
+</div>
+
+## What it's for
+
+To let someone pick light or dark when their system's choice isn't the one they want here. The choice is kept, so the next page opens the same way.
+
+## When not to use it
+
+- **More than once on a page.** One, in the header, at the end of the row.
+- **As a settings form.** It only switches. Following the system again means clearing the choice, which no one has needed yet.
+
+## Anatomy
+
+- **Button:** round, 40px, 44px on a touch screen.
+- **Icon:** the theme it switches to. A moon in light, a sun in dark. The two share a cell, and one turns into the other.
+- **Label:** for a screen reader only. It names where the button goes, such as "Switch to dark".
+
+## Variants
+
+None.
+
+## States
+
+- **Hover:** the edge darkens.
+- **Press:** it gives a little, then springs back.
+- **Switching:** where the browser has view transitions, the whole page eases into its new colours over `--motion-base`, as one cross-fade. Elsewhere it changes at once.
+- **Reduced motion:** the page changes at once, and the icons don't turn.
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-text`, `--ease-hover`, `--ease-out`, `--ease-soft`, `--motion-base`, `--motion-fast`, `--motion-gentle`, `--motion-hover`, `--radius-full`.
+
+## Keyboard and screen reader
+
+- **A real button,** so Tab, Enter and Space come from the browser.
+- **Its name says what it does,** and changes with the theme, without waiting for a script.
+
+## Content
+
+- **Name the destination:** "Switch to dark", not "Toggle theme". Pass your own wording with `labels`.
+
+## Status
+
+New. Taken from the portfolio's header, for a dashboard.
+
+## Code
+
+```astro wrap
+---
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+---
+
+<ThemeToggle labels={{ toDark: 'Switch to dark', toLight: 'Switch to light' }} />
+```
+
+The page applies the kept choice before it paints, so dark never flashes light. Put this first in `<head>`:
+
+```html
+<meta name="theme-color" content="#FFF9F6" media="(prefers-color-scheme: light)" data-for="light" />
+<meta name="theme-color" content="#1A0C06" media="(prefers-color-scheme: dark)" data-for="dark" />
+<script is:inline>
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved) {
+      document.documentElement.dataset.theme = saved;
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+        m.media = m.dataset.for === saved ? 'all' : 'not all';
+      });
+    }
+  } catch {}
+</script>
+```
+
+## Keep in mind
+
+- **No `data-theme` means follow the system,** as `tokens.css` does. The toggle sets it, and keeps it under `theme` in `localStorage`.
+- **The browser bar follows** where the page marks its two `theme-color` tags with `data-for`.

@@ -1,0 +1,37 @@
+/*
+ * Moving between pages: a short cross-fade of the whole page, and PageNav's pill gliding from
+ * the link you left to the one you arrived at, on the spring. For a site whose pages are
+ * separate documents. Import once, per site, on every page: both pages must opt in.
+ *
+ * A browser without cross-document view transitions simply changes the page, and under
+ * reduced motion nothing moves.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--motion-base);
+    animation-timing-function: var(--ease-out);
+  }
+
+  ::view-transition-group(page-nav-current) {
+    animation-duration: var(--motion-spring);
+    animation-timing-function: var(--ease-spring);
+  }
+
+  /* The pill is an empty shape, so it can stretch to its new width without a cross-fade. */
+  ::view-transition-old(page-nav-current) {
+    animation: none;
+    opacity: 0;
+  }
+
+  ::view-transition-new(page-nav-current) {
+    animation: none;
+    width: 100%;
+    height: 100%;
+  }
+}

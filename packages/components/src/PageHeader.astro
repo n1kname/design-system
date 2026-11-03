@@ -2,6 +2,12 @@
 /**
  * The top of a page: what it is, what it says, and how fresh that is, with the page's
  * actions beside it. Actions go in the "actions" slot.
+ *
+ * `rule` puts the house signature, a short accent bar, under the title. `mark` names the
+ * words that answer the question, such as "6,5% lower": the first place they appear, in the
+ * title or else the lede, gets a highlighter that sweeps in once. A page that writes its title
+ * or lede once its data arrives wraps those words in <mark> itself; the sweep plays as they
+ * land.
  */
 interface Props {
   eyebrow?: string;
@@ -11,15 +17,28 @@ interface Props {
   meta?: string;
   /** Ids, for a page that fills these in once its data arrives. */
   ids?: { eyebrow?: string; title?: string; lede?: string; meta?: string };
+  /** The short accent bar under the title. */
+  rule?: boolean;
+  /** Words in the title or lede to highlight. */
+  mark?: string;
 }
-const { eyebrow, title, lede, meta, ids = {} } = Astro.props;
+const { eyebrow, title, lede, meta, ids = {}, rule = false, mark } = Astro.props;
+
+// The text around the marked words, or the text alone when they aren't in it.
+const split = (text?: string) => {
+  const at = mark && text ? text.indexOf(mark) : -1;
+  return at < 0 ? null : [text!.slice(0, at), mark, text!.slice(at + mark!.length)];
+};
+const inTitle = split(title);
+const inLede = inTitle ? null : split(lede);
 ---
 
 <header class="page-header">
   <div class="text">
     {(eyebrow || ids.eyebrow) && <p class="eyebrow" id={ids.eyebrow}>{eyebrow}</p>}
-    <h1 id={ids.title}>{title}</h1>
-    {(lede || ids.lede) && <p class="lede" id={ids.lede}>{lede}</p>}
+    <h1 id={ids.title}>{inTitle ? <>{inTitle[0]}<mark>{inTitle[1]}</mark>{inTitle[2]}</> : title}</h1>
+    {rule && <span class="rule" aria-hidden="true" />}
+    {(lede || ids.lede) && <p class="lede" id={ids.lede}>{inLede ? <>{inLede[0]}<mark>{inLede[1]}</mark>{inLede[2]}</> : lede}</p>}
     {(meta || ids.meta) && <p class="meta t-meta" id={ids.meta}>{meta}</p>}
   </div>
   {Astro.slots.has('actions') && <div class="actions"><slot name="actions" /></div>}
@@ -72,6 +91,62 @@ const { eyebrow, title, lede, meta, ids = {} } = Astro.props;
   .meta {
     margin: var(--sp-2) 0 0;
     min-height: 1lh;
+  }
+
+  /* The house signature: a short accent bar under the title. */
+  .rule {
+    display: block;
+    width: var(--sp-7);
+    height: 5px;
+    margin: var(--sp-3) 0 var(--sp-4);
+    border-radius: var(--radius-rule);
+    background: var(--c-accent);
+  }
+
+  /* A highlighter behind the words that answer the question. It sits low, like a pen, wraps
+   * line by line, and is mixed into the page colour rather than see-through, so it holds up in
+   * dark. It sweeps in once, a moment after the words land. */
+  .text :global(mark) {
+    --sweep: color-mix(in oklab, var(--c-accent) 32%, var(--c-bg));
+    --band: 0.42em;
+    padding-inline: 0.08em;
+    margin-inline: -0.08em;
+    background: linear-gradient(var(--sweep), var(--sweep)) no-repeat 0 88% / 100% var(--band);
+    color: inherit;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  /* In the smaller lede the band is wider and stronger, and the figure takes the body colour,
+   * so it reads as clearly as it does in a headline. */
+  .lede :global(mark) {
+    --sweep: color-mix(in oklab, var(--c-accent) 42%, var(--c-bg));
+    --band: 0.6em;
+    color: var(--c-text);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .text :global(mark) {
+      animation: sweep 700ms var(--ease-out) 300ms both;
+    }
+  }
+
+  @keyframes sweep {
+    from {
+      background-size: 0% var(--band);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .rule {
+      background: CanvasText;
+    }
+
+    .text :global(mark) {
+      background: none;
+      text-decoration: underline 0.2em;
+      text-underline-offset: 0.1em;
+    }
   }
 
   .actions {
