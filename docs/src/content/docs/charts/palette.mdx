@@ -18,6 +18,7 @@ Every chart colour does one job. Pick the job first, then the colour.
 | How much | `--c-seq-*`, `--c-seq2-*` | One hue. Step 1 means little, in both themes. |
 | Above or below | `--c-div-*` | Two hues around a near-grey midpoint. |
 | Good or bad | `--c-status-*` | Reserved. Always with an icon and a label. |
+| Where each day of a record stands | `--c-state-*` | Complete, waiting, set aside, missing. For [day strips](/components/day-strips/). |
 
 ## Categorical
 
@@ -64,10 +65,22 @@ Reserved meaning, never "series 4". Good and critical differ in lightness as wel
   { token: 'status-critical', against: 'surface-sunken', label: 'Critical' },
 ]} />
 
+## Record states
+
+The state of each day in a long record. Complete is soft, because it is most of what you see. Missing is the ink, the one that asks for something. Set aside is the neutral grey, drawn in stripes. Waiting recedes: lighter than complete on light, darker on dark, so it is never taken for complete, also by colour-blind readers.
+
+<Swatches rows={[
+  { token: 'state-complete', against: 'surface', label: 'Complete' },
+  { token: 'state-waiting', against: 'surface', label: 'Waiting' },
+  { token: 'state-set-aside', against: 'surface', label: 'Set aside' },
+  { token: 'state-missing', against: 'surface', label: 'Missing' },
+]} />
+
 ## Where it stops working
 
 - **Eight colours can't all stay apart for colour-blind readers.** Some pairs that aren't neighbours get close (see Checks for the numbers). Stacks and lines only have neighbours touching, so they can use all eight. Scatter plots, maps and small multiples stop at three.
 - **Labels inside a fill pass WCAG but mostly score low on APCA.** So keep them large, or put them outside the mark.
 - **Deep teal sits under the usual chroma floor.** Slot 2 in light reaches 0.08, where the guideline asks for 0.10, because sRGB can't go further at that lightness. It stays far from the orange, which is what the floor protects.
 - **Dark mode goes above the usual lightness limit.** The common guideline stops at 0.67. The brand orange sits at 0.69, and I'd rather keep the real orange, so the checks allow up to 0.76.
+- **Complete and waiting are soft on purpose,** under 3:1 against the card. They are most of a strip, and the tooltip and a table carry the detail. Missing and set aside reach 3:1.
 - **The simulations are models.** None of this has been tested with colour-blind readers yet. If it fails for you, please tell me.

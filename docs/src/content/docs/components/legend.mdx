@@ -13,10 +13,10 @@ import Stack from '@n1kname/components/Stack.astro';
     <Legend keys={[{ label: 'Measured', color: 'var(--c-chart-1)', mark: 'dot' }, { label: 'Estimated', color: 'var(--c-chart-3)', mark: 'hollow' }]} />
     <Legend
       keys={[
-        { label: 'Complete', color: 'var(--c-status-good)' },
+        { label: 'Complete', color: 'var(--c-state-complete)' },
         { label: 'Not recorded yet', mark: 'empty' },
-        { label: 'Known gap', color: 'var(--c-chart-neutral)', mark: 'stripes' },
-        { label: 'Gap', color: 'var(--c-text)' },
+        { label: 'Known gap', color: 'var(--c-state-set-aside)', mark: 'stripes' },
+        { label: 'Gap', color: 'var(--c-state-missing)' },
       ]}
     />
     <Legend
@@ -64,6 +64,8 @@ It has no states.
 ## Tokens
 
 `--c-border-strong`, `--c-text-secondary`, `--leading-caption`, `--sp-2`, `--sp-3`, `--sp-4`, `--text-caption`.
+
+How each mark is coloured lives in `marks.css`, which [day strips](/components/day-strips/) share, so a key and its chart can't drift apart. A page that draws its own marks imports `@n1kname/components/marks.css` and sets `data-mark` and `--mark` on them. `--mark-ground` is what shows between stripes: transparent unless set.
 
 ## Keyboard and screen reader
 

@@ -20,7 +20,8 @@ For a record kept every day over years, in a few streams, when the question is w
 ## Anatomy
 
 - **Names:** one per stream, with a title for what complete means.
-- **Strips:** runs of days in the same state. Gaps go on top and are never thinner than 4px, so a one-day gap shows across years.
+- **Strips:** runs of days in the same state, rounded at the stream's first and last day, wherever it starts. Gaps go on top and are never thinner than 4px, so a one-day gap shows across years.
+- **Gaps:** cut into the strip, with a hairline of the card on each side. Their stripes sit on the card, never on the days around them. Narrower than 8px, where stripes can't show, a gap is drawn solid in its colour; the tooltip still names it.
 - **Ticks:** the first of each quarter, the year at each January. Half years on a phone.
 - **Pointer:** a line on the day under it, and a tooltip with the date and every stream that wasn't quiet that day.
 
@@ -40,6 +41,8 @@ For a record kept every day over years, in a few streams, when the question is w
 
 ## Tokens
 
+The record states, `--c-state-complete`, `--c-state-waiting`, `--c-state-set-aside` and `--c-state-missing`, for the states' colours. The marks come from `marks.css`, shared with [Legend](/components/legend/).
+
 `--c-border`, `--c-border-strong`, `--c-surface`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--font-mono`, `--radius-md`, `--sp-2`, `--sp-3`, `--text-caption`, `--z-sticky`.
 
 ## Keyboard and screen reader
@@ -49,7 +52,7 @@ For a record kept every day over years, in a few streams, when the question is w
 
 ## Content
 
-- **Make one state the ink one,** the mark that asks for something, and keep the usual state soft.
+- **Use the record state tokens.** Missing is the ink one, the mark that asks for something; complete is soft. Their checks hold them apart, also for colour-blind readers.
 - **Use the same marks in the legend,** from [Legend](/components/legend/), so the key looks like the strips.
 
 ## Status
@@ -71,8 +74,8 @@ import DayStrips from '@n1kname/components/DayStrips.astro';
     quiet: 'ok',
     quietText: 'Everything complete',
     states: {
-      ok: { label: 'complete', mark: 'fill', color: 'var(--c-status-good)' },
-      gap: { label: 'gap', mark: 'fill', color: 'var(--c-text)', gap: true },
+      ok: { label: 'complete', mark: 'fill', color: 'var(--c-state-complete)' },
+      gap: { label: 'gap', mark: 'fill', color: 'var(--c-state-missing)', gap: true },
     },
     streams: [{ label: 'Meter', days: ['ok', 'ok', 'gap', 'ok'], summary: 'Meter: 1 day with a gap' }],
   });

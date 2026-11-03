@@ -200,6 +200,38 @@
         "hex": "#908580"
       }
     },
+    "state-complete": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.5529,
+          0.7686,
+          0.5961
+        ],
+        "hex": "#8DC498"
+      }
+    },
+    "state-waiting": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9059,
+          0.8588,
+          0.8392
+        ],
+        "hex": "#E7DBD6"
+      }
+    },
+    "state-set-aside": {
+      "$type": "color",
+      "$value": "{c.chart-neutral}"
+    },
+    "state-missing": {
+      "$type": "color",
+      "$value": "{c.text}"
+    },
     "surface-hover": {
       "$type": "color",
       "$value": "{primitive.neutral.100}"

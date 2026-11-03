@@ -164,6 +164,15 @@ for (const mode of ['light', 'dark']) {
   for (const k of ['chart-axis', 'chart-neutral']) for (const bg of CHART_SURFACES) ratio(contrast(t[k], t[bg]), 3, `${k} on ${bg}`, t[k], t[bg]);
   assert(deltaE(t['chart-2'], t['chart-1']) >= 25, `chart-2 vs chart-1 deltaE ${deltaE(t['chart-2'], t['chart-1']).toFixed(1)} >= 25, the leading pair`);
   assert(deltaE(t['chart-neutral'], t['chart-1']) >= NORMAL_FLOOR, `chart-neutral vs chart-1 deltaE ${deltaE(t['chart-neutral'], t['chart-1']).toFixed(1)}`);
+
+  // Record states: missing must stand out from the card and from complete, set aside must
+  // show its stripes, and the two quiet solids must not be taken for each other.
+  heading(`${mode}: record states`);
+  for (const bg of CHART_SURFACES) ratio(contrast(t['state-missing'], t[bg]), 3, `state-missing on ${bg}`, t['state-missing'], t[bg]);
+  ratio(contrast(t['state-missing'], t['state-complete']), 3, 'state-missing next to state-complete', t['state-missing'], t['state-complete']);
+  for (const bg of CHART_SURFACES) ratio(contrast(t['state-set-aside'], t[bg]), 3, `state-set-aside stripes on ${bg}`, t['state-set-aside'], t[bg]);
+  assert(deltaE(t['state-complete'], t['state-waiting']) >= NORMAL_FLOOR, `state-complete vs state-waiting deltaE ${deltaE(t['state-complete'], t['state-waiting']).toFixed(1)} >= ${NORMAL_FLOOR}`);
+  assert(cvd(t['state-complete'], t['state-waiting']) >= CVD_TARGET, `state-complete vs state-waiting colour-blind deltaE ${cvd(t['state-complete'], t['state-waiting']).toFixed(1)} >= ${CVD_TARGET}`);
 }
 
 writeFileSync(new URL('../dist/report.json', import.meta.url), JSON.stringify({ total, failures, results }, null, 2) + '\n');

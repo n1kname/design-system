@@ -55,7 +55,7 @@ h1,
   height: auto;
 }
 
-.legend {
+.swatch-legend {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2) var(--sp-4);
@@ -64,19 +64,19 @@ h1,
   color: var(--c-text);
 }
 
-.legend span {
+.swatch-legend span {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
 }
 
-.legend i,
+.swatch-legend i,
 .ramp i {
   display: block;
   border-radius: 3px;
 }
 
-.legend i {
+.swatch-legend i {
   width: 12px;
   height: 12px;
 }

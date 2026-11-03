@@ -4,9 +4,10 @@ import DayStrips from '@n1kname/components/DayStrips.astro';
 import Legend from '@n1kname/components/Legend.astro';
 
 const STATES = {
-  ok: { label: 'complete', mark: 'fill', color: 'color-mix(in oklab, var(--c-status-good) 60%, var(--c-surface))' },
-  known: { label: 'known gap', mark: 'stripes', color: 'var(--c-chart-neutral)', gap: true },
-  gap: { label: 'gap, not written down', mark: 'fill', color: 'var(--c-text)', gap: true },
+  ok: { label: 'complete', mark: 'fill', color: 'var(--c-state-complete)' },
+  known: { label: 'known gap', mark: 'stripes', color: 'var(--c-state-set-aside)', gap: true },
+  gap: { label: 'gap, not written down', mark: 'fill', color: 'var(--c-state-missing)', gap: true },
+  late: { label: 'waiting for late data', mark: 'fill', color: 'var(--c-state-waiting)' },
   later: { label: 'not recorded yet', mark: 'empty' },
 };
 ---
@@ -26,6 +27,7 @@ const STATES = {
     const days = Array.from({ length: DAYS }, (_, i) => (i < start ? 'later' : 'ok'));
     for (const g of gaps) days[g] = 'gap';
     for (const [a, b] of known) for (let i = a; i <= b; i++) days[i] = 'known';
+    for (let i = DAYS - 4; i < DAYS; i++) days[i] = 'late';
     const count = (s) => days.filter((d) => d === s).length;
     return { label, days, summary: `${label}: ${count('gap')} days with a gap not written down, ${count('known')} known` };
   };

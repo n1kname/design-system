@@ -1,0 +1,34 @@
+/*
+ * How each kind of mark is coloured, in one place, so a Legend's key and the chart it explains
+ * look alike. Legend and DayStrips import it; a page that draws its own marks can too.
+ *
+ *   <i data-mark="stripes" style="--mark: var(--c-state-set-aside)"></i>
+ *
+ * --mark is the colour. --mark-ground is what shows between the stripes: transparent unless
+ * set, and set to the card where a stripe sits on other marks, so they never show through.
+ * Size and shape stay with the component.
+ */
+
+[data-mark='fill'] {
+  background: var(--mark);
+}
+
+[data-mark='stripes'] {
+  background: repeating-linear-gradient(135deg, var(--mark) 0 2px, var(--mark-ground, transparent) 2px 5px);
+  box-shadow: inset 0 0 0 1px var(--mark);
+}
+
+[data-mark='empty'] {
+  box-shadow: inset 0 0 0 1px var(--c-border-strong);
+}
+
+/* The same fades as a bar chart's unsettled rows, a little stronger so a small swatch still shows. */
+[data-mark='faint'] {
+  background: color-mix(in oklab, var(--mark) 65%, transparent);
+}
+
+[data-mark='dashed'] {
+  background: color-mix(in oklab, var(--mark) 37%, transparent);
+  outline: 1px dashed var(--mark);
+  outline-offset: -1px;
+}

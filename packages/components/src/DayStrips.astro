@@ -7,6 +7,8 @@
  * The strips arrive at runtime: fill them with setDayStrips from `@n1kname/components/daystrips.js`.
  * `rows` is how many streams to hold room for until then, so nothing below moves when they come.
  */
+import './marks.css';
+
 interface Props {
   id: string;
   rows?: number;
@@ -59,11 +61,43 @@ const { id, rows = 0, class: className, style, ...rest } = Astro.props;
     margin-bottom: 6px;
     overflow: hidden;
     border-radius: 3px;
+    /* Between a gap's stripes, the card, never the days under it. */
+    --mark-ground: var(--c-surface);
   }
 
   .day-strips :global(.strip i) {
     position: absolute;
     inset-block: 0;
+  }
+
+  /* A stream's first and last day are rounded, wherever in the strip it starts. */
+  .day-strips :global(.strip .start) {
+    border-start-start-radius: 3px;
+    border-end-start-radius: 3px;
+  }
+
+  .day-strips :global(.strip .end) {
+    border-start-end-radius: 3px;
+    border-end-end-radius: 3px;
+  }
+
+  /* A gap is cut into the strip: a hairline of card on each side keeps it apart from the days
+     around it. Too narrow for its stripes to show, it is drawn solid in its colour instead. */
+  .day-strips :global(.strip .gap) {
+    box-shadow:
+      -1px 0 0 var(--c-surface),
+      1px 0 0 var(--c-surface);
+  }
+
+  .day-strips :global(.strip .gap[data-mark='stripes']) {
+    box-shadow:
+      -1px 0 0 var(--c-surface),
+      1px 0 0 var(--c-surface),
+      inset 0 0 0 1px var(--mark);
+  }
+
+  .day-strips :global(.strip .gap.narrow) {
+    background: var(--mark);
   }
 
   .day-strips :global(.ticks) {
@@ -138,19 +172,5 @@ const { id, rows = 0, class: className, style, ...rest } = Astro.props;
 
   .day-strips :global(.tip .quiet) {
     color: var(--c-text-muted);
-  }
-
-  /* The marks, the same as a Legend's, so a strip and its key look alike. */
-  .day-strips :global(.mark.fill) {
-    background: var(--mark);
-  }
-
-  .day-strips :global(.mark.stripes) {
-    background: repeating-linear-gradient(135deg, var(--mark) 0 2px, transparent 2px 5px);
-    box-shadow: inset 0 0 0 1px var(--mark);
-  }
-
-  .day-strips :global(.mark.empty) {
-    box-shadow: inset 0 0 0 1px var(--c-border-strong);
   }
 </style>

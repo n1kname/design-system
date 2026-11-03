@@ -6,4 +6,4 @@ interface Props {
 const { names, colors } = Astro.props;
 ---
 
-<div class="legend">{names.map((n, i) => <span><i style={`background: ${colors[i]}`} />{n}</span>)}</div>
+<div class="swatch-legend">{names.map((n, i) => <span><i style={`background: ${colors[i]}`} />{n}</span>)}</div>
