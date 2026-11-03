@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -8,6 +8,7 @@
     "./type.css": "./src/type.css",
     "./marks.css": "./src/marks.css",
     "./page-change.css": "./src/page-change.css",
+    "./highlight.css": "./src/highlight.css",
     "./icons": "./src/icons.ts",
     "./datatable.js": "./src/datatable.js",
     "./dotrows.js": "./src/dotrows.js",

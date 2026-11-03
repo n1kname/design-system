@@ -1,0 +1,160 @@
+---
+/**
+ * One pill, two actions: the link half opens it (a mail client, say), the half on the right
+ * copies the value, because a recruiter often wants the address rather than an app opening. Each
+ * half is its own control with its own focus ring; a hairline marks where one ends. The pill
+ * lifts and presses as one, so it never comes apart at the seam.
+ *
+ * The copy half is rendered hidden and shown from script only where the clipboard is there to
+ * use, so nobody sees a button that does nothing. The check arrives on the spring; "Copied" is
+ * read out from a separate live region, since a changing button label is not announced reliably.
+ */
+import Tag from './Tag.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  href: string;
+  /** What gets copied, such as the email address. */
+  value: string;
+  /** What is copied, for the accessible name: "Copy email address". */
+  what: string;
+  icon?: IconName;
+}
+
+const { href, value, what, icon } = Astro.props;
+// Lucide's copy and check, drawn the way Icon draws at 15px.
+const svg = { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.75, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' } as const;
+---
+
+<span class="copy-tag">
+  <Tag href={href} icon={icon} tone="accent" still><slot /></Tag>
+  <button class="copy" type="button" data-copy={value} aria-label={`Copy ${what}`} hidden>
+    <span class="ico">
+      <svg class="c1" {...svg}><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
+      <svg class="c2" {...svg}><path d="M20 6 9 17l-5-5" /></svg>
+    </span>
+    <span class="sr-only" role="status"></span>
+  </button>
+</span>
+
+<style>
+  .copy-tag {
+    display: inline-flex;
+    transition:
+      translate var(--motion-spring) var(--ease-spring),
+      scale var(--motion-base) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .copy-tag:hover {
+      translate: 0 -2px;
+    }
+  }
+
+  .copy-tag:has(:active) {
+    scale: 0.97;
+    transition-duration: var(--motion-spring), 80ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .copy-tag {
+      translate: none !important;
+      scale: none !important;
+    }
+  }
+
+  /* Square inner corners only once the copy half is there to meet. */
+  .copy-tag:has(.copy:not([hidden])) :global(a.tag) {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px var(--sp-3);
+    border-radius: var(--radius-full);
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border: 1px solid transparent;
+    background: var(--c-surface-tint);
+    color: var(--c-text-accent);
+    box-shadow: inset 1px 0 0 color-mix(in oklab, var(--c-text-accent) 22%, transparent);
+    cursor: pointer;
+  }
+
+  .copy[hidden] {
+    display: none;
+  }
+
+  .copy-tag :global(a.tag),
+  .copy {
+    transition: background-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .copy-tag :global(a.tag:hover),
+  .copy:hover {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--c-surface-tint), var(--c-accent) 14%);
+  }
+
+  .ico {
+    position: relative;
+    width: 15px;
+    height: 15px;
+  }
+
+  .ico svg {
+    position: absolute;
+    inset: 0;
+    transition:
+      opacity var(--motion-fast) var(--ease-out),
+      scale var(--motion-fast) var(--ease-out);
+  }
+
+  .c2,
+  .done .c1 {
+    opacity: 0;
+    scale: 0.6;
+  }
+
+  .done .c2 {
+    opacity: 1;
+    scale: 1;
+    transition:
+      opacity var(--motion-fast) var(--ease-out),
+      scale var(--motion-spring) var(--ease-spring);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.copy-tag button[data-copy]').forEach((button) => {
+    if (!navigator.clipboard) return;
+    button.hidden = false;
+    const status = button.querySelector('[role="status"]')!;
+    let timer = 0;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy!);
+      } catch {
+        return;
+      }
+      button.classList.add('done');
+      status.textContent = 'Copied';
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        button.classList.remove('done');
+        status.textContent = '';
+      }, 2000);
+    });
+  });
+</script>

@@ -1,0 +1,16 @@
+---
+/**
+ * Highlights the words a heading or lede is about, with a band that sweeps in once. Give each
+ * mark its place with `n` when there are several, so they sweep one after the other. The look and
+ * the timing live in highlight.css, shared with PageHeader.
+ */
+import './highlight.css';
+
+interface Props {
+  /** This mark's place among the marks on the page, from 0. */
+  n?: number;
+}
+const { n = 0 } = Astro.props;
+---
+
+<mark class="highlight" style={`--n: ${n}`}><slot /></mark>

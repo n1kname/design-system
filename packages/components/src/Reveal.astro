@@ -1,0 +1,68 @@
+---
+/**
+ * Lets something settle in once, as it comes a little way into view: it rises 24px and fades in.
+ * Only what starts below the fold is held back, so nothing on screen at load ever disappears.
+ * Items that arrive together go 90ms apart. A jump past items (an anchor, a fast fling) shows the
+ * ones it skipped at once, so nothing is left hidden above.
+ *
+ * Hidden only once the script has armed it, so without script, or with reduced motion, it is
+ * simply there. Each item fires `reveal` with its delay in `detail`, for a page that wants to
+ * start something of its own as it arrives.
+ */
+interface Props {
+  /** The element to render, such as "li" for a row of a list. */
+  as?: string;
+  class?: string;
+  [attr: string]: unknown;
+}
+
+const { as: Element = 'div', class: className, ...rest } = Astro.props;
+---
+
+<Element class:list={[className]} data-reveal {...rest}><slot /></Element>
+
+<style is:global>
+  [data-reveal].reveal-armed {
+    opacity: 0;
+    translate: 0 24px;
+    transition:
+      opacity 600ms var(--ease-out),
+      translate 900ms var(--ease-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  [data-reveal].reveal-armed.reveal-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+</style>
+
+<script>
+  if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const items = [...document.querySelectorAll<HTMLElement>('[data-reveal]')].filter(
+      (el) => el.getBoundingClientRect().top > innerHeight,
+    );
+    const show = (el: HTMLElement, delay: number) => {
+      el.style.setProperty('--reveal-delay', `${delay}ms`);
+      el.classList.add('reveal-in');
+      el.dispatchEvent(new CustomEvent('reveal', { detail: { delay } }));
+      io.unobserve(el);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries
+          .filter((e) => e.isIntersecting)
+          .forEach((e, i) => {
+            const el = e.target as HTMLElement;
+            items.slice(0, items.indexOf(el)).filter((s) => !s.classList.contains('reveal-in')).forEach((s) => show(s, 0));
+            show(el, i * 90);
+          });
+      },
+      { rootMargin: '0px 0px -12% 0px' },
+    );
+    items.forEach((el) => {
+      el.classList.add('reveal-armed');
+      io.observe(el);
+    });
+  }
+</script>

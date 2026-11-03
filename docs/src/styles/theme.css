@@ -186,3 +186,15 @@ h1,
   overflow: hidden;
   font-size: var(--text-caption);
 }
+
+/* A stand-in picture for demos: a sunken plate, so no image has to ship with the docs. */
+.demo-plate {
+  display: grid;
+  place-items: center;
+  min-height: 4rem;
+  padding: var(--sp-4);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface-sunken);
+  color: var(--c-text-muted);
+  font-size: var(--text-body-sm);
+}

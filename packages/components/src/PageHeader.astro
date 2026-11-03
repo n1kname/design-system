@@ -9,6 +9,8 @@
  * or lede once its data arrives wraps those words in <mark> itself; the sweep plays as they
  * land.
  */
+import './highlight.css';
+
 interface Props {
   eyebrow?: string;
   title: string;
@@ -103,38 +105,12 @@ const inLede = inTitle ? null : split(lede);
     background: var(--c-accent);
   }
 
-  /* A highlighter behind the words that answer the question. It sits low, like a pen, wraps
-   * line by line, and is mixed into the page colour rather than see-through, so it holds up in
-   * dark. It sweeps in once, a moment after the words land. */
-  .text :global(mark) {
-    --sweep: color-mix(in oklab, var(--c-accent) 32%, var(--c-bg));
-    --band: 0.42em;
-    padding-inline: 0.08em;
-    margin-inline: -0.08em;
-    background: linear-gradient(var(--sweep), var(--sweep)) no-repeat 0 88% / 100% var(--band);
-    color: inherit;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-  }
-
-  /* In the smaller lede the band is wider and stronger, and the figure takes the body colour,
-   * so it reads as clearly as it does in a headline. */
+  /* The highlighter itself is highlight.css. In the smaller lede the band is wider and stronger,
+   * and the figure takes the body colour, so it reads as clearly as it does in a headline. */
   .lede :global(mark) {
-    --sweep: color-mix(in oklab, var(--c-accent) 42%, var(--c-bg));
-    --band: 0.6em;
+    --highlight: color-mix(in oklab, var(--c-accent) 42%, var(--c-bg));
+    --highlight-band: 0.6em;
     color: var(--c-text);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .text :global(mark) {
-      animation: sweep 700ms var(--ease-out) 300ms both;
-    }
-  }
-
-  @keyframes sweep {
-    from {
-      background-size: 0% var(--band);
-    }
   }
 
   @media (forced-colors: active) {
@@ -142,11 +118,6 @@ const inLede = inTitle ? null : split(lede);
       background: CanvasText;
     }
 
-    .text :global(mark) {
-      background: none;
-      text-decoration: underline 0.2em;
-      text-underline-offset: 0.1em;
-    }
   }
 
   .actions {

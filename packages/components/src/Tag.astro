@@ -8,6 +8,9 @@
  *   quiet   → this is a descriptor, not something to click
  *   warm    → a warm tag: how something was done
  *   cool    → the cool tag: what something was about
+ *
+ * A linked tag lifts 2px under a real pointer and gives under a press, and the spring brings it
+ * back. `still` turns that off, for a tag inside something that moves as a whole (CopyTag).
  */
 import Icon from './Icon.astro';
 import type { IconName } from './icons';
@@ -17,13 +20,15 @@ interface Props {
   href?: string;
   tone?: 'accent' | 'quiet' | 'warm' | 'cool';
   small?: boolean;
+  /** No lift or press, for a linked tag inside something that moves as a whole. */
+  still?: boolean;
 }
 
-const { icon, href, tone = 'quiet', small = false } = Astro.props;
+const { icon, href, tone = 'quiet', small = false, still = false } = Astro.props;
 const Tag = href ? 'a' : 'span';
 ---
 
-<Tag class:list={['tag', tone, { small }]} href={href}>
+<Tag class:list={['tag', tone, { small, still }]} href={href}>
   {icon && <Icon name={icon} size={15} />}
   <slot />
 </Tag>
@@ -72,7 +77,27 @@ const Tag = href ? 'a' : 'span';
   a.tag {
     transition:
       border-color var(--motion-hover) var(--ease-hover),
-      background-color var(--motion-hover) var(--ease-hover);
+      background-color var(--motion-hover) var(--ease-hover),
+      translate var(--motion-spring) var(--ease-spring),
+      scale var(--motion-base) var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    a.tag:not(.still):hover {
+      translate: 0 -2px;
+    }
+  }
+
+  a.tag:not(.still):active {
+    scale: 0.97;
+    transition-duration: var(--motion-hover), var(--motion-hover), var(--motion-spring), 80ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.tag {
+      translate: none !important;
+      scale: none !important;
+    }
   }
 
   a.quiet:hover {

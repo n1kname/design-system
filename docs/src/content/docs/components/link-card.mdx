@@ -1,0 +1,76 @@
+---
+title: "Link card"
+description: "A card that is one link, such as a case on an index: a picture and the argument beside it."
+---
+
+import LinkCard from '@n1kname/components/LinkCard.astro';
+import Tag from '@n1kname/components/Tag.astro';
+
+<div class="not-content demo-stack">
+  <LinkCard href="#variants">
+    <div slot="media" class="demo-plate" style="aspect-ratio: 16 / 9"></div>
+    <p class="t-meta">Project · Organisation · 2025 — now</p>
+    <h3>A headline that says what was decided</h3>
+    <p>One or two sentences on the situation and the choice.</p>
+    <p><Tag tone="cool" small>What it was about</Tag></p>
+  </LinkCard>
+</div>
+
+## What it's for
+
+To send someone to a page that is worth a whole card of explanation: a case on a portfolio index, a report in a list. The whole card is the target, so there's one link, not three.
+
+## When not to use it
+
+- **A card with several actions.** Use a plain surface with real links and buttons inside.
+- **A list you scan.** A row of text links reads faster than a stack of cards.
+- **Data on a dashboard.** A card that moves under the pointer suggests it opens something; a figure that doesn't shouldn't move.
+
+## Anatomy
+
+- **Media:** optional, in the `media` slot. Left of the text from 640px of card, above it below that. Its frame clips, so the picture can lean in without growing the card.
+- **Body:** the default slot. An overline, a heading, a line or two, tags.
+- **Surface:** the card fill and edge.
+
+## Variants
+
+With or without media. `transition` names the picture for a cross-document view transition, so it grows into the picture with the same name on the page it opens. Give that one `view-transition-class: media`; `page-change.css` animates the move on the spring.
+
+## States
+
+- **Hover:** the edge and the fill deepen. Under a real pointer the card also lifts 2px and the picture leans in 2%, on the spring.
+- **Press:** the card gives a little and the spring brings it back.
+- **Focus:** the ring goes round the whole card.
+- **Reduced motion:** nothing moves; only the edge and the fill answer.
+
+## Tokens
+
+`--c-accent-edge`, `--c-border`, `--c-surface`, `--c-surface-tint`, `--ease-hover`, `--ease-out`, `--ease-spring`, `--motion-base`, `--motion-hover`, `--motion-spring`, `--radius-lg`, `--radius-sm`
+
+## Keyboard and screen reader
+
+- **It's one link,** so it's one tab stop and is read as a link named by everything inside it. Keep that short: a heading and a line, not a page.
+- **Don't put another link or a button inside.** A link inside a link is invalid and breaks both.
+- **The picture needs alt text** only if it says something the heading doesn't. Otherwise leave it empty.
+
+## Content
+
+- **Lead with the outcome,** in the heading. The project name goes in the overline.
+- **One picture per card,** cropped from the page it opens, so the two can't drift apart.
+
+## Status
+
+Used by the portfolio's case index.
+
+## Code
+
+```astro wrap
+---
+import LinkCard from '@n1kname/components/LinkCard.astro';
+---
+
+<LinkCard href="/work/a-case" transition="case-a-case">
+  <img slot="media" src="/a-case.webp" alt="" />
+  <h2>A headline that says what was decided</h2>
+</LinkCard>
+```

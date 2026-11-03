@@ -1,0 +1,61 @@
+---
+title: "Highlight"
+description: "A band behind the words a heading is about, that sweeps in once."
+---
+
+import Highlight from '@n1kname/components/Highlight.astro';
+
+<div class="not-content">
+  <p class="t-h2">Systems that had to be <Highlight>correct</Highlight>, not merely <Highlight n={1}>usable</Highlight>.</p>
+</div>
+
+## What it's for
+
+To point at the words a heading or a lede is about, such as the figure that answers the question. It sits low, like a pen, and wraps line by line.
+
+## When not to use it
+
+- **Emphasis in running text.** Use bold.
+- **More than two or three marks on a page.** Then nothing stands out.
+- **A link.** It would look like a visited state.
+
+## Anatomy
+
+- **The band:** the accent mixed into the page colour, so it holds up in dark.
+- **The words:** keep their own colour.
+
+## Variants
+
+`n` gives a mark its place among the marks on the page, so several sweep one after the other. [Page header](/components/page-header/) uses the same highlighter for its `mark` prop.
+
+## States
+
+- **Arriving:** sweeps in 300ms after load, then 450ms per mark. A page can set `--highlight-delay` and `--highlight-step` to wait for its own opening.
+- **Reduced motion:** the band is simply there.
+- **Forced colours:** an underline instead of the band.
+
+## Tokens
+
+`--c-accent`, `--c-bg`, `--ease-out`
+
+## Keyboard and screen reader
+
+It's a `mark` element, which some screen readers announce as highlighted. Mark the words that matter, not decoration.
+
+## Content
+
+A few words, never a whole sentence.
+
+## Status
+
+Used by the portfolio and, through Page header, a dashboard.
+
+## Code
+
+```astro wrap
+---
+import Highlight from '@n1kname/components/Highlight.astro';
+---
+
+<h1>Systems that had to be <Highlight>correct</Highlight>, not merely <Highlight n={1}>usable</Highlight>.</h1>
+```

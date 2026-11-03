@@ -1,0 +1,44 @@
+/*
+ * The highlighter: a band behind the words a page is about. It sits low, like a pen, wraps line
+ * by line, and is mixed into the page colour rather than see-through, so it holds up in dark. It
+ * sweeps in once, a moment after the words land; several marks go one after the other, by --n.
+ *
+ * Used by Highlight and PageHeader. A page that writes its words once its data arrives can wrap
+ * them in <mark class="highlight"> itself, and the sweep plays as they land.
+ *
+ *   --highlight         the band colour
+ *   --highlight-band    its height
+ *   --highlight-delay   before the first mark sweeps (300ms)
+ *   --highlight-step    between one mark and the next (450ms)
+ */
+:where(mark.highlight, .page-header .text mark) {
+  --highlight: color-mix(in oklab, var(--c-accent) 32%, var(--c-bg));
+  --highlight-band: 0.42em;
+  padding-inline: 0.08em;
+  margin-inline: -0.08em;
+  background: linear-gradient(var(--highlight), var(--highlight)) no-repeat 0 88% / 100% var(--highlight-band);
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(mark.highlight, .page-header .text mark) {
+    animation: highlight 700ms var(--ease-out)
+      calc(var(--highlight-delay, 300ms) + var(--n, 0) * var(--highlight-step, 450ms)) both;
+  }
+}
+
+@keyframes highlight {
+  from {
+    background-size: 0% var(--highlight-band);
+  }
+}
+
+@media (forced-colors: active) {
+  :where(mark.highlight, .page-header .text mark) {
+    background: none;
+    text-decoration: underline 0.2em;
+    text-underline-offset: 0.1em;
+  }
+}

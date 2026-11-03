@@ -1,0 +1,116 @@
+---
+/**
+ * A card that is one link, such as a case on an index: a picture in the "media" slot and the
+ * argument beside it, or above it once the card is narrow. The whole card is the target.
+ *
+ * Under a real pointer the card lifts 2px and its picture leans in 2% inside its frame; a press
+ * gives a little; the spring brings both back. `transition` names the picture for a
+ * cross-document view transition, so it can grow into the same picture on the page it opens
+ * (give that one the same name, with view-transition-class: media; page-change.css animates it).
+ * Under reduced motion nothing moves, and only the edge and the fill answer the hover.
+ */
+interface Props {
+  href: string;
+  /** A view-transition-name for the picture, unique on the page. */
+  transition?: string;
+}
+
+const { href, transition } = Astro.props;
+const hasMedia = Astro.slots.has('media');
+---
+
+<a class="link-card" href={href}>
+  <div class:list={['layout', { 'has-media': hasMedia }]}>
+    {
+      hasMedia && (
+        <div class="media" style={transition ? `view-transition-name: ${transition}; view-transition-class: media` : undefined}>
+          <slot name="media" />
+        </div>
+      )
+    }
+    <div class="body"><slot /></div>
+  </div>
+</a>
+
+<style>
+  .link-card {
+    container-type: inline-size;
+    display: block;
+    padding: var(--sp-6) var(--sp-7);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      border-color var(--motion-hover) var(--ease-hover),
+      background-color var(--motion-hover) var(--ease-hover),
+      translate var(--motion-spring) var(--ease-spring),
+      scale var(--motion-base) var(--ease-out);
+  }
+
+  /* Picture left, argument right. The picture's column is fixed rather than fractional, so the
+   * text measure does not shift between cards. Below 640px of card it stacks; the card is the
+   * container, so the layout inside it can ask. */
+  .has-media {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  @container (min-width: 640px) {
+    .has-media {
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: var(--sp-6);
+      align-items: start;
+    }
+  }
+
+  .media {
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+  }
+
+  .media > :global(*) {
+    display: block;
+    width: 100%;
+    transition: scale var(--motion-spring) var(--ease-spring);
+  }
+
+  .body {
+    min-width: 0;
+  }
+
+  .link-card:hover {
+    border-color: var(--c-accent-edge);
+    background: var(--c-surface-tint);
+  }
+
+  @media (hover: hover) {
+    .link-card:hover {
+      translate: 0 -2px;
+    }
+
+    .link-card:hover .media > :global(*) {
+      scale: 1.02;
+    }
+  }
+
+  .link-card:active {
+    scale: 0.99;
+    transition-duration: var(--motion-hover), var(--motion-hover), var(--motion-spring), 80ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .link-card,
+    .media > :global(*) {
+      translate: none !important;
+      scale: none !important;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .link-card {
+      padding: var(--sp-5);
+    }
+  }
+</style>

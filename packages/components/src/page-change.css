@@ -1,6 +1,7 @@
 /*
- * Moving between pages: a short cross-fade of the whole page, and PageNav's pill gliding from
- * the link you left to the one you arrived at, on the spring. For a site whose pages are
+ * Moving between pages: a short cross-fade of the whole page, PageNav's pill gliding from the
+ * link you left to the one you arrived at, and a picture with view-transition-class: media (a
+ * LinkCard's, say) growing into the picture of the same name on the next page, all on the spring. For a site whose pages are
  * separate documents. Import once, per site, on every page: both pages must opt in.
  *
  * A browser without cross-document view transitions simply changes the page, and under
@@ -33,5 +34,24 @@
     animation: none;
     width: 100%;
     height: 100%;
+  }
+
+  /* A picture that carries over, such as a case thumbnail becoming that case's header image. */
+  ::view-transition-group(*.media) {
+    animation-duration: var(--motion-spring);
+    animation-timing-function: var(--ease-spring);
+  }
+
+  /* The two pictures rarely share a shape (a 16:9 thumbnail, a 20:9 header), so each fills the
+   * moving frame and is cropped to it, rather than stretched. */
+  ::view-transition-image-pair(*.media) {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+
+  ::view-transition-old(*.media),
+  ::view-transition-new(*.media) {
+    height: 100%;
+    object-fit: cover;
   }
 }

@@ -1,0 +1,65 @@
+---
+title: "Copy tag"
+description: "One pill, two actions: open the link, or copy what it points to."
+---
+
+import CopyTag from '@n1kname/components/CopyTag.astro';
+
+<div class="not-content demo-row">
+  <CopyTag href="https://example.com/report" value="https://example.com/report" what="link" icon="file-text">The report</CopyTag>
+</div>
+
+## What it's for
+
+For a value people often want as text rather than as an action, such as an email address: the left half opens a mail client, the right half copies the address.
+
+## When not to use it
+
+- **A link nobody copies.** Use a linked [tag](/components/tags/).
+- **A long value.** The pill doesn't wrap.
+
+## Anatomy
+
+- **Link half:** a linked accent tag, with an optional icon.
+- **Copy half:** an icon button, joined to it by a hairline.
+
+## Variants
+
+None.
+
+## States
+
+- **Without a clipboard (or script):** the copy half isn't shown, and the link half has its round ends back.
+- **Hover:** the half under the pointer deepens. Under a real pointer the whole pill lifts 2px, as one.
+- **Press:** the pill gives a little and the spring brings it back.
+- **Copied:** the copy icon turns into a check on the spring, for 2 seconds.
+
+## Tokens
+
+`--c-accent`, `--c-surface-tint`, `--c-text-accent`, `--ease-hover`, `--ease-out`, `--ease-spring`, `--motion-base`, `--motion-fast`, `--motion-hover`, `--motion-spring`, `--radius-full`
+
+## Keyboard and screen reader
+
+- **Two tab stops,** each with its own focus ring.
+- **The copy button is named** "Copy" plus `what`, such as "Copy email address".
+- **"Copied" is read out** from a live region, since a changing button label isn't announced reliably.
+
+## Content
+
+`what` names the value in a few words, lower case: "email address".
+
+## Status
+
+Used by the portfolio.
+
+## Code
+
+```astro wrap
+---
+import CopyTag from '@n1kname/components/CopyTag.astro';
+---
+
+<CopyTag href="https://example.com/report" value="https://example.com/report" what="link" icon="file-text">
+  The report
+</CopyTag>
+```

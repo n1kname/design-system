@@ -1,0 +1,63 @@
+---
+title: "Reveal"
+description: "Lets something settle in once, as it comes into view."
+---
+
+import Reveal from '@n1kname/components/Reveal.astro';
+
+<div class="not-content demo-stack">
+  <Reveal><div class="demo-plate">Scroll this page and anything below the fold settles in once.</div></Reveal>
+</div>
+
+## What it's for
+
+To let rows or cards that start below the fold arrive as you reach them, on a page that is read once, top to bottom, such as a portfolio. It rises 24px and fades in, once.
+
+## When not to use it
+
+- **A data page you return to.** The figures should be there when you look. Charts have their own arrival.
+- **Anything on screen at load.** Reveal leaves it alone anyway, so wrapping it does nothing.
+- **Every element on a page.** One kind of thing settles in, such as the rows of a list. Not the headings and the paragraphs too.
+
+## Anatomy
+
+- **The item:** any element, set with `as` (`li` for a row of a list). It carries `data-reveal`.
+
+## Variants
+
+None. Items that arrive together go 90ms apart. A jump past items shows the ones it skipped at once.
+
+## States
+
+- **Armed:** below the fold at load, hidden until it comes 12% into view.
+- **In:** settled, for good.
+- **Without script, or under reduced motion:** never armed, simply there.
+
+## Tokens
+
+`--ease-out`, `--ease-soft`
+
+## Keyboard and screen reader
+
+- **Nothing is removed from the page,** only faded, so screen readers read it all, armed or not.
+- **Focus can reach an armed item;** moving focus scrolls it into view, which shows it.
+
+## Content
+
+Each item fires `reveal` with its delay in `detail`, for a page that wants to start something of its own as it arrives, such as an icon drawing itself.
+
+## Status
+
+Used by the portfolio's landing page and case index.
+
+## Code
+
+```astro wrap
+---
+import Reveal from '@n1kname/components/Reveal.astro';
+---
+
+<ol>
+  {rows.map((row) => <Reveal as="li">{row.title}</Reveal>)}
+</ol>
+```
