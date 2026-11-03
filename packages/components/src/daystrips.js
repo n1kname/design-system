@@ -6,7 +6,8 @@
 // `states` says how each state looks: { label, mark, color, gap }. `mark` is a Legend mark:
 // fill, stripes, or empty (not drawn on the strip, only in the tooltip and the legend). A `gap`
 // state is drawn on top of the rest and never thinner than MIN_GAP_PX, so a one-day gap is
-// never missed, and solid when too narrow for its stripes. The colours are best the record
+// never missed. Too narrow for its stripes, a filled gap is drawn solid and a striped one as a
+// clean cut. The colours are best the record
 // state tokens, --c-state-complete, -waiting, -set-aside and -missing. Each stream is { label, title?, days, summary }: `days` its state per day,
 // `summary` what a screen reader hears for its strip. Hovering shows the date and every
 // stream whose state that day is not `quiet`.
@@ -14,7 +15,7 @@ import { esc } from './datatable.js';
 
 // A one-day gap is about a pixel wide at a few years' scale; never draw one thinner than this.
 const MIN_GAP_PX = 4;
-// Below this, stripes are noise: the gap is drawn solid in its colour instead.
+// Below this, stripes are noise: a striped gap is drawn as a clean cut instead.
 const MIN_STRIPES_PX = 8;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

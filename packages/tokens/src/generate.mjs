@@ -102,8 +102,8 @@ const TAG_FOCUS_HUE = 200;
 //   chart-*        marks, not text. Text in a chart wears text tokens.
 //   status-*       reserved meaning, never "series 4", always icon plus label.
 //   state-*        the state of each day in a long record, as day strips draw it.
-//                  Complete is soft, because it is most of the strip; missing is the
-//                  ink, the one that asks for something. Set aside is drawn in stripes.
+//                  Complete is the soft teal, because it is most of the strip; missing is
+//                  the orange, the one that asks for something. Set aside is drawn in stripes.
 //
 // on-accent is the deep brown in BOTH themes: white on the accent fill is under
 // 3:1, and dark-on-orange keeps the fill identical in light and dark.
@@ -162,12 +162,14 @@ const semantics = (mode) => {
     // Recedes behind the slots: low chroma, and darker than the orange on dark.
     'chart-neutral': pick(oklch(0.625, 0.015, NEUTRAL_HUE), oklch(0.57, 0.015, NEUTRAL_HUE)),
   };
-  // Record states. Complete is status-good let down toward the card, waiting a quiet grey, lighter on light and darker on dark, so it recedes and
+  // Record states, all from the chart palette. Complete is the teal ramp, a step softer than slot 2,
+  // because it is most of the strip; missing is slot 1's orange, the one that asks for something;
+  // waiting a warm grey from the neutrals, lighter on light and darker on dark, so it recedes and
   // never reads as complete, also for colour-blind readers.
-  out['state-complete'] = pick(oklch(0.77, 0.085, 150), oklch(0.55, 0.08, 150));
-  out['state-waiting'] = pick(oklch(0.9, 0.015, NEUTRAL_HUE), oklch(0.37, 0.03, NEUTRAL_HUE));
+  out['state-complete'] = pick({ ref: 'primitive.seq2.4' }, { ref: 'primitive.seq2.5' });
+  out['state-waiting'] = pick(n('300'), n('700'));
   out['state-set-aside'] = { ref: 'c.chart-neutral' };
-  out['state-missing'] = { ref: 'c.text' };
+  out['state-missing'] = { ref: 'c.chart-1' };
   // Hover and well on any surface.
   out['surface-hover'] = out['surface-sunken'];
   // The field behind a case hero: colour and grain from the leading pair, quiet in both themes.

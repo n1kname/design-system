@@ -202,27 +202,11 @@
     },
     "state-complete": {
       "$type": "color",
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.5529,
-          0.7686,
-          0.5961
-        ],
-        "hex": "#8DC498"
-      }
+      "$value": "{primitive.seq2.4}"
     },
     "state-waiting": {
       "$type": "color",
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.9059,
-          0.8588,
-          0.8392
-        ],
-        "hex": "#E7DBD6"
-      }
+      "$value": "{primitive.neutral.300}"
     },
     "state-set-aside": {
       "$type": "color",
@@ -230,7 +214,7 @@
     },
     "state-missing": {
       "$type": "color",
-      "$value": "{c.text}"
+      "$value": "{c.chart-1}"
     },
     "surface-hover": {
       "$type": "color",

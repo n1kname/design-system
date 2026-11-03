@@ -21,7 +21,7 @@ For a record kept every day over years, in a few streams, when the question is w
 
 - **Names:** one per stream, with a title for what complete means.
 - **Strips:** runs of days in the same state, rounded at the stream's first and last day, wherever it starts. Gaps go on top and are never thinner than 4px, so a one-day gap shows across years.
-- **Gaps:** cut into the strip, with a hairline of the card on each side. Their stripes sit on the card, never on the days around them. Narrower than 8px, where stripes can't show, a gap is drawn solid in its colour; the tooltip still names it.
+- **Gaps:** cut into the strip, with a hairline of the card on each side. Their stripes sit on the card, never on the days around them. Narrower than 8px, where stripes can't show, a filled gap is drawn solid in its colour and a striped one as a clean cut of card; the tooltip still names both.
 - **Ticks:** the first of each quarter, the year at each January. Half years on a phone.
 - **Pointer:** a line on the day under it, and a tooltip with the date and every stream that wasn't quiet that day.
 
@@ -52,7 +52,7 @@ The record states, `--c-state-complete`, `--c-state-waiting`, `--c-state-set-asi
 
 ## Content
 
-- **Use the record state tokens.** Missing is the ink one, the mark that asks for something; complete is soft. Their checks hold them apart, also for colour-blind readers.
+- **Use the record state tokens.** Missing is the orange, the mark that asks for something; complete is the soft teal. Their checks hold them apart, also for colour-blind readers.
 - **Use the same marks in the legend,** from [Legend](/components/legend/), so the key looks like the strips.
 
 ## Status

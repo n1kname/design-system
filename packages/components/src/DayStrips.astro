@@ -82,7 +82,8 @@ const { id, rows = 0, class: className, style, ...rest } = Astro.props;
   }
 
   /* A gap is cut into the strip: a hairline of card on each side keeps it apart from the days
-     around it. Too narrow for its stripes to show, it is drawn solid in its colour instead. */
+     around it. Too narrow for its stripes to show, a gap that asks for something is drawn solid
+     in its colour, and a striped one is left as a clean cut of card. */
   .day-strips :global(.strip .gap) {
     box-shadow:
       -1px 0 0 var(--c-surface),
@@ -98,6 +99,11 @@ const { id, rows = 0, class: className, style, ...rest } = Astro.props;
 
   .day-strips :global(.strip .gap.narrow) {
     background: var(--mark);
+  }
+
+  .day-strips :global(.strip .gap.narrow[data-mark='stripes']) {
+    background: var(--c-surface);
+    box-shadow: none;
   }
 
   .day-strips :global(.ticks) {

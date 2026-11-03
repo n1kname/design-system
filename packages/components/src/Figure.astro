@@ -29,7 +29,7 @@ const Title = level ? `h${level}` : 'p';
         </div>
       )
     }
-    <slot />
+    <div class="body"><slot /></div>
   </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
@@ -43,6 +43,11 @@ const Title = level ? `h${level}` : 'p';
   .field {
     border: 1px solid var(--c-border);
     border-radius: var(--radius-lg);
+  }
+
+  /* The body is the container, not the field, so what's inside can respond to the room it has
+     and the field can still be a subgrid (containment would stop that). */
+  .body {
     container-type: inline-size;
   }
 
@@ -89,6 +94,34 @@ const Title = level ? `h${level}` : 'p';
     font-size: var(--text-caption);
     line-height: var(--leading-caption);
     color: var(--c-text-muted);
+  }
+
+  /* Side by side in a Grid, the cards in a row are one height and share their head's height, so
+     a subtitle on two lines in one card doesn't push its chart below the others. */
+  :global(.grid) > .figure {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+
+  :global(.grid) > .figure:has(> figcaption) {
+    grid-row: span 3;
+  }
+
+  :global(.grid) > .figure > .field {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+
+  :global(.grid) > .figure .head {
+    grid-row: 1;
+  }
+
+  :global(.grid) > .figure .body {
+    grid-row: 2;
   }
 
   figcaption {
