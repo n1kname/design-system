@@ -108,6 +108,29 @@ export const barsSpec = {
 };
 export const barsChart = renderResponsive((width) => barsHelper(barsSpec, width));
 
+// Grouped: two made-up years side by side, the summer months set apart as not comparable.
+export const pairedMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map((month, i) => ({
+  month,
+  before: i < 5 ? Math.round(80 - 14 * i + 6 * Math.sin(i)) / 100 : null,
+  after: i < 5 ? Math.round(72 - 13 * i + 5 * Math.cos(i)) / 100 : null,
+}));
+export const groupedSpec = {
+  rows: pairedMonths,
+  x: 'month',
+  unit: 'units per step',
+  digits: 2,
+  yDigits: 2,
+  grouped: true,
+  height: 200,
+  tick: (m) => m[0],
+  shade: { from: 'Jun', to: 'Aug', text: 'not comparable' },
+  series: [
+    { key: 'before', label: 'Year one', color: 'var(--c-chart-2)', tag: 'one' },
+    { key: 'after', label: 'Year two', color: 'var(--c-chart-1)', tag: 'two' },
+  ],
+};
+export const groupedChart = renderResponsive((width) => barsHelper(groupedSpec, width));
+
 // The heatmap helper: a made-up level for each evening hour over eight days, in four steps.
 export const HEAT_HOURS = [18, 19, 20, 21, 22, 23];
 export const heatDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon 2'];

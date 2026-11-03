@@ -71,5 +71,44 @@ const wrapped = renderPlot(bars({ ...long, wrap: () => 5 }, 300));
 assert.ok(!/>Before the works</.test(wrapped) && /Before/.test(wrapped), 'a long label wraps onto more lines');
 assert.ok(/>Before the works</.test(renderPlot(bars(long, 300))), 'without wrap it stays on one line');
 assert.ok(/units a year/.test(wrapped), 'the y axis carries its words');
+const small = renderPlot(bars({ ...long, rows: [{ k: 'A', v: 0.3 }, { k: 'B', v: 1.2 }], yDigits: 2 }, 300));
+assert.ok(/>0\.40</.test(small) && !/>1</.test(small), 'small values keep their decimals on the y axis');
+
+// Grouped: last year beside this one, each bar from zero, a run of steps shaded.
+const pairs = [
+  { m: 'M1', old: 30, now: 20 },
+  { m: 'M2', old: 10, now: 12 },
+  { m: 'M3', old: null, now: null },
+  { m: 'M4', old: null, now: null },
+  { m: 'M5', old: 5, now: null },
+];
+const two = [
+  { key: 'old', label: 'Then', color: 'var(--c-chart-2)', tag: '’24' },
+  { key: 'now', label: 'Now', color: 'var(--c-chart-1)', tag: '’25' },
+];
+const g = bars({ rows: pairs, x: 'm', series: two, unit: 'units', grouped: true, shade: { from: 'M3', to: 'M4', text: 'left out' } }, 500);
+const gSvg = renderPlot(g);
+assert.deepEqual(g.y.domain, [0, 30], 'grouped, the y domain holds the highest bar, not a sum');
+const [oldBars, , nowBars] = g.marks.slice(5);
+assert.deepEqual([oldBars.data[0].y1, oldBars.data[0].y2, nowBars.data[0].y1, nowBars.data[0].y2], [0, 30, 0, 20], 'each bar stands on zero');
+// The two bars of a step side by side, 2px apart, centred in the step and no wider than 14px.
+// Each bar's left and right edge: the least and greatest x its path visits.
+const rects = (color) => [...gSvg.matchAll(new RegExp(`fill="var\\(--c-${color}\\)"[^>]*>((?:<path[^>]*>)+)`, 'g'))]
+  .flatMap((m) => [...m[1].matchAll(/ d="([^"]+)"/g)])
+  .map(([, d]) => {
+    const xs = [...d.matchAll(/(?:[MLH]|0 0 1 )([\d.]+)/g)].map((n) => Number(n[1]));
+    return [Math.min(...xs), Math.max(...xs)];
+  });
+const [o1, n1] = [rects('chart-2')[0], rects('chart-1')[0]];
+assert.ok(o1 && n1, 'both bars of the first step are drawn');
+assert.ok(Math.abs(n1[0] - o1[1] - 2) < 0.01, 'the second bar starts 2px after the first ends');
+assert.ok(o1[1] - o1[0] <= 14.001, 'no bar is wider than 14px');
+assert.ok(gSvg.includes('>left out<'), 'the shaded run says why');
+assert.ok(gSvg.includes('>’24<') && gSvg.includes('>’25<'), 'each series carries its tag over its first bar');
+const gTip = g.marks.at(-1);
+assert.equal(gTip.data.length, 5, 'grouped, every step has a tooltip, even an empty one');
+assert.equal(gTip.channels.title.value(pairs[0]), 'M1\nThen  30\nNow  20\nunits', 'grouped, the tooltip lists the series in order');
+assert.equal(gTip.channels.title.value(pairs[2]), 'M3\nunits', 'an empty step says only its label and unit, not 0');
+assert.ok(!renderPlot(bars({ ...spec, grouped: false }, 600)).includes('left out'), 'no shade unless asked');
 
 console.log('bars: all assertions pass');

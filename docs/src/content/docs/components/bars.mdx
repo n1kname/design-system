@@ -1,43 +1,51 @@
 ---
 title: "Bars"
-description: "One bar per step, a single value or a few parts stacked, as Observable Plot options."
+description: "One bar per step, a single value, a few parts stacked or two series side by side, as Observable Plot options."
 ---
 
 import Chart from '../../../components/Chart.astro';
-import { barsChart } from '../../../lib/examples.mjs';
+import { barsChart, groupedChart } from '../../../lib/examples.mjs';
 
 <Chart chart={barsChart} alt="Twelve fictional months, each a stack of base, heat and power. Base stays at 40; heat is high in winter and gone in summer. November is fainter, an estimate; December fainter again with a dashed edge, a projection." />
 
 ## What it's for
 
-For a value per step, such as a month or a year, when the size of each matters. Stacked, for a few parts of each step's total, when the bottom part holds still and the change in the others is the point.
+For a value per step, such as a month or a year, when the size of each matters. Stacked, for a few parts of each step's total, when the bottom part holds still and the change in the others is the point. Grouped, for two of the same thing side by side in each step, such as last year beside this one.
+
+<Chart chart={groupedChart} alt="Eight fictional months, two bars each: year one and year two, both falling from winter into spring. The first pair carries the words one and two. June to August have no bars and are shaded, with the words not comparable." />
 
 ## When not to use it
 
 - **Many steps of a value that moves smoothly.** Use [lines](/components/lines/).
 - **More than three or four parts.** The middle ones can't be compared. Show the total, and the parts in a table.
+- **More than two series side by side.** The pairs stop reading as pairs. Use lines, or a table.
 - **A ranking of things with labels.** Use [ranked bars](/components/ranked-bars/), whose labels are real text.
 - **Estimates with a range.** Use [range bars](/components/range-bars/).
 
 ## Anatomy
 
-- **Bars:** one per row, its parts stacked in the order of `series`, bottom to top. Square on the baseline, rounded at the top.
+- **Bars:** one per row, its parts stacked in the order of `series`, bottom to top. Square on the baseline, rounded at the top. Grouped, one bar per series in each step, up to 14px wide and 2px apart, each from zero.
+- **Tags:** a series' `tag`, such as a year, written over its first bar. Grouped, the first grows left from its bar and the second right, so the two never touch.
+- **Shade:** a run of steps set apart as one block, with a word in the middle on why.
 - **Zero line:** positive parts stack up from it and negative ones down, so a part can be below zero.
 - **Values:** with `values`, each bar's total on top.
 - **Axis:** y with five gridlines and no tick marks; x prints only the labels you choose.
-- **Pointer:** the bar under it lit, and a tooltip with every part, from the top.
+- **Pointer:** the bar under it lit, and a tooltip with every part, from the top. Grouped, every step has a tooltip, even one with no bars, so it can say why.
 
 ## Variants
 
 | Option | For |
 |---|---|
 | `values` | One series, where each bar's figure is what to read. |
+| `grouped` | Two series side by side in each step, instead of stacked. |
+| `shade` | `{ from, to, text }`: a run of steps that can't be compared, set apart with a word on why. |
 | `fade` | An opacity per row, for figures not settled yet. Say what each means in a [legend](/components/legend/). |
 | `dashed` | A dashed edge per row, for the least settled, such as a month still running. |
 | `title` | The tooltip's own text per row, when it needs more than the parts. |
 | `y` | Fix either end of the scale. `'auto'` always takes in zero. |
 | `wrap` | Long labels, such as the name of a period, onto more lines on a narrow chart: how many ems a line may run. |
 | `yLabel` | Words on the y axis, when there is no subtitle to say the unit. |
+| `yDigits` | Decimals on the y axis, for values below a few units. |
 
 ## States
 
@@ -45,7 +53,7 @@ For a value per step, such as a month or a year, when the size of each matters. 
 
 ## Tokens
 
-`--c-chart-*`, `--c-chart-grid`, `--c-chart-axis`, `--c-surface`, `--c-surface-hover`, `--c-text`.
+`--c-chart-*`, `--c-chart-grid`, `--c-chart-axis`, `--c-chart-neutral` (the shade), `--c-surface`, `--c-surface-hover`, `--c-text`, `--c-text-secondary` (tags and the shade's word).
 
 ## Keyboard and screen reader
 
@@ -56,10 +64,12 @@ For a value per step, such as a month or a year, when the size of each matters. 
 
 - **Put the part that holds still at the bottom,** so the others sit on a flat floor.
 - **Never tell a fade apart by fade alone** when it matters: add the dashed edge, and say both in the legend.
+- **Never tell two grouped series apart by colour alone:** tag the first pair, and name both in a legend.
+- **A step with nothing to compare still says so:** shade it, or give it a tooltip that says why.
 
 ## Status
 
-New. Used by a dashboard.
+New. Used by a dashboard: stacked, single and grouped.
 
 ## Code
 
