@@ -84,6 +84,8 @@ export const lines = (
           stroke: s.color,
           strokeWidth: s.width ?? 2,
           strokeDasharray: s.dashed ? '4 3' : undefined,
+          // A dashed line can't draw itself in with a dash of its own, so it fades.
+          className: s.dashed ? 'enter-fade' : 'enter-line',
         }),
       ),
       // A series' own `dots` wins over the chart's.
@@ -97,6 +99,7 @@ export const lines = (
             fill: s.dashed ? 'var(--c-surface)' : s.color,
             stroke: s.color,
             strokeWidth: s.dashed ? 1.5 : 0,
+            className: 'enter-dot',
           }),
         ),
       ...named.map(({ s, name }) => {
@@ -110,6 +113,7 @@ export const lines = (
           fill: chrome.text,
           fontWeight: 600,
           fontSize: 11,
+          className: 'enter-fade',
         });
       }),
       Plot.ruleX(tipped, Plot.pointerX({ x, stroke: chrome.axis })),

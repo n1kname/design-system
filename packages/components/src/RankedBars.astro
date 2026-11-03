@@ -2,8 +2,9 @@
 /**
  * Ranked bars in plain HTML and CSS, so the labels are real text. Safari lays out
  * SVG text with the fallback font's widths and then paints the web font, so
- * right-aligned SVG labels come out uneven and run into the bars. No script reaches
- * the browser, and the data stays in this page's HTML. Rows keep the order given.
+ * right-aligned SVG labels come out uneven and run into the bars. The data stays in this
+ * page's HTML. The only script is the arrival: the bars grow in once as the chart comes into
+ * view, and without it they are simply there. Rows keep the order given.
  * `alt` speaks for the chart, and needs every value.
  */
 import Figure from './Figure.astro';
@@ -44,6 +45,11 @@ const max = Math.max(...data.map((d) => d.value));
     </ul>
   </div>
 </Figure>
+
+<script>
+  import { enterAll } from '@n1kname/charts/enter';
+  enterAll('.ranked-bars');
+</script>
 
 <style>
   .ranked-bars {

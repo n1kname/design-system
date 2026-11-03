@@ -19,6 +19,11 @@ const { chart, alt } = Astro.props;
   <slot />
 </div>
 
+<script>
+  import { enterAll } from '@n1kname/charts/enter';
+  enterAll('.chart-panel');
+</script>
+
 <style>
   .chart-panel {
     container-type: inline-size;

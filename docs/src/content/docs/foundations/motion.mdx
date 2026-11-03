@@ -30,6 +30,27 @@ Use it for arriving only, and on `transform`. Leaving stays on `--ease-standard`
 
 The numbers live in `generate.mjs`. Change the stiffness, damping or mass there, and the curve and its duration follow.
 
+## Charts arriving
+
+A chart arrives once, the first time it comes into view, so the eye follows how it is built:
+
+- **Bars** grow from the zero line on the spring, left to right, all of them within 420ms. Bars below zero grow down from it, and a stack grows as one bar.
+- **Lines** draw from their first point over a second. Their dots appear as the line reaches them. A dashed line fades in instead, because its dash is its own.
+- **Heatmap cells** fill in column by column.
+- **Words and shading**, such as value labels and line names, land last.
+- **Ranked bars** grow from the left, top to bottom.
+
+The chart builders tag their marks (`enter-bar`, `enter-line`, `enter-dot`, `enter-cell`, `enter-fade`, `enter-zero`), and one browser helper plays them. It uses the Web Animations API, so it needs no stylesheet and leaves the marks' own transforms alone.
+
+```js
+import { enter, enterAll } from '@n1kname/charts/enter';
+
+enter(svg);              // a chart drawn in the page: its first drawing only
+enterAll('.chart-panel'); // charts drawn at build time
+```
+
+Nothing is hidden until the helper runs, so without script a chart is simply there. Under reduced motion it does nothing. A drawing that isn't shown, such as the narrow one of a pair, is left alone.
+
 ## Two modes
 
 Carbon calls these productive and expressive, and that split works here too.
@@ -38,7 +59,7 @@ Carbon calls these productive and expressive, and that split works here too.
 |---|---|---|
 | **Job** | Get out of the way | Set a mood, once |
 | **Hover** | `fast`, `out` | `gentle`, `soft` |
-| **Opening** | Nothing, data settles in over `base` | `reveal`, `soft`, about 70ms apart |
+| **Opening** | Charts arrive once, about a second | `reveal`, `soft`, about 70ms apart |
 | **Page change** | Instant | A 180ms cross-fade |
 | **Ambient** | None | Colour and grain on case heroes only, still |
 
@@ -56,7 +77,7 @@ A portfolio sets these once, and every component follows:
 - **Ask how often it happens.** Something you trigger all day should be instant. Tooltips don't animate for this reason.
 - **Smaller things move faster.** A button is `fast`, a panel is `slow`.
 - **Leaving is quicker than arriving,** and travels less. Your attention has already moved on.
-- **One moment, then stop.** Charts settle in once when a page's data arrives, and not on every resize.
+- **One moment, then stop.** Charts arrive once, as they come into view, and not on every resize or redraw.
 - **Move `transform` and `opacity` only.** Animating width or height makes the whole page work harder.
 - **No looping motion to get attention.** No pulsing dots, no breathing buttons.
 

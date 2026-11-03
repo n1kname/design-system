@@ -25,9 +25,11 @@ assert.ok(/>Alder</.test(svg) && />Birch</.test(svg), 'subject lines end in thei
 assert.ok(!/Birch, not settled/.test(svg), 'a silent line has no name at its end');
 assert.ok(svg.includes('stroke-dasharray="4 3"'), 'a dashed series is dashed');
 assert.ok(!/#[0-9a-f]{6}/i.test(svg), 'no hex: colours are tokens');
+assert.ok(/class="enter-line"/.test(svg) && /class="enter-dot"/.test(svg), 'solid lines and dots are tagged to arrive');
+assert.ok(/<g[^>]*class="enter-fade"[^>]*stroke-dasharray="4 3"|<g[^>]*stroke-dasharray="4 3"[^>]*class="enter-fade"/.test(svg), 'a dashed line fades in, its dash is its own');
 
 // A null breaks the line: Birch is drawn as two pieces, W1 alone and W3 to W4.
-const birch = svg.match(/<g(?![^>]*dasharray)[^>]*stroke="var\(--c-chart-2\)" fill="none"><path d="([^"]+)"/)[1];
+const birch = svg.match(/<g(?![^>]*dasharray)[^>]*stroke="var\(--c-chart-2\)" fill="none"[^>]*><path d="([^"]+)"/)[1];
 assert.equal((birch.match(/M/g) ?? []).length, 2, 'a null breaks the line instead of joining across it');
 
 // The tooltip: every series with a value, and a silent one only where its line has none.

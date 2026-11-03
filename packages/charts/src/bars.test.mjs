@@ -29,6 +29,7 @@ const spec = {
 
 const options = bars(spec, 600);
 const svg = renderPlot(options);
+assert.ok(/class="enter-bar"/.test(svg) && /class="enter-zero"/.test(svg), 'bars and the zero line are tagged to arrive');
 const ticks = [...svg.matchAll(/<text[^>]*>(M\d)<\/text>/g)].map((m) => m[1]);
 assert.deepEqual(ticks, ['M1', 'M3', 'M5'], 'only the ticks the tick function prints');
 assert.ok(!/#[0-9a-f]{6}/i.test(svg), 'no hex: colours are tokens');

@@ -45,5 +45,5 @@ export const heatmap = (
   x: { domain: xDomain, label: null, tickSize: 0, tickFormat: (v, i) => xTick(v, i, width) },
   y: { domain: yDomain, label: null, tickSize: 0, tickFormat: yTick },
   color: { type: 'threshold', domain: steps, range: colors },
-  marks: [Plot.cell(cells, { x, y, fill: value, tip: tipStyle, title })],
+  marks: [Plot.cell(cells, { x, y, fill: value, tip: tipStyle, title, className: 'enter-cell' })],
 });

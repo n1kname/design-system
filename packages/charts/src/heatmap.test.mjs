@@ -27,6 +27,7 @@ const spec = {
 
 const options = heatmap(spec, 400);
 const svg = renderPlot(options);
+assert.ok(/class="enter-cell"/.test(svg), 'cells are tagged to arrive');
 assert.equal(options.height, heatmapHeight(3), 'as tall as its rows');
 assert.ok(heatmapHeight(6) > heatmapHeight(3), 'and taller with more rows');
 assert.ok(!/#[0-9a-f]{6}/i.test(svg), 'no hex: colours are tokens');

@@ -108,6 +108,7 @@ export const bars = (
       stroke: edge ? s.color : 'var(--c-surface)',
       strokeWidth: 1,
       strokeDasharray: edge ? '3 2' : undefined,
+      className: 'enter-bar',
       // The last series is the top of the bar: rounded there, square on the baseline. Grouped,
       // every bar is its own top.
       ...(grouped || i === series.length - 1 ? { ry1: 4 } : {}),
@@ -118,7 +119,7 @@ export const bars = (
   const shaded = shade ? rows.slice(rows.findIndex((r) => r[x] === shade.from), rows.findIndex((r) => r[x] === shade.to) + 1) : [];
   const shading = shaded.length
     ? [
-        Plot.barY(shaded, { x, y1: () => domain[0], y2: () => domain[1], fill: chrome.neutral, fillOpacity: 0.16, inset: -(step - band) / 2 }),
+        Plot.barY(shaded, { x, y1: () => domain[0], y2: () => domain[1], fill: chrome.neutral, fillOpacity: 0.16, inset: -(step - band) / 2, className: 'enter-fade' }),
         Plot.text([shaded[0]], {
           x,
           frameAnchor: 'middle',
@@ -126,6 +127,7 @@ export const bars = (
           text: () => shade.text,
           fill: 'var(--c-text-secondary)',
           fontSize: 11,
+          className: 'enter-fade',
         }),
       ]
     : [];
@@ -147,6 +149,7 @@ export const bars = (
         textAnchor: grouped && i === 0 ? 'end' : 'start',
         fill: 'var(--c-text-secondary)',
         fontSize: 10,
+        className: 'enter-fade',
       }),
     ];
   });
@@ -173,10 +176,10 @@ export const bars = (
         piece(s, i, pieces[i].filter((p) => dashed(p.row)), true),
       ]),
       ...(values
-        ? [Plot.text(drawn, { x, y: total, text: (r) => format(total(r), digits), dy: -8, lineAnchor: 'bottom', fill: chrome.text, fontSize: 12 })]
+        ? [Plot.text(drawn, { x, y: total, text: (r) => format(total(r), digits), dy: -8, lineAnchor: 'bottom', fill: chrome.text, fontSize: 12, className: 'enter-fade' })]
         : []),
       ...tags,
-      Plot.ruleY([0], { stroke: chrome.axis }),
+      Plot.ruleY([0], { stroke: chrome.axis, className: 'enter-zero' }),
       Plot.tip(tipped, Plot.pointerX({ x, y: top, title: says, ...tipStyle })),
     ],
   };
