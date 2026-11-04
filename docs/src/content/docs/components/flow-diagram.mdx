@@ -1,0 +1,104 @@
+---
+title: "Flow diagram"
+description: "A diagram placed by hand, with Lucide icons, that builds itself as it comes into view: who pays whom, who sits where."
+---
+
+import FlowDiagram from '@n1kname/components/FlowDiagram.astro';
+
+<div class="not-content">
+  <FlowDiagram
+    title="A payment loop"
+    desc="A supplier delivers to a customer and is paid by them. A third party pays the customer back."
+    width={900}
+    height={160}
+    minWidth={680}
+    nodes={[
+      { id: 'a', x: 110, y: 52, shape: 'icon', icon: 'utility-pole', tone: 'cool', label: 'Supplier', sub: 'Sets the price', step: 0 },
+      { id: 'b', x: 450, y: 52, shape: 'icon', icon: 'house-plug', tone: 'accent', label: 'Customer', sub: 'Uses it at home', step: 1 },
+      { id: 'c', x: 790, y: 52, shape: 'icon', icon: 'building-2', tone: 'accent', label: 'Third party', sub: 'Pays the customer back', step: 2 },
+    ]}
+    edges={[
+      { from: 'a', to: 'b', fromSide: 'right', toSide: 'left', fromShift: -10, toShift: -10, label: 'Delivers', tone: 'cool', step: 2, flow: true },
+      { from: 'b', to: 'a', fromSide: 'left', toSide: 'right', fromShift: 10, toShift: 10, label: 'Pays', labelAt: [280, 86], tone: 'accent', step: 3, flow: true },
+      { from: 'c', to: 'b', fromSide: 'left', toSide: 'right', label: 'Pays back', tone: 'accent', step: 4, flow: true },
+    ]}
+  />
+</div>
+
+## What it's for
+
+A diagram that makes its point through its shape: a loop that money goes round, a team with the lead on top and the engineering teams on either side. The nodes are placed by hand on a viewBox, and the component does the rest: it routes the lines between their sides with rounded corners, puts the arrowheads and labels on, and builds the diagram once, in order, as it scrolls into view.
+
+## When not to use it
+
+- **A process with many steps that will change.** Placing nodes by hand is slow to redo. A layout engine (Mermaid, ELK) is better for a flow you'll edit often, and worse at making an argument.
+- **A tree with tiers.** A hierarchy that has to line up tier by tier wants its own component, like the portfolio's account hierarchy.
+- **Data.** Use a chart. A diagram has no axis, so its distances mean nothing.
+
+## Anatomy
+
+- **Nodes:** `pill` (a label, an optional icon at the start), `circle` (a label of up to three lines inside) or `icon` (an icon disc with a name and up to two lines below it). Each one is placed by its centre.
+- **Edges:** from one node's side to another's. Two horizontal sides make an elbow at `turn` (default: halfway), two vertical sides the same, one of each an L. `fromShift` and `toShift` move an anchor along its side, which is how two lines between the same pair run in parallel. An edge can carry a label, placed above the middle of its longest run unless `labelAt` says otherwise.
+- **Rings:** a dashed circle behind a group, such as a team.
+- **Note:** a few lines of text in a corner, the first one bold, for what the drawing can't say.
+- **Frame:** the sunken surface around it, which scrolls sideways below `minWidth` rather than shrinking the text.
+
+## Variants
+
+Four tones, for nodes and edges alike:
+
+- **`quiet`:** the default. Surface fill, diagram-edge border, diagram-line strokes.
+- **`accent`:** the tinted surface and the accent edge. Lines and their labels go orange.
+- **`cool`:** the cool tag's fill and text colour. For the other side of a two-sided story, such as energy against money.
+- **`solid`:** an accent fill with the on-accent text. The one node the diagram is about, and never more than one.
+
+`flow` on an edge sends a small pulse along it every few seconds, once it has drawn. Use it where something really moves (money, energy), not to make a structure look busy.
+
+## States
+
+- **Arriving:** below the fold, it waits until it scrolls in. Then each part plays at its `step`, 220ms apart: nodes and rings settle in on the spring, lines draw from their source, and the arrowhead and label land as the line arrives. Already on screen when the page opens, it is simply there.
+- **Flowing:** a flowing edge's pulse starts a beat after its line has drawn and keeps going.
+- **Reduced motion, or no script:** the finished diagram, no pulses.
+
+## Tokens
+
+`--c-accent`, `--c-accent-edge`, `--c-border`, `--c-diagram-edge`, `--c-diagram-line`, `--c-on-accent`, `--c-surface`, `--c-surface-sunken`, `--c-surface-tint`, `--c-tag-cool-bg`, `--c-tag-cool-text`, `--c-text`, `--c-text-accent`, `--c-text-muted`, `--ease-out`, `--ease-spring`, `--font-body`, `--radius-lg`
+
+## Keyboard and screen reader
+
+- **It is one image,** named by `title` and described by `desc`. Write `desc` as the sentences someone would need if they couldn't see it: who does what to whom. The labels inside are not read one by one.
+- **The frame is a focusable region,** so a keyboard can scroll it sideways when it's narrower than `minWidth`.
+- **Ids come from the title,** so two diagrams on one page need different titles.
+
+## Content
+
+- **Say what it shows in the caption,** and what it means in the text around it. The diagram is the evidence, not the argument.
+- **Short labels.** A node name is two or three words. Anything longer belongs in `sub` or in the note.
+- **One `solid` node at most,** and one or two tones beyond quiet. A diagram where everything is highlighted has nothing highlighted.
+- **Icons only where they name a kind of thing,** the same rule as everywhere else.
+
+## Status
+
+Used by the portfolio's case studies, for the reimbursement loop and the design team structure.
+
+## Code
+
+```astro wrap
+---
+import FlowDiagram from '@n1kname/components/FlowDiagram.astro';
+---
+
+<FlowDiagram
+  title="A payment loop"
+  desc="A supplier delivers to a customer and is paid by them."
+  width={600}
+  height={160}
+  nodes={[
+    { id: 'a', x: 110, y: 52, shape: 'icon', icon: 'utility-pole', tone: 'cool', label: 'Supplier' },
+    { id: 'b', x: 490, y: 52, shape: 'icon', icon: 'house-plug', tone: 'accent', label: 'Customer', step: 1 },
+  ]}
+  edges={[
+    { from: 'a', to: 'b', fromSide: 'right', toSide: 'left', label: 'Delivers', tone: 'cool', step: 2, flow: true },
+  ]}
+/>
+```

@@ -1,0 +1,536 @@
+---
+/**
+ * A drawn diagram: nodes placed by hand on a viewBox, edges routed between their sides with
+ * rounded elbows, Lucide icons inside the nodes. For a diagram that makes an argument through
+ * its shape, where a layout engine would put things in the wrong place.
+ *
+ * It builds itself once as it comes into view, in `step` order: nodes settle in, edges draw
+ * from their source, the arrowhead and label land as the line arrives. An edge with `flow`
+ * then carries a small pulse along itself, so a loop reads as a loop. Without script, or with
+ * reduced motion, the diagram is simply there and nothing moves.
+ */
+import { ICONS, type IconName } from './icons';
+
+type Side = 'top' | 'right' | 'bottom' | 'left';
+type Tone = 'accent' | 'cool' | 'quiet' | 'solid';
+
+interface Node {
+  id: string;
+  /** Centre. */
+  x: number;
+  y: number;
+  w?: number;
+  h?: number;
+  shape?: 'pill' | 'circle' | 'icon';
+  icon?: IconName;
+  label: string;
+  /** Up to two lines under an icon node; break them with \\n. */
+  sub?: string;
+  tone?: Tone;
+  step?: number;
+}
+
+interface Edge {
+  from: string;
+  to: string;
+  fromSide: Side;
+  toSide: Side;
+  /** Shift the anchor along its side, in px from the side's middle. */
+  fromShift?: number;
+  toShift?: number;
+  /** Where a horizontal-to-horizontal edge turns, as an x; vertical-to-vertical, as a y. */
+  turn?: number;
+  label?: string;
+  /** Label position, defaults to the middle of the longest segment, above it. */
+  labelAt?: [number, number];
+  tone?: Tone;
+  step?: number;
+  flow?: boolean;
+}
+
+interface Ring {
+  cx: number;
+  cy: number;
+  r: number;
+  step?: number;
+}
+
+interface Props {
+  title: string;
+  desc: string;
+  width: number;
+  height: number;
+  nodes: Node[];
+  edges: Edge[];
+  rings?: Ring[];
+  /** A short legend in the corner: lines of text, the first one bold. */
+  note?: { x: number; y: number; lines: { text: string; tone?: Tone }[] };
+  caption?: string;
+  /** Narrowest the drawing may get before it scrolls instead. */
+  minWidth?: number;
+}
+
+const { title, desc, width, height, nodes, edges, rings = [], note, caption, minWidth = 640 } = Astro.props;
+// Ids from the title, so two diagrams on a page don't collide and a build stays the same.
+let hash = 0;
+for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+const uid = `flow-${(hash >>> 0).toString(36)}`;
+
+const size = (n: Node) => {
+  if (n.shape === 'circle') return { w: n.w ?? 88, h: n.w ?? 88 };
+  if (n.shape === 'icon') return { w: n.w ?? 64, h: n.w ?? 64 };
+  return { w: n.w ?? 200, h: n.h ?? 44 };
+};
+const byId = new Map(nodes.map((n) => [n.id, n]));
+
+const anchor = (n: Node, side: Side, shift = 0): [number, number] => {
+  const { w, h } = size(n);
+  if (side === 'top') return [n.x + shift, n.y - h / 2];
+  if (side === 'bottom') return [n.x + shift, n.y + h / 2];
+  if (side === 'left') return [n.x - w / 2, n.y + shift];
+  return [n.x + w / 2, n.y + shift];
+};
+
+const horizontal = (s: Side) => s === 'left' || s === 'right';
+
+// The corner points of an orthogonal route between two anchors.
+const route = (e: Edge, a: [number, number], b: [number, number]): [number, number][] => {
+  const [ax, ay] = a;
+  const [bx, by] = b;
+  if (horizontal(e.fromSide) && horizontal(e.toSide)) {
+    if (ay === by) return [a, b];
+    const tx = e.turn ?? (ax + bx) / 2;
+    return [a, [tx, ay], [tx, by], b];
+  }
+  if (!horizontal(e.fromSide) && !horizontal(e.toSide)) {
+    if (ax === bx) return [a, b];
+    const ty = e.turn ?? (ay + by) / 2;
+    return [a, [ax, ty], [bx, ty], b];
+  }
+  return horizontal(e.fromSide) ? [a, [bx, ay], b] : [a, [ax, by], b];
+};
+
+// A path through the points with each corner rounded, never by more than half a segment.
+const R = 12;
+const rounded = (pts: [number, number][]) => {
+  let d = `M${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [px, py] = pts[i - 1];
+    const [cx, cy] = pts[i];
+    const [nx, ny] = pts[i + 1];
+    const r = Math.min(R, Math.hypot(cx - px, cy - py) / 2, Math.hypot(nx - cx, ny - cy) / 2);
+    const inX = cx - Math.sign(cx - px) * r;
+    const inY = cy - Math.sign(cy - py) * r;
+    const outX = cx + Math.sign(nx - cx) * r;
+    const outY = cy + Math.sign(ny - cy) * r;
+    d += ` L${inX} ${inY} Q${cx} ${cy} ${outX} ${outY}`;
+  }
+  const [lx, ly] = pts[pts.length - 1];
+  return `${d} L${lx} ${ly}`;
+};
+
+// A small open chevron at the end, pointing along the last segment.
+const head = (pts: [number, number][]) => {
+  const [x, y] = pts[pts.length - 1];
+  const [px, py] = pts[pts.length - 2];
+  const dx = Math.sign(x - px);
+  const dy = Math.sign(y - py);
+  const s = 6;
+  return `M${x - dx * s - dy * s} ${y - dy * s - dx * s} L${x} ${y} L${x - dx * s + dy * s} ${y - dy * s + dx * s}`;
+};
+
+const longest = (pts: [number, number][]): [number, number] => {
+  let best = 0;
+  let at: [number, number] = pts[0];
+  for (let i = 1; i < pts.length; i++) {
+    const len = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    if (len > best) {
+      best = len;
+      at = [(pts[i][0] + pts[i - 1][0]) / 2, (pts[i][1] + pts[i - 1][1]) / 2 - 10];
+    }
+  }
+  return at;
+};
+
+const drawn = edges.map((e) => {
+  const a = anchor(byId.get(e.from)!, e.fromSide, e.fromShift);
+  // Stop short of the target so the arrowhead does not sit on its border.
+  const t = anchor(byId.get(e.to)!, e.toSide, e.toShift);
+  const gap = 4;
+  const b: [number, number] =
+    e.toSide === 'left' ? [t[0] - gap, t[1]] : e.toSide === 'right' ? [t[0] + gap, t[1]] : e.toSide === 'top' ? [t[0], t[1] - gap] : [t[0], t[1] + gap];
+  const pts = route(e, a, b);
+  return { ...e, d: rounded(pts), head: head(pts), at: e.labelAt ?? longest(pts), tone: e.tone ?? 'quiet', step: e.step ?? 1 };
+});
+
+// Label lines for a circle: break at the space nearest the middle when it is long.
+const lines = (label: string) => {
+  if (label.length <= 10 || !label.includes(' ')) return [label];
+  const words = label.split(' ');
+  // Three or more words: keep short words with their neighbour ("UI and motion" / "designer").
+  if (words.length >= 3 && label.length > 14) {
+    const last = words.pop()!;
+    const head = words.join(' ');
+    return head.length > 10 ? [words.slice(0, -1).join(' '), words.at(-1)!, last] : [head, last];
+  }
+  const mid = label.length / 2;
+  let cut = 0;
+  let best = Infinity;
+  for (let i = 0; i < label.length; i++) if (label[i] === ' ' && Math.abs(i - mid) < best) (best = Math.abs(i - mid)), (cut = i);
+  return [label.slice(0, cut), label.slice(cut + 1)];
+};
+---
+
+<figure class="flow" data-flow>
+  <div class="scroll" tabindex="0" role="region" aria-label={title}>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby={`${uid}-t ${uid}-d`} style={`min-width: ${minWidth}px`}>
+      <title id={`${uid}-t`}>{title}</title>
+      <desc id={`${uid}-d`}>{desc}</desc>
+
+      {rings.map((r) => <circle class="ring" data-step={r.step ?? 0} cx={r.cx} cy={r.cy} r={r.r} />)}
+
+      <g class="edges">
+        {
+          drawn.map((e) => (
+            <g class:list={['edge', e.tone]} data-step={e.step}>
+              <path class="line" d={e.d} pathLength="1" />
+              <path class="head" d={e.head} />
+              {e.label && (
+                <text class="edge-label" x={e.at[0]} y={e.at[1]}>
+                  {e.label}
+                </text>
+              )}
+              {e.flow && (
+                <circle class="pulse" r="3.5">
+                  <animateMotion dur="2.8s" begin="indefinite" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.7;1" calcMode="linear" path={e.d} />
+                </circle>
+              )}
+            </g>
+          ))
+        }
+      </g>
+
+      {
+        nodes.map((n) => {
+          const { w, h } = size(n);
+          const tone = n.tone ?? 'quiet';
+          const step = n.step ?? 0;
+          if (n.shape === 'icon') {
+            return (
+              <g class:list={['node', 'icon-node', tone]} data-step={step}>
+                <circle class="disc" cx={n.x} cy={n.y} r={w / 2} />
+                {n.icon && (
+                  <svg x={n.x - 15} y={n.y - 15} width="30" height="30" viewBox="0 0 24 24" class="glyph" set:html={ICONS[n.icon]} />
+                )}
+                <text class="name" x={n.x} y={n.y + w / 2 + 24}>{n.label}</text>
+                {n.sub?.split('\n').map((s, i) => <text class="sub" x={n.x} y={n.y + w / 2 + 44 + i * 18}>{s}</text>)}
+              </g>
+            );
+          }
+          if (n.shape === 'circle') {
+            const ls = lines(n.label);
+            return (
+              <g class:list={['node', 'circle-node', tone]} data-step={step}>
+                <circle class="disc" cx={n.x} cy={n.y} r={w / 2} />
+                {ls.map((l, i) => (
+                  <text class="name" x={n.x} y={n.y + (i - (ls.length - 1) / 2) * 19 + 5}>
+                    {l}
+                  </text>
+                ))}
+              </g>
+            );
+          }
+          return (
+            <g class:list={['node', 'pill-node', tone]} data-step={step}>
+              <rect class="disc" x={n.x - w / 2} y={n.y - h / 2} width={w} height={h} rx={h / 2} />
+              {n.icon && <svg x={n.x - w / 2 + 16} y={n.y - 10} width="20" height="20" viewBox="0 0 24 24" class="glyph" set:html={ICONS[n.icon]} />}
+              <text class="name" x={n.icon ? n.x + 12 : n.x} y={n.y + 5}>{n.label}</text>
+            </g>
+          );
+        })
+      }
+
+      {
+        note && (
+          <g class="note" data-step={Math.max(...drawn.map((e) => e.step), 0) + 1}>
+            {note.lines.map((l, i) => (
+              <text x={note.x} y={note.y + i * 20} class:list={[i === 0 && 'note-head', l.tone]}>
+                {l.text}
+              </text>
+            ))}
+          </g>
+        )
+      }
+    </svg>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  // One step is a beat. Arm only what is below the fold, so a diagram already on screen
+  // never blinks out, and start the pulses once their line has drawn.
+  const STEP = 220;
+  if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    document.querySelectorAll<HTMLElement>('[data-flow]').forEach((fig) => {
+      if (fig.getBoundingClientRect().top < innerHeight * 0.85) return;
+      fig.classList.add('armed');
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          fig.querySelectorAll<SVGElement>('[data-step]').forEach((el) => el.style.setProperty('--d', `${Number(el.dataset.step) * STEP}ms`));
+          fig.classList.replace('armed', 'in');
+          let last = 0;
+          fig.querySelectorAll<SVGGElement>('.edge').forEach((g) => {
+            const at = Number(g.dataset.step) * STEP + 900;
+            last = Math.max(last, at);
+            const m = g.querySelector<SVGAnimationElement>('animateMotion');
+            if (m) setTimeout(() => (g.classList.add('flowing'), m.beginElement()), at);
+          });
+        },
+        { rootMargin: '0px 0px -15% 0px' },
+      );
+      io.observe(fig);
+    });
+    // On screen from the start: the pulses still run, a beat after load.
+    document.querySelectorAll<HTMLElement>('[data-flow]:not(.armed) .edge').forEach((g) => {
+      const m = g.querySelector<SVGAnimationElement>('animateMotion');
+      if (m) setTimeout(() => (g.classList.add('flowing'), m.beginElement()), 600);
+    });
+  }
+</script>
+
+<style>
+  .flow {
+    margin-block: var(--sp-7);
+  }
+
+  .scroll {
+    overflow-x: auto;
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6) var(--sp-5);
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  text {
+    font-family: var(--font-body);
+    text-anchor: middle;
+  }
+
+  .name {
+    font-weight: 600;
+    font-size: 15px;
+    fill: var(--c-text);
+  }
+
+  .sub {
+    font-size: 13px;
+    fill: var(--c-text-muted);
+  }
+
+  /* Nodes. Tint and border carry the tone, never a saturated slab, except `solid`, the one
+   * node a diagram is about. */
+  .disc {
+    fill: var(--c-surface);
+    stroke: var(--c-diagram-edge);
+    stroke-width: 1.5;
+  }
+
+  .accent .disc {
+    fill: var(--c-surface-tint);
+    stroke: var(--c-accent-edge);
+  }
+
+  .cool .disc {
+    fill: var(--c-tag-cool-bg);
+    stroke: color-mix(in oklab, var(--c-tag-cool-text) 45%, transparent);
+  }
+
+  .solid .disc {
+    fill: var(--c-accent);
+    stroke: var(--c-accent);
+  }
+
+  .solid .name {
+    fill: var(--c-on-accent);
+  }
+
+  .glyph {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    color: var(--c-text-accent);
+    overflow: visible;
+  }
+
+  .cool .glyph {
+    color: var(--c-tag-cool-text);
+  }
+
+  .ring {
+    fill: color-mix(in oklab, var(--c-accent) 5%, transparent);
+    stroke: var(--c-accent-edge);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 5;
+    stroke-linecap: round;
+  }
+
+  /* Edges. */
+  .line,
+  .head {
+    fill: none;
+    stroke: var(--c-diagram-line);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .edge.accent .line,
+  .edge.accent .head {
+    stroke: var(--c-accent);
+  }
+
+  .edge.cool .line,
+  .edge.cool .head {
+    stroke: var(--c-tag-cool-text);
+  }
+
+  .edge-label {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--c-text-muted);
+  }
+
+  .edge.accent .edge-label {
+    fill: var(--c-text-accent);
+  }
+
+  .edge.cool .edge-label {
+    fill: var(--c-tag-cool-text);
+  }
+
+  .pulse {
+    fill: var(--c-diagram-line);
+    opacity: 0;
+  }
+
+  .edge.accent .pulse {
+    fill: var(--c-accent);
+  }
+
+  .edge.cool .pulse {
+    fill: var(--c-tag-cool-text);
+  }
+
+  .flowing .pulse {
+    opacity: 1;
+  }
+
+  .note text {
+    text-anchor: start;
+    font-size: 12.5px;
+    fill: var(--c-text-muted);
+  }
+
+  .note .note-head {
+    font-weight: 600;
+    fill: var(--c-text);
+  }
+
+  .note .accent {
+    fill: var(--c-text-accent);
+  }
+
+  /* The build. Armed: everything waits. In: each part plays at its own beat. */
+  .armed [data-step] {
+    opacity: 0;
+  }
+
+  .armed .line {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+  }
+
+  .in [data-step] {
+    animation: settle 560ms var(--ease-spring) var(--d, 0ms) both;
+  }
+
+  .in .node,
+  .in .ring {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .in .edge {
+    animation: none;
+    opacity: 1;
+  }
+
+  .in .edge .line {
+    animation: draw 700ms cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0ms) both;
+  }
+
+  .in .edge .head,
+  .in .edge .edge-label {
+    animation: land 320ms var(--ease-out) calc(var(--d, 0ms) + 560ms) both;
+  }
+
+  .in .ring {
+    animation-name: grow;
+    animation-duration: 900ms;
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      scale: 0.92;
+    }
+  }
+
+  @keyframes grow {
+    from {
+      opacity: 0;
+      scale: 0.8;
+    }
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dasharray: 1 1;
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dasharray: 1 1;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes land {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse {
+      display: none;
+    }
+  }
+
+  figcaption {
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+    max-width: var(--layout-measure);
+  }
+</style>
