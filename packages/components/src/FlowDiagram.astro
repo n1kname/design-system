@@ -254,7 +254,7 @@ const lines = (label: string) => {
         note && (
           <g class="note" data-step={Math.max(...drawn.map((e) => e.step), 0) + 1}>
             {note.lines.map((l, i) => (
-              <text x={note.x} y={note.y + i * 20} class:list={[i === 0 && 'note-head', l.tone]}>
+              <text x={note.x} y={note.y + i * 22} class:list={[i === 0 && 'note-head', l.tone]}>
                 {l.text}
               </text>
             ))}
@@ -438,7 +438,7 @@ const lines = (label: string) => {
 
   .note text {
     text-anchor: start;
-    font-size: 12.5px;
+    font-size: 14px;
     fill: var(--c-text-muted);
   }
 
