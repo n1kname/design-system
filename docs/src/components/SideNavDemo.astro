@@ -1,0 +1,39 @@
+---
+import SideNav from '@n1kname/components/SideNav.astro';
+import Button from '@n1kname/components/Button.astro';
+---
+
+<div class="not-content demo-row">
+  <Button data-demo-fold>Fold and unfold</Button>
+</div>
+
+<div class="not-content side-nav-demo" id="side-nav-demo">
+  <SideNav
+    label="Example pages"
+    id="demo-side-nav"
+    marker={false}
+    groups={[
+      {
+        label: 'Places',
+        items: [
+          { href: '#', label: 'Overview', icon: 'layout-dashboard' },
+          { href: '#', label: 'Monthly', icon: 'calendar', current: true },
+          { href: '#', label: 'Map', icon: 'map' },
+        ],
+      },
+      {
+        label: 'Health',
+        items: [
+          { href: '#', label: 'Sleep', icon: 'moon' },
+          { href: '#', label: 'Workouts', icon: 'dumbbell' },
+        ],
+      },
+    ]}
+  />
+</div>
+
+<script>
+  document.querySelector('[data-demo-fold]')?.addEventListener('click', () =>
+    document.getElementById('side-nav-demo')!.toggleAttribute('data-nav-collapsed'),
+  );
+</script>

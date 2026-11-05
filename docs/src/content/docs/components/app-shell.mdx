@@ -1,0 +1,81 @@
+---
+title: "App shell"
+description: "The frame of a tool with many pages: a side nav that folds to its icons, a drawer on a phone, and the page beside it."
+---
+
+import AppShell from '@n1kname/components/AppShell.astro';
+
+It frames a whole page, so it has no example here.
+
+## What it's for
+
+To hold a tool with many pages, such as a dashboard: its pages stand in a column on the left ([Side nav](/components/side-nav/)), and the page beside it. Where you are is on the left; detail that opens, such as a [Side panel](/components/side-panel/), keeps the right.
+
+## When not to use it
+
+- **A handful of pages, or a site people read,** such as a portfolio. A [Page nav](/components/page-nav/) in a bar across the top fits those.
+- **Inside a page.** It is the page's frame, once.
+
+## Anatomy
+
+- **Column (rail):** the site's name and the fold button at the top, the side nav, and a foot for a [Theme toggle](/components/theme-toggle/) or the like. It stays in place while the page scrolls, and scrolls on its own if it is taller than the window.
+- **Fold button:** folds the column to its icons and back. The choice is kept in `localStorage` for the next page, and set before the column is drawn, so nothing moves on arrival.
+- **Top bar:** below 1024px, instead of the column: a menu button, the site's name, and the `top-end` slot.
+- **Drawer:** the same side nav, from the left, in a real dialog.
+- **Page:** the default slot, for the page's own `main` and footer.
+
+## Variants
+
+- **Folded:** the column is 65px, icons only, with each page's name beside it on hover and focus.
+
+## States
+
+- **Folding:** the column narrows over `--motion-slow` while its words fade. The one width that moves in the system: the room it frees has to be laid out anyway, and it moves only when you ask it to.
+- **Changing page:** with `page-change.css`, the column holds still while the page beside it cross-fades, and the side nav's marker glides to the new page's link.
+- **Drawer:** opens from the left edge on the spring and leaves the same way, quicker, over a dimmed page. It plays its leaving before it closes, so Safari shows it too.
+- **Reduced motion:** the column and the drawer change at once.
+
+## Tokens
+
+`--c-bg`, `--c-border`, `--c-focus`, `--c-surface-hover`, `--c-text`, `--c-text-muted`, `--ease-hover`, `--ease-out`, `--ease-spring`, `--ease-standard`, `--layout-gutter`, `--motion-base`, `--motion-hover`, `--motion-slow`, `--motion-spring`, `--radius-md`, `--radius-sm`, `--sp-1`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--z-sticky`.
+
+## Keyboard and screen reader
+
+- **The fold button says what it will do,** "Collapse sidebar" or "Expand sidebar", and controls the column.
+- **The menu button opens a dialog:** focus moves into it, Escape and a click on the dimmed page close it, and focus returns to the button.
+- **A skip link still comes first.** Put a [Skip link](/components/skip-link/) before the shell, to the page's `main`.
+
+## Content
+
+- **The site's name, short.** Folded, it gives way to the fold button.
+- **Button words for another language** go in `labels`.
+
+## Status
+
+New. Taken from a dashboard with ten pages.
+
+## Code
+
+```astro wrap
+---
+import AppShell from '@n1kname/components/AppShell.astro';
+import SkipLink from '@n1kname/components/SkipLink.astro';
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+import '@n1kname/components/page-change.css';
+---
+
+<body>
+  <SkipLink target="#page" />
+  <AppShell brand={{ label: 'Dashboard', href: '/', logo: '/favicon.svg' }} groups={groups}>
+    <ThemeToggle slot="rail-foot" id="theme-rail" />
+    <ThemeToggle slot="top-end" id="theme-top" />
+    <main id="page">…</main>
+  </AppShell>
+</body>
+```
+
+## Keep in mind
+
+- **Give `html` a stable scrollbar gutter** (`scrollbar-gutter: stable`), so a page that scrolls and one that doesn't sit in the same place.
+- **One per page.** Its ids and the side nav's marker are unique.
+- **The page's width is yours:** the shell gives it the room, and the page sets its own measure.

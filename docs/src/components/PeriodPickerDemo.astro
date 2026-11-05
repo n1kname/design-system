@@ -1,0 +1,21 @@
+---
+import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
+---
+
+<div class="not-content demo-row">
+  <PeriodPicker
+    id="demo-period"
+    periods={['2019', '2020', '2021', '2022', '2023', '2024', '2025']}
+    all="All years"
+    initial="2025"
+    labels={{ name: 'Year', previous: 'Previous year', next: 'Next year', list: 'Choose a year' }}
+  />
+  <span class="demo-note" id="demo-period-out" aria-live="polite">Showing 2025</span>
+</div>
+
+<script>
+  document.getElementById('demo-period')?.addEventListener('period-change', (e) => {
+    const { value } = (e as CustomEvent<{ value: string }>).detail;
+    document.getElementById('demo-period-out')!.textContent = `Showing ${value === 'all' ? 'all years' : value}`;
+  });
+</script>

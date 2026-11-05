@@ -1,0 +1,264 @@
+---
+/**
+ * A period stepper: ‹ 2025 ›. Time is mostly read a step at a time, so the arrows do the common
+ * thing, and the period itself opens every period at once, in a grid. With `all`, the line ends in
+ * a choice covering every period ("All years"): forward from the newest period is all of them,
+ * and back from there is the newest again.
+ *
+ * With `param`, the choice lives in the address (?year=2025), so a link or a reload keeps it and
+ * Back steps back through it; "all" is no parameter at all. The periods are known at build time
+ * (`periods`) or set later from script with setPeriods() from period.js, such as years read from
+ * an API. Each change fires `period-change` on the element, with the period as `detail.value`
+ * ("all" for all of them).
+ *
+ * Keyboard: Tab reaches each part; in the list, the arrow keys move through the periods and
+ * Escape closes it.
+ */
+interface Props {
+  /** The address parameter that holds the choice. Leave it out to keep the choice in the page. */
+  param?: string;
+  /** Periods known at build time, oldest first. */
+  periods?: string[];
+  /** The words for a choice covering every period, such as "All years". Leave it out for none. */
+  all?: string;
+  /** The period chosen when the address says nothing: "all", or one of the periods. Default: all if there is one, otherwise the newest. */
+  initial?: string;
+  /** The words a screen reader hears. */
+  labels?: { name?: string; previous?: string; next?: string; list?: string };
+  /** Unique on the page. */
+  id?: string;
+}
+
+const { param, periods = [], all, initial, labels = {}, id = 'period' } = Astro.props;
+const words = { name: 'Period', previous: 'Previous', next: 'Next', list: 'Choose a period', ...labels };
+const chevron = (d: string) =>
+  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const start = initial ?? (all ? 'all' : periods.at(-1));
+const shown = start === 'all' ? all : start;
+---
+
+<div
+  class="period"
+  id={id}
+  data-period
+  data-param={param}
+  data-all={all}
+  data-value={start}
+  hidden={!periods.length}
+>
+  <button type="button" class="step" data-step="-1" aria-label={words.previous}><Fragment set:html={chevron('m15 18-6-6 6-6')} /></button>
+  <button type="button" class="current" popovertarget={`${id}-list`} aria-haspopup="true" aria-expanded="false">
+    <span class="sr">{words.name}: </span><span class="label"><span class="sizer" aria-hidden="true">{shown}</span><span class="now">{shown}</span></span>
+    <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+  </button>
+  <button type="button" class="step" data-step="1" aria-label={words.next}><Fragment set:html={chevron('m9 18 6-6-6-6')} /></button>
+  <div id={`${id}-list`} class="period-list" popover role="group" aria-label={words.list}>
+    {all && <button type="button" class="option all" data-value="all">{all}</button>}
+    <div class="periods">
+      {
+        [...periods].reverse().map((p) => (
+          <button type="button" class="option" data-value={p}>
+            {p}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  import { wirePeriodPicker } from './period.js';
+  document.querySelectorAll<HTMLElement>('[data-period]').forEach(wirePeriodPicker);
+</script>
+
+<style>
+  .period {
+    display: inline-flex;
+    align-items: stretch;
+    min-height: 40px;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+  }
+
+  .period[hidden] {
+    display: none;
+  }
+
+  .period > button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    border: 0;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-hover) var(--ease-hover),
+      color var(--motion-hover) var(--ease-hover);
+  }
+
+  .period > button:hover:not(:disabled) {
+    background: var(--c-surface-hover);
+  }
+
+  .period > button:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .period > button:disabled {
+    color: var(--c-text-muted);
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  .step {
+    padding: 0 var(--sp-2);
+  }
+
+  .step:first-child {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  }
+
+  .step:last-of-type {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  .current {
+    padding: 0 var(--sp-3);
+    border-inline: 1px solid var(--c-border) !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The period rolls: the old one leaves the way time went and the new one arrives from the
+     other side. The sizer, the longest words it may show, keeps the control's width still. */
+  .label {
+    display: inline-grid;
+    overflow: hidden;
+    justify-items: center;
+  }
+
+  .label > :global(span) {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+  }
+
+  .sizer {
+    visibility: hidden;
+  }
+
+  .chev {
+    color: var(--c-text-muted);
+    transition: transform var(--motion-base) var(--ease-out);
+  }
+
+  .current[aria-expanded='true'] .chev {
+    transform: rotate(180deg);
+  }
+
+  .period-list {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: 17rem;
+    max-width: calc(100vw - 2 * var(--sp-4));
+    padding: var(--sp-2);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    color: var(--c-text);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+    /* It opens on the spring from the control it belongs to, and leaves quicker. */
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transform-origin: top center;
+    transition:
+      opacity var(--motion-fast) var(--ease-standard),
+      transform var(--motion-fast) var(--ease-standard),
+      overlay var(--motion-fast) allow-discrete,
+      display var(--motion-fast) allow-discrete;
+  }
+
+  .period-list:popover-open {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--motion-base) var(--ease-out),
+      transform var(--motion-spring) var(--ease-spring),
+      overlay var(--motion-spring) allow-discrete,
+      display var(--motion-spring) allow-discrete;
+  }
+
+  @starting-style {
+    .period-list:popover-open {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+  }
+
+  .periods {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 2px;
+  }
+
+  /* Periods set from script are made in the page, so :global reaches them. */
+  .period-list :global(.option) {
+    min-height: 36px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .period-list :global(.option.all) {
+    width: 100%;
+    text-align: start;
+    padding-inline: var(--sp-3);
+  }
+
+  .period-list :global(.option:hover) {
+    background: var(--c-surface-hover);
+    color: var(--c-text);
+  }
+
+  .period-list :global(.option[aria-pressed='true']) {
+    background: var(--c-text);
+    color: var(--c-bg);
+    font-weight: 600;
+  }
+
+  .period-list :global(.option:focus-visible),
+  .period > button:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: -2px;
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .period > button:active:not(:disabled) {
+      transform: none;
+    }
+
+    .period-list,
+    .period-list:popover-open {
+      transform: none;
+    }
+  }
+</style>

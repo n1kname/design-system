@@ -1,6 +1,6 @@
 /*
- * Moving between pages: a short cross-fade of the whole page, PageNav's pill gliding from the
- * link you left to the one you arrived at, and a picture with view-transition-class: media (a
+ * Moving between pages: a short cross-fade of the whole page, PageNav's pill (or SideNav's
+ * marker) gliding from the link you left to the one you arrived at, and a picture with view-transition-class: media (a
  * LinkCard's, say) growing into the picture of the same name on the next page, all on the spring. For a site whose pages are
  * separate documents. Import once, per site, on every page: both pages must opt in.
  *
@@ -34,6 +34,45 @@
     animation: none;
     width: 100%;
     height: 100%;
+  }
+
+  /* SideNav's marker, the same way. The column it sits in (AppShell's side-rail) holds still: it
+   * shows the new page's column at once, the marker glides over its background, and the words
+   * and icons (side-nav) lie on top, so the marker never covers them on its way. */
+  ::view-transition-group(side-nav-current) {
+    z-index: 1;
+    animation-duration: var(--motion-spring);
+    animation-timing-function: var(--ease-spring);
+  }
+
+  ::view-transition-old(side-nav-current) {
+    animation: none;
+    opacity: 0;
+  }
+
+  ::view-transition-new(side-nav-current) {
+    animation: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  ::view-transition-group(side-rail),
+  ::view-transition-group(side-nav) {
+    animation: none;
+  }
+
+  ::view-transition-group(side-nav) {
+    z-index: 2;
+  }
+
+  ::view-transition-old(side-rail),
+  ::view-transition-old(side-nav) {
+    display: none;
+  }
+
+  ::view-transition-new(side-rail),
+  ::view-transition-new(side-nav) {
+    animation: none;
   }
 
   /* A picture that carries over, such as a case thumbnail becoming that case's header image. */

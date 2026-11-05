@@ -1,0 +1,188 @@
+---
+/**
+ * Navigation down the side, in groups, for a site with more pages than a row holds, such as a
+ * dashboard's ten. With page-change.css, the current page's marker glides to the next page's
+ * link while the words and icons stay put above it. Usually inside AppShell, which gives it a
+ * column, a phone drawer and the button that folds it.
+ *
+ * Inside an element with data-nav-collapsed it shows its icons only: the words stay for a screen
+ * reader, and a pointer or keyboard on a link shows its name beside it.
+ *
+ * One with a marker per page: the marker's transition name must be unique, so a second copy of
+ * the same navigation (AppShell's drawer) leaves it out.
+ */
+import { ICONS, type IconName } from './icons';
+
+interface Item {
+  href: string;
+  label: string;
+  icon?: IconName;
+  current?: boolean;
+}
+
+interface Group {
+  label: string;
+  items: Item[];
+}
+
+interface Props {
+  groups: Group[];
+  /** Names the navigation for a screen reader. */
+  label?: string;
+  /** Leave the gliding marker out, for a second copy of the same navigation. */
+  marker?: boolean;
+  /** The nav's id, and the start of its group labels' ids. */
+  id?: string;
+}
+
+const { groups, label = 'Pages', marker = true, id = 'side-nav' } = Astro.props;
+const icon = (name?: IconName) =>
+  name
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`
+    : '';
+---
+
+<nav id={id} class:list={['side-nav', { glides: marker }]} aria-label={label} data-side-nav>
+  {
+    groups.map((g, i) => (
+      <div class="group">
+        <p class="group-label" id={`${id}-g${i}`}>
+          <span>{g.label}</span>
+        </p>
+        <ul aria-labelledby={`${id}-g${i}`}>
+          {g.items.map((item) => (
+            <li>
+              <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+                {item.current && <span class="marker" aria-hidden="true" />}
+                <Fragment set:html={icon(item.icon)} />
+                <span class="label">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+  <span class="tip" aria-hidden="true" hidden></span>
+</nav>
+
+<script>
+  // Collapsed, a link's name appears beside it on hover and on keyboard focus. Measured, since
+  // the column it sits in scrolls and would clip anything that stuck out of it.
+  document.querySelectorAll<HTMLElement>('[data-side-nav]').forEach((nav) => {
+    const tip = nav.querySelector<HTMLElement>('.tip')!;
+    const show = (a: HTMLElement) => {
+      if (!nav.closest('[data-nav-collapsed]')) return;
+      const r = a.getBoundingClientRect();
+      tip.textContent = a.querySelector('.label')?.textContent ?? '';
+      tip.style.top = `${r.top + r.height / 2}px`;
+      tip.style.left = `${r.right + 8}px`;
+      tip.hidden = false;
+    };
+    const hide = () => (tip.hidden = true);
+    nav.addEventListener('pointerover', (e) => {
+      const a = (e.target as Element).closest<HTMLElement>('a');
+      if (a) show(a);
+    });
+    nav.addEventListener('pointerleave', hide);
+    nav.addEventListener('focusin', (e) => {
+      const a = (e.target as Element).closest<HTMLElement>('a');
+      if (a?.matches(':focus-visible')) show(a);
+    });
+    nav.addEventListener('focusout', hide);
+    nav.closest('[data-nav-scroll]')?.addEventListener('scroll', hide, { passive: true });
+    addEventListener('keydown', (e) => e.key === 'Escape' && hide());
+  });
+</script>
+
+<style>
+  /* The tracks may be narrower than the words, so that collapsed, a link is as wide as its column
+     and the words are cut off inside it, not past it. */
+  .side-nav { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); }
+  .group-label {
+    position: relative;
+    margin: 0 0 var(--sp-1);
+    padding-inline: 11px;
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--c-text-muted);
+  }
+  ul { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin: 0; padding: 0; list-style: none; }
+  a {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    min-height: 36px;
+    /* 11px each side, so an icon sits in the middle of a 40px square, collapsed or not. */
+    padding: var(--sp-1) 11px;
+    border-radius: var(--radius-md);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color var(--motion-hover) var(--ease-hover),
+      background-color var(--motion-hover) var(--ease-hover);
+  }
+  a :global(svg) { flex: none; color: var(--c-text-muted); transition: color var(--motion-hover) var(--ease-hover); }
+  a:hover { color: var(--c-text); }
+  a:hover :global(svg) { color: var(--c-text-secondary); }
+  a:not([aria-current]):hover { background: var(--c-surface-hover); }
+  a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+  a[aria-current='page'] { color: var(--c-text); font-weight: 600; }
+  a[aria-current="page"] :global(svg) { color: var(--c-accent); }
+  .marker {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 1px solid var(--c-border);
+    border-radius: inherit;
+    background: var(--c-surface);
+  }
+  /* The words and icons are a layer of their own while the page changes, above the marker, so the
+     marker passes under them instead of over them (page-change.css). */
+  .glides { view-transition-name: side-nav; }
+  .glides .marker { view-transition-name: side-nav-current; }
+
+  /* Collapsed: icons only. The words fade, and the group names give way to a short rule, keeping
+     their height so no icon moves up or down. */
+  .label, .group-label > span { transition: opacity var(--motion-base) var(--ease-standard); }
+  .group-label::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    width: 18px;
+    border-top: 1px solid var(--c-border-strong);
+    opacity: 0;
+    transition: opacity var(--motion-base) var(--ease-standard);
+  }
+  :global([data-nav-collapsed]) .label,
+  :global([data-nav-collapsed]) .group-label > span { opacity: 0; }
+  :global([data-nav-collapsed]) .group-label::before { opacity: 1; }
+  :global([data-nav-collapsed]) a { overflow: hidden; }
+
+  .tip {
+    position: fixed;
+    z-index: var(--z-panel);
+    translate: 0 -50%;
+    padding: var(--sp-1) var(--sp-2);
+    border-radius: var(--radius-sm);
+    background: var(--c-text);
+    color: var(--c-bg);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  /* No motion: a name you look for many times a day should just be there. */
+  .tip[hidden] { display: none; }
+
+  @media (pointer: coarse) { a { min-height: 44px; } }
+  @media (forced-colors: active) { .marker { border-color: CanvasText; } }
+</style>

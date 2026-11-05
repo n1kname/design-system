@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -13,7 +13,8 @@
     "./datatable.js": "./src/datatable.js",
     "./dotrows.js": "./src/dotrows.js",
     "./rangebars.js": "./src/rangebars.js",
-    "./daystrips.js": "./src/daystrips.js"
+    "./daystrips.js": "./src/daystrips.js",
+    "./period.js": "./src/period.js"
   },
   "scripts": {},
   "dependencies": {

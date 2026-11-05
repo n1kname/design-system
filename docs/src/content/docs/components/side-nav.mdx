@@ -1,0 +1,82 @@
+---
+title: "Side nav"
+description: "Pages down the side, in groups, with icons, a marker that glides to the next page, and a folded state of icons only."
+---
+
+import SideNav from '@n1kname/components/SideNav.astro';
+import SideNavDemo from '../../../components/SideNavDemo.astro';
+
+<SideNavDemo />
+
+## What it's for
+
+To move between the pages of a tool with more of them than a row holds, such as a dashboard's ten, and to show which one you're on. Usually inside [App shell](/components/app-shell/), which gives it its column, the phone drawer and the button that folds it.
+
+## When not to use it
+
+- **A handful of pages.** [Page nav](/components/page-nav/) across the top leaves the whole width to the page.
+- **A site people read rather than use,** such as a portfolio. A column of links says "tool".
+- **Within a page.** Sections of one page are headings, not navigation.
+
+## Anatomy
+
+- **Group label:** a short overline over each group's links.
+- **Link:** an icon and one or two words, in a 40px square's width when folded.
+- **Current link:** `aria-current="page"`, in the body text colour and semibold, its icon in the accent colour.
+- **Marker:** an empty shape behind the current link. It is a shape of its own, so it can glide without the words.
+- **Name tip:** folded, a link's name beside it, on hover and keyboard focus.
+
+## Variants
+
+- **Folded:** inside an element with `data-nav-collapsed`, icons only. The words fade out but stay for a screen reader, and each group label gives way to a short rule of the same height, so no icon moves up or down.
+- **Without marker** (`marker={false}`): for a second copy of the same navigation, such as App shell's drawer.
+
+## States
+
+- **Hover:** the text darkens, on a soft surface.
+- **Current:** the marker.
+- **Changing page:** with `page-change.css`, the page cross-fades and the marker glides to the new page's link on the spring, under the words and icons, which hold still.
+- **Folding:** the words fade over `--motion-base`.
+- **Reduced motion:** the page changes at once.
+
+## Tokens
+
+`--c-accent`, `--c-bg`, `--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-surface-hover`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-spring`, `--ease-standard`, `--motion-base`, `--motion-hover`, `--motion-spring`, `--radius-md`, `--radius-sm`, `--sp-1`, `--sp-2`, `--sp-3`, `--sp-5`, `--text-body-sm`, `--text-caption`, `--text-label`, `--z-panel`.
+
+## Keyboard and screen reader
+
+- **A `nav` with a name,** "Pages" unless you pass `label`, and each group a list named by its label.
+- **The current page is announced** through `aria-current`.
+- **Folded, every link keeps its name.** The tip is for the eye only, so it's hidden from a screen reader, and it shows on keyboard focus as well as hover. Escape hides it.
+
+## Content
+
+- **One or two words a page,** the same words as the page's title.
+- **An icon for every page or none.** A column with gaps in it reads as a mistake.
+- **Group labels name the source or the kind,** such as the app the data comes from.
+
+## Status
+
+New. Taken from a dashboard whose ten pages didn't fit a row.
+
+## Code
+
+```astro wrap
+---
+import SideNav from '@n1kname/components/SideNav.astro';
+import '@n1kname/components/page-change.css';
+---
+
+<SideNav
+  groups={[
+    { label: 'Places', items: [{ href: '/overview/', label: 'Overview', icon: 'layout-dashboard', current: true }] },
+    { label: 'Health', items: [{ href: '/sleep/', label: 'Sleep', icon: 'moon' }] },
+  ]}
+/>
+```
+
+## Keep in mind
+
+- **One marker a page.** Its transition name must be unique; a second copy takes `marker={false}`.
+- **Import `page-change.css` on every page** for the glide. Both pages must opt in.
+- **The icons are names from [Icons](/components/icons/).** Add one there first.

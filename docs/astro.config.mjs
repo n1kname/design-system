@@ -37,6 +37,8 @@ export default defineConfig({
             { label: 'Stack, Cluster, Grid, Split', link: '/components/layout/' },
             { label: 'Page header', link: '/components/page-header/' },
             { label: 'Page nav', link: '/components/page-nav/' },
+            { label: 'App shell', link: '/components/app-shell/' },
+            { label: 'Side nav', link: '/components/side-nav/' },
             { label: 'Figure', link: '/components/figure/' },
           ],
         },
@@ -44,6 +46,7 @@ export default defineConfig({
           label: 'Data',
           items: [
             { label: 'Stat strip', link: '/components/stat-strip/' },
+            { label: 'Period picker', link: '/components/period-picker/' },
             { label: 'Data table', link: '/components/data-table/' },
             { label: 'Side panel', link: '/components/side-panel/' },
             { label: 'Empty state', link: '/components/empty-state/' },

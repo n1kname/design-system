@@ -1,0 +1,80 @@
+---
+title: "Period picker"
+description: "‹ 2025 ›: step through periods one at a time, or open them all at once."
+---
+
+import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
+import PeriodPickerDemo from '../../../components/PeriodPickerDemo.astro';
+
+<PeriodPickerDemo />
+
+## What it's for
+
+To choose the period a page shows, such as a year. Time is mostly read a step at a time, so the arrows do the common thing, and the period itself opens every period at once.
+
+## When not to use it
+
+- **Periods that aren't in a line,** such as categories. They have no "next".
+- **A date or a range of dates.** That needs a calendar.
+- **Two or three choices.** Show them all, side by side.
+
+## Anatomy
+
+- **Back and forward:** a step through the periods. The line runs from the oldest to the newest and then, with `all`, to every period at once.
+- **Current period:** opens the list. The period rolls as it changes: up when time goes forward, down when it goes back.
+- **List:** a popover with the choice of all periods first, then the periods in a grid, newest first.
+
+## Variants
+
+- **With `all`:** "All years" ends the line. Without it, forward stops at the newest.
+- **In the address** (`param`): the choice lives in the URL, so a link or a reload keeps it, and Back steps back through it.
+
+## States
+
+- **At either end:** the step that leads nowhere is disabled.
+- **Changing:** the period rolls on the spring; the page's figures change with it (see Motion, "Charts changing").
+- **List open:** it opens from the control on the spring and leaves quicker. The chosen period has focus and is pressed.
+- **Before the periods are known:** hidden, so it never shows a period it can't step from.
+- **Reduced motion:** the period changes in place.
+
+## Tokens
+
+`--c-bg`, `--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-surface-hover`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--ease-spring`, `--ease-standard`, `--motion-base`, `--motion-fast`, `--motion-hover`, `--motion-spring`, `--radius-md`, `--radius-sm`, `--sp-2`, `--sp-3`, `--sp-4`, `--text-body-sm`.
+
+## Keyboard and screen reader
+
+- **Tab reaches each part.** The steps are named by `labels` ("Previous year"), and the current period reads as "Year: 2025".
+- **In the list, the arrow keys move through it** in reading order, and Escape or a click outside closes it. Focus goes back to the control.
+- **Each choice is a pressed or unpressed button.**
+
+## Content
+
+- **The period as people say it:** "2025", "Q3 2025", "All years".
+- **Name the kind in `labels`,** so the steps say "Previous year", not "Previous".
+
+## Status
+
+New. Taken from a dashboard, where it replaced a year select.
+
+## Code
+
+```astro wrap
+---
+import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
+---
+
+<PeriodPicker param="year" all="All years" labels={{ name: 'Year', previous: 'Previous year', next: 'Next year', list: 'Choose a year' }} />
+
+<script>
+  import { setPeriods } from '@n1kname/components/period.js';
+  const picker = document.querySelector('[data-period]');
+  picker.addEventListener('period-change', (e) => show(e.detail.value));
+  setPeriods(picker, ['2023', '2024', '2025']); // oldest first, once they are known
+</script>
+```
+
+## Keep in mind
+
+- **Listen for `period-change`** on the element; it fires on every change, by the control or by Back.
+- **Periods are oldest first,** in `periods` and in `setPeriods`.
+- **Keep the figures still while the next ones load,** then let them change in place, so the page doesn't jump between periods.

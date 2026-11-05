@@ -1,0 +1,412 @@
+---
+/**
+ * The frame of a tool with many pages, such as a dashboard: its pages stand in a column on the
+ * left, in groups (SideNav), and the page beside it. The column folds to its icons and back with
+ * a button at its top, and the choice is kept for the next page. Narrower than 1024px, a menu
+ * button in a bar across the top opens the pages in a drawer from the left. Detail that opens on
+ * the right, such as a SidePanel, keeps the right: where you are on the left, detail on the right.
+ *
+ * Moving between pages, with page-change.css, the column holds still while the page beside it
+ * cross-fades, and the current page's marker glides to the link you chose.
+ *
+ * The page's own <main> and footer go in the default slot; a ThemeToggle or the like goes in
+ * rail-foot (wide) and top-end (narrow), one in each, with different ids.
+ */
+import SideNav from './SideNav.astro';
+import { ICONS, type IconName } from './icons';
+
+interface Item {
+  href: string;
+  label: string;
+  icon?: IconName;
+  current?: boolean;
+}
+
+interface Props {
+  groups: { label: string; items: Item[] }[];
+  /** The site's name, its link home and, if it has one, its mark. */
+  brand: { label: string; href: string; logo?: string };
+  /** Names the navigation for a screen reader. */
+  label?: string;
+  /** The words on the buttons, for a site in another language. */
+  labels?: { collapse?: string; expand?: string; menu?: string; close?: string };
+  /** Where the folded choice is kept in localStorage. */
+  storageKey?: string;
+}
+
+const { groups, brand, label = 'Pages', labels = {}, storageKey = 'nav-collapsed' } = Astro.props;
+const words = { collapse: 'Collapse sidebar', expand: 'Expand sidebar', menu: label, close: 'Close', ...labels };
+const icon = (name: IconName, size = 18) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+---
+
+<div class="app-shell" data-app-shell data-storage-key={storageKey}>
+  <script is:inline define:vars={{ storageKey }}>
+    // Folded or not, set before the column is drawn, so it doesn't move on arrival.
+    try {
+      if (localStorage.getItem(storageKey) === '1') document.currentScript.parentElement.dataset.navCollapsed = '';
+    } catch {}
+  </script>
+  <aside class="rail" id="app-shell-rail" data-nav-scroll>
+    <div class="rail-head">
+      <a class="home" href={brand.href}>
+        {brand.logo && <img src={brand.logo} alt="" width="20" height="20" />}
+        <span>{brand.label}</span>
+      </a>
+      <button
+        type="button"
+        class="icon-button fold"
+        aria-controls="app-shell-rail"
+        aria-label={words.collapse}
+        title={words.collapse}
+        data-nav-collapse
+        data-collapse={words.collapse}
+        data-expand={words.expand}
+      >
+        <Fragment set:html={icon('panel-left')} />
+      </button>
+    </div>
+    <SideNav groups={groups} label={label} id="app-shell-nav" />
+    <div class="rail-foot"><slot name="rail-foot" /></div>
+  </aside>
+
+  <header class="top">
+    <button type="button" class="icon-button menu" aria-label={words.menu} aria-haspopup="dialog" aria-controls="app-shell-drawer" data-drawer-open>
+      <Fragment set:html={icon('menu', 20)} />
+    </button>
+    <a class="home" href={brand.href}>
+      {brand.logo && <img src={brand.logo} alt="" width="20" height="20" />}
+      <span>{brand.label}</span>
+    </a>
+    <div class="top-end"><slot name="top-end" /></div>
+  </header>
+
+  <dialog class="drawer" id="app-shell-drawer" aria-label={label}>
+    <div class="drawer-head">
+      <a class="home" href={brand.href}>
+        {brand.logo && <img src={brand.logo} alt="" width="20" height="20" />}
+        <span>{brand.label}</span>
+      </a>
+      <button type="button" class="icon-button" aria-label={words.close} data-drawer-close>
+        <Fragment set:html={icon('x', 20)} />
+      </button>
+    </div>
+    <SideNav groups={groups} label={label} marker={false} id="app-shell-drawer-nav" />
+  </dialog>
+
+  <div class="column">
+    <slot />
+  </div>
+</div>
+
+<script>
+  // A motion token in milliseconds; the tokens are written in seconds.
+  const ms = (name: string, fallback: number) => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const n = parseFloat(v);
+    return Number.isNaN(n) ? fallback : v.endsWith('ms') ? n : n * 1000;
+  };
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-app-shell]').forEach((shell) => {
+    // The column folds to its icons and back, and the choice is kept for the next page.
+    const fold = shell.querySelector<HTMLButtonElement>('[data-nav-collapse]')!;
+    const name = () => {
+      const words = shell.hasAttribute('data-nav-collapsed') ? fold.dataset.expand! : fold.dataset.collapse!;
+      fold.setAttribute('aria-label', words);
+      fold.title = words;
+    };
+    fold.addEventListener('click', () => {
+      const folded = shell.toggleAttribute('data-nav-collapsed');
+      try {
+        localStorage.setItem(shell.dataset.storageKey!, folded ? '1' : '0');
+      } catch {}
+      name();
+    });
+    name();
+
+    // The drawer leaves the way it came before it closes. Safari can't animate a dialog's close
+    // in CSS alone, so the leaving plays first and the dialog closes after.
+    const drawer = shell.querySelector<HTMLDialogElement>('dialog.drawer')!;
+    const shut = () => {
+      if (!drawer.open || drawer.hasAttribute('data-closing')) return;
+      if (reduced()) return drawer.close();
+      drawer.setAttribute('data-closing', '');
+      setTimeout(() => {
+        drawer.close();
+        drawer.removeAttribute('data-closing');
+      }, ms('--motion-base', 180));
+    };
+    shell.querySelector('[data-drawer-open]')?.addEventListener('click', () => drawer.showModal());
+    shell.querySelector('[data-drawer-close]')?.addEventListener('click', shut);
+    drawer.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      shut();
+    });
+    // A click on the backdrop lands on the dialog itself; the current page's link only closes it.
+    drawer.addEventListener('click', (e) => {
+      if (e.target === drawer || (e.target as Element).closest('a[aria-current]')) shut();
+    });
+    // Wide again with the drawer open: the column has the pages, so the drawer goes.
+    matchMedia('(min-width: 1024px)').addEventListener('change', (m) => m.matches && drawer.close());
+  });
+</script>
+
+<style>
+  /* The column folds in step with its words fading. The one width that moves in the system: the
+     column it frees has to be laid out anyway, and it moves only when you ask it to. */
+  .app-shell {
+    --rail: 240px;
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    min-height: 100dvh;
+    transition: grid-template-columns var(--motion-slow) var(--ease-standard);
+  }
+
+  /* Folded, the column is the icons' 40px squares, its padding and its rule. */
+  .app-shell[data-nav-collapsed] {
+    --rail: 65px;
+  }
+
+  .rail {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+    padding: var(--sp-4) var(--sp-3);
+    border-right: 1px solid var(--c-border);
+    background: var(--c-bg);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+  }
+
+  .rail :global(.side-nav) {
+    flex: 1;
+    align-content: start;
+  }
+
+  .rail-head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    margin-block: calc(-1 * var(--sp-1));
+  }
+
+  .rail-head .home {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    transition: opacity var(--motion-base) var(--ease-standard);
+  }
+
+  .app-shell[data-nav-collapsed] .rail-head .home {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--motion-base) var(--ease-standard),
+      visibility 0s var(--motion-base);
+  }
+
+  .rail-foot {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .home {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding-inline: 10px;
+    font-weight: 600;
+    color: var(--c-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .home img {
+    flex: none;
+    border-radius: var(--radius-sm);
+  }
+
+  .icon-button {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--c-text);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-hover) var(--ease-hover),
+      color var(--motion-hover) var(--ease-hover);
+  }
+
+  .icon-button:hover {
+    background: var(--c-surface-hover);
+  }
+
+  .icon-button:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .fold {
+    color: var(--c-text-muted);
+  }
+
+  .fold:hover {
+    color: var(--c-text);
+  }
+
+  .column {
+    min-width: 0;
+    padding: 0 var(--layout-gutter);
+  }
+
+  .top {
+    display: none;
+  }
+
+  .drawer {
+    margin: 0 auto 0 0;
+    width: min(300px, 86vw);
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    padding: var(--sp-3) var(--sp-3) var(--sp-6);
+    border: 0;
+    border-inline-end: 1px solid var(--c-border);
+    background: var(--c-bg);
+    color: var(--c-text);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* From the edge it belongs to: it arrives on the spring and leaves quicker, the same way. */
+    opacity: 0;
+    transform: translateX(-100%);
+    transition:
+      opacity var(--motion-base) var(--ease-standard),
+      transform var(--motion-base) var(--ease-standard),
+      overlay var(--motion-base) allow-discrete,
+      display var(--motion-base) allow-discrete;
+  }
+
+  .drawer[open] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--motion-slow) var(--ease-out),
+      transform var(--motion-spring) var(--ease-spring),
+      overlay var(--motion-spring) allow-discrete,
+      display var(--motion-spring) allow-discrete;
+  }
+
+  @starting-style {
+    .drawer[open] {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+  }
+
+  .drawer[open][data-closing] {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition:
+      opacity var(--motion-base) var(--ease-standard),
+      transform var(--motion-base) var(--ease-standard);
+  }
+
+  .drawer::backdrop {
+    background: rgb(0 0 0 / 0);
+    transition:
+      background-color var(--motion-base) var(--ease-standard),
+      overlay var(--motion-base) allow-discrete,
+      display var(--motion-base) allow-discrete;
+  }
+
+  .drawer[open]::backdrop {
+    background: rgb(0 0 0 / 0.4);
+    transition-duration: var(--motion-slow);
+  }
+
+  .drawer[open][data-closing]::backdrop {
+    background: rgb(0 0 0 / 0);
+    transition-duration: var(--motion-base);
+  }
+
+  @starting-style {
+    .drawer[open]::backdrop {
+      background: rgb(0 0 0 / 0);
+    }
+  }
+
+  .drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-4);
+  }
+
+  @media (max-width: 1023px) {
+    .app-shell {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rail {
+      display: none;
+    }
+
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: var(--sp-2) var(--layout-gutter);
+      border-bottom: 1px solid var(--c-border);
+      background: var(--c-bg);
+    }
+
+    .top .home {
+      padding-inline: var(--sp-1);
+    }
+
+    .top .menu {
+      margin-left: calc(-1 * var(--sp-2));
+    }
+
+    .top-end {
+      margin-left: auto;
+    }
+  }
+
+  /* With page-change.css, the column holds still while the page beside it changes. */
+  @media (prefers-reduced-motion: no-preference) {
+    .rail {
+      view-transition-name: side-rail;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-shell {
+      transition: none;
+    }
+
+    .drawer,
+    .drawer[open],
+    .drawer[open][data-closing] {
+      transform: none;
+    }
+
+    @starting-style {
+      .drawer[open] {
+        transform: none;
+      }
+    }
+  }
+</style>
