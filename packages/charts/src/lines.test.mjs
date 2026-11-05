@@ -85,3 +85,12 @@ assert.equal(timed.marks.at(-1).channels.title.value(days[1]), 'Week of 2024-01-
 assert.equal(lines({ ...spec, legend: true, marginRight: 24 }, 600).marginRight, 24, 'a page can give the last label room');
 
 console.log('lines: all assertions pass');
+
+// pointer: false leaves out Plot's tooltip, crosshair and dot, for a page that draws its own.
+{
+  const own = lines({ ...spec, pointer: false }, 600);
+  const names = (o) => o.marks.flat().filter(Boolean).map((m) => m.constructor.name);
+  assert.ok(names(options).includes('Tip'), "Plot's tip is there by default");
+  assert.ok(!names(own).includes('Tip') && !names(own).includes('RuleX'), 'no tip or crosshair with pointer: false');
+  assert.ok(!own.marks.flat().some((m) => m?.r === 4), 'no pointer dot with pointer: false');
+}

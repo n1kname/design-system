@@ -1,0 +1,46 @@
+---
+title: Under the pointer
+description: What a chart drawn in the page says under the pointer, how it moves, and how it works from the keyboard.
+---
+
+import PointerDemo from '../../../components/PointerDemo.astro';
+
+A chart drawn in the page says what is under the pointer in a small card, in the page's own type, and brings what is pointed at forward. Point at the charts below, or tab to one and use the arrow keys. The data is made up.
+
+<PointerDemo />
+
+## What it does
+
+- **The card** names the step quietly and gives each series' figure in bold, in figures of one width, with a swatch when there is more than one series. A stack is listed from the top down, as it is drawn.
+- **It never covers what it describes.** Above a bar, centred; beside a bar too tall for that, and beside a point on a line, on the side with room. In a donut it sits in the hole, over the title.
+- **Bars and slices dim.** While one is pointed at, the others step back to 55%, and so do the swatches in a donut's list beside its ring; the words in the list keep full contrast. Nothing is drawn behind the bars. On a line, a rule runs through the step and a dot sits on the line, in front of it.
+- **It glides.** The card, rule and dot move from step to step on the spring. The figures change at once, so reading is never delayed. It fades in fast and out a moment after the pointer leaves, so crossing a gap doesn't blink. Nothing moves under reduced motion.
+- **From the keyboard,** the chart takes focus; the arrow keys step, Home and End go to the ends, and Escape lets go. Each step is said in a polite live region beside the chart.
+
+It is a reading aid, not the record: every figure also needs a table.
+
+## Using it
+
+Draw the chart in the page with `pointer: false`, which leaves out Plot's own tooltip and hover marks, then hand the box to `pointer`. Call it again whenever the chart is drawn again.
+
+```js
+import { bars } from '@n1kname/charts/bars';
+import { pointer } from '@n1kname/charts/pointer';
+import '@n1kname/charts/pointer.css';
+
+box.replaceChildren(Plot.plot({ style, ...bars({ ...spec, pointer: false }, width) }));
+pointer(box, { rows, x: 'month', series, format: (v) => `${v} h`, label: (r) => r.month });
+```
+
+| Option | Takes | Notes |
+|---|---|---|
+| `kind` | `'bars'` or `'lines'` | Default `'bars'` |
+| `focus` | `'dim'`, `'rule'` or `'both'` | Bars only. Default `'dim'` |
+| `format` | `(value, series) → text` | Each figure in the card |
+| `label` | `(row) → text` | The step's name. Default the x value |
+
+For a donut from the [Donut](/components/donut/) component, `pointerDonut(element, { parts, format })` with the same slices.
+
+## Why not Plot's tip
+
+Plot's tip is SVG text, plain and the same weight throughout. Safari places a web font in SVG text wrongly, so it was set in a system mono, at a size that read large. It can't carry a swatch, and it can't move. A chart drawn at build time keeps it, since the card needs the browser.

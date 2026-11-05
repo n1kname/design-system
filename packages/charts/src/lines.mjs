@@ -33,6 +33,9 @@ export const lines = (
     xTicks,
     // A line at zero, for values that can fall below it.
     zero = false,
+    // Plot's own tooltip, crosshair and dot. Leave on for a chart drawn at build time; turn off
+    // when the page says what is under the pointer itself, with `pointer` from ./pointer.mjs.
+    pointer = true,
     // Words on the y axis, such as its unit, and the decimals its labels show.
     yLabel = null,
     yDigits = 0,
@@ -116,13 +119,17 @@ export const lines = (
           className: 'enter-fade',
         });
       }),
-      Plot.ruleX(tipped, Plot.pointerX({ x, stroke: chrome.axis })),
-      ...series
-        .filter((s) => !s.silent)
-        .map((s) =>
-          Plot.dot(rows.filter((r) => has(r, s.key)), Plot.pointerX({ x, y: s.key, r: 4, fill: s.color, stroke: 'var(--c-surface)', strokeWidth: 2 })),
-        ),
-      Plot.tip(tipped, Plot.pointerX({ x, y: (r) => Math.max(...told(r).map((s) => r[s.key])), title, ...tipStyle })),
+      ...(pointer
+        ? [
+            Plot.ruleX(tipped, Plot.pointerX({ x, stroke: chrome.axis })),
+            ...series
+              .filter((s) => !s.silent)
+              .map((s) =>
+                Plot.dot(rows.filter((r) => has(r, s.key)), Plot.pointerX({ x, y: s.key, r: 4, fill: s.color, stroke: 'var(--c-surface)', strokeWidth: 2 })),
+              ),
+            Plot.tip(tipped, Plot.pointerX({ x, y: (r) => Math.max(...told(r).map((s) => r[s.key])), title, ...tipStyle })),
+          ]
+        : []),
     ],
   };
 };

@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/charts",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -12,7 +12,9 @@
     "./bars": "./src/bars.mjs",
     "./heatmap": "./src/heatmap.mjs",
     "./enter": "./src/enter.mjs",
-    "./update": "./src/update.mjs"
+    "./update": "./src/update.mjs",
+    "./pointer": "./src/pointer.mjs",
+    "./pointer.css": "./src/pointer.css"
   },
   "scripts": {
     "check": "node src/donut.test.mjs && node src/lines.test.mjs && node src/bars.test.mjs && node src/heatmap.test.mjs"

@@ -25,6 +25,7 @@ export default defineConfig({
           items: [
             { label: 'Palette', link: '/charts/palette/' },
             { label: 'Examples', link: '/charts/examples/' },
+            { label: 'Under the pointer', link: '/charts/pointer/' },
           ],
         },
         {

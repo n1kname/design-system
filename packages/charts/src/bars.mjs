@@ -50,6 +50,9 @@ export const bars = (
     grouped = false,
     // A run of steps set apart: { from, to, text }, the first and last x and why.
     shade = null,
+    // Plot's own tooltip and hover band. Leave on for a chart drawn at build time; turn off when
+    // the page says what is under the pointer itself, with `pointer` from ./pointer.mjs.
+    pointer = true,
   },
   width,
 ) => {
@@ -170,7 +173,7 @@ export const bars = (
       ...shading,
       Plot.gridY({ stroke: chrome.grid, strokeOpacity: 1, ticks: 5 }),
       // The bar under the pointer, behind the bars.
-      Plot.barY(tipped, Plot.pointerX({ x, y1: () => domain[0], y2: () => domain[1], fill: 'var(--c-surface-hover)', inset: -2 })),
+      ...(pointer ? [Plot.barY(tipped, Plot.pointerX({ x, y1: () => domain[0], y2: () => domain[1], fill: 'var(--c-surface-hover)', inset: -2 }))] : []),
       ...series.flatMap((s, i) => [
         piece(s, i, pieces[i].filter((p) => !dashed(p.row)), false),
         piece(s, i, pieces[i].filter((p) => dashed(p.row)), true),
@@ -180,7 +183,7 @@ export const bars = (
         : []),
       ...tags,
       Plot.ruleY([0], { stroke: chrome.axis, className: 'enter-zero' }),
-      Plot.tip(tipped, Plot.pointerX({ x, y: top, title: says, ...tipStyle })),
+      ...(pointer ? [Plot.tip(tipped, Plot.pointerX({ x, y: top, title: says, ...tipStyle }))] : []),
     ],
   };
 };

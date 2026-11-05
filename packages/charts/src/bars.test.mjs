@@ -113,3 +113,13 @@ assert.equal(gTip.channels.title.value(pairs[2]), 'M3\nunits', 'an empty step sa
 assert.ok(!renderPlot(bars({ ...spec, grouped: false }, 600)).includes('left out'), 'no shade unless asked');
 
 console.log('bars: all assertions pass');
+
+// pointer: false leaves out Plot's tooltip and hover band, for a page that draws its own.
+{
+  const own = bars({ ...spec, pointer: false }, 600);
+  const names = (o) => o.marks.flat().filter(Boolean).map((m) => m.constructor.name);
+  assert.ok(names(options).includes('Tip'), "Plot's tip is there by default");
+  assert.ok(!names(own).includes('Tip'), 'no tip with pointer: false');
+  assert.ok(!own.marks.flat().some((m) => m?.fill === 'var(--c-surface-hover)'), 'no hover band with pointer: false');
+  assert.equal(names(options).length - names(own).length, 2, 'only those two are left out');
+}

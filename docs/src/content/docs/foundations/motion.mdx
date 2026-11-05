@@ -74,6 +74,10 @@ settle(statElement);
 
 Never on a resize, and nothing under reduced motion. The tokens are read with their unit, so `.34s` is 340ms.
 
+## Under the pointer
+
+The card, rule and dot of a chart's [pointer](/charts/pointer/) glide from step to step on the spring (`--motion-spring`, `--ease-spring`), so the eye follows where it went. The figures in the card change at once. It appears over `--motion-fast` and leaves the same way, a moment after the pointer does, so crossing a gap doesn't make it blink. The bars or slices not pointed at dim over `--motion-base`. Nothing moves under reduced motion.
+
 ## Changing page and theme
 
 Both are one cross-fade of the whole page, through view transitions, so nothing else on the page has to animate.
@@ -108,7 +112,7 @@ A portfolio sets these once, and every component follows:
 
 ## Rules
 
-- **Ask how often it happens.** Something you trigger all day should be instant. Tooltips don't animate for this reason.
+- **Ask how often it happens.** Something you trigger all day should never make you wait. The chart [pointer](/charts/pointer/) glides from step to step, but its figures change at once: only where it is moves, never what it says.
 - **Smaller things move faster.** A button is `fast`, a panel is `slow`.
 - **Leaving is quicker than arriving,** and travels less. Your attention has already moved on.
 - **One moment, then stop.** Charts arrive once, as they come into view, and not on every resize or redraw.

@@ -51,3 +51,10 @@ export const deltas = (() => {
   const r = random(31);
   return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, delta: Math.round((r() - 0.5) * 36) }));
 })();
+
+// Twelve months of three series, for the pointer demo's stacked bars.
+export const months = (() => {
+  const r = random(43);
+  const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return names.map((month) => ({ month, alder: Math.round(20 + r() * 14), birch: Math.round(8 + r() * 8), cedar: Math.round(4 + r() * 6) }));
+})();

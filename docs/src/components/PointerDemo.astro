@@ -1,0 +1,100 @@
+---
+/**
+ * The pointer on charts drawn in the page, on synthetic data: stacked bars, a line and a donut.
+ * Drawn in the browser, because the pointer needs Plot's scales.
+ */
+import Donut from '@n1kname/components/Donut.astro';
+import { categorical } from '@n1kname/charts';
+import { shares } from '../lib/data.mjs';
+
+const parts = shares.slice(0, 4).map((d, i) => ({ ...d, valueLabel: `${d.value}%`, color: categorical[i] }));
+---
+
+<div class="pointer-demo not-content">
+  <div class="panel">
+    <p class="name">Stacked bars, dimming</p>
+    <div class="box" id="demo-bars" role="img" aria-label="Stacked bars of three fictional series over twelve months."></div>
+  </div>
+  <div class="panel">
+    <p class="name">A line, rule and dot</p>
+    <div class="box" id="demo-line" role="img" aria-label="A line of one fictional series over 24 weeks."></div>
+  </div>
+  <div class="panel" id="demo-donut" data-parts={JSON.stringify(parts)}>
+    <p class="name">A donut, dimming</p>
+    <Donut data={parts} title={['Fictional', 'shares']} alt="Donut of four fictional shares: Alder 24%, Birch 21%, Cedar 16%, Dogwood 13%." />
+  </div>
+</div>
+
+<script>
+  import { Plot, categorical } from '@n1kname/charts';
+  import { bars } from '@n1kname/charts/bars';
+  import { lines } from '@n1kname/charts/lines';
+  import { pointer, pointerDonut } from '@n1kname/charts/pointer';
+  import '@n1kname/charts/pointer.css';
+  import { lines as weekly, months } from '../lib/data.mjs';
+
+  const style = { background: 'transparent', color: 'var(--c-text-muted)', fontFamily: 'ui-sans-serif, system-ui, sans-serif', fontSize: '12px', overflow: 'visible' };
+  const series = ['Alder', 'Birch', 'Cedar'].map((label, i) => ({ key: label.toLowerCase(), label, color: categorical[i] }));
+  const alder = weekly.filter((d) => d.series === 'Alder').map((d) => ({ week: `Week ${d.week}`, y: d.y }));
+
+  // The box speaks for its chart (role="img" and a label), so the SVG and Plot's own labels on
+  // its parts are hidden from screen readers.
+  const drawn = (box: HTMLElement, make: (w: number) => SVGSVGElement, after: () => void) => {
+    let width = 0;
+    const render = () => {
+      if (box.clientWidth === width) return;
+      width = box.clientWidth;
+      box.querySelector('svg')?.remove();
+      const svg = make(width);
+      svg.setAttribute('aria-hidden', 'true');
+      svg.querySelectorAll('[aria-label]').forEach((n) => n.removeAttribute('aria-label'));
+      box.prepend(svg);
+      after();
+    };
+    new ResizeObserver(render).observe(box);
+    render();
+  };
+
+  const barsBox = document.getElementById('demo-bars')!;
+  drawn(
+    barsBox,
+    (w) => Plot.plot({ style, ...bars({ rows: months, x: 'month', series, height: 220, padding: 0.2, marginLeft: 32, pointer: false }, w) }) as SVGSVGElement,
+    () => pointer(barsBox, { rows: months, x: 'month', series, format: (v) => `${v} units` }),
+  );
+
+  const lineBox = document.getElementById('demo-line')!;
+  const one = [{ key: 'y', label: 'Alder', color: categorical[0] }];
+  drawn(
+    lineBox,
+    (w) => Plot.plot({ style, ...lines({ rows: alder, x: 'week', series: one, height: 200, legend: true, dots: false, marginLeft: 32, tick: (v: string, i: number) => (i % 4 ? '' : v.replace('Week ', '')), pointer: false }, w) }) as SVGSVGElement,
+    () => pointer(lineBox, { rows: alder, x: 'week', series: one, kind: 'lines', format: (v) => v.toFixed(1) }),
+  );
+
+  const donut = document.getElementById('demo-donut')!;
+  pointerDonut(donut.querySelector('.donut')!, { parts: JSON.parse(donut.dataset.parts!), format: (v) => `${v}%`, share: false });
+</script>
+
+<style>
+  .pointer-demo {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  .panel {
+    padding: var(--sp-5);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+  }
+
+  .name {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+  }
+
+  .box :global(svg) {
+    display: block;
+    max-width: 100%;
+  }
+</style>

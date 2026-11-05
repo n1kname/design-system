@@ -19,8 +19,9 @@ export const chrome = {
   textMuted: v('text-muted'),
 };
 
-// Tooltips: instant, because hover is too frequent to animate. Set in a system font, because
-// Safari misplaces centred SVG text in a web font. Every value also needs a table.
+// Plot's own tooltip, for charts drawn at build time: in a system font, because Safari misplaces
+// centred SVG text in a web font. A chart drawn in the page can say it better with `pointer`
+// (./pointer.mjs): an HTML card in the page's type that glides. Every value also needs a table.
 export const tipStyle = {
   fill: 'var(--c-surface)',
   stroke: 'var(--c-border-strong)',
