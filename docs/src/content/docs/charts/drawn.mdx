@@ -9,6 +9,8 @@ A chart that reads its figures in the browser (a logged-in dashboard, say) is dr
 
 Draws a Plot chart into a box, and again whenever the box's width changes, so its text keeps its real size. The box speaks for the chart (`role="img"` and a label), so the SVG is hidden from screen readers and Plot's labels on its parts move to `data-mark`. The chart [arrives](/foundations/motion/#charts-arriving) once; drawn again with new figures on a page that asks for it (`data-chart-motion="update"`), it [changes in place](/foundations/motion/#charts-changing). `after` runs after every drawing, such as attaching the [pointer](/charts/pointer/).
 
+While the page is still arriving through a view transition, as with [`page-change.css`](/foundations/motion/#changing-page-and-theme), the first drawing waits until it has finished. Drawing a chart is the heaviest thing a page does, and done during the glide it takes the frames the nav pill needs. Nothing else waits: the figures are fetched and the rest of the page fills in at once. `drawn()` returns the first drawing's svg, or a promise of it while that waits.
+
 ```js
 import { drawn } from '@n1kname/charts/drawn';
 import { bars } from '@n1kname/charts/bars';

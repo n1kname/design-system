@@ -82,7 +82,7 @@ The card, rule and dot of a chart's [pointer](/charts/pointer/) glide from step 
 
 Both are one cross-fade of the whole page, through view transitions, so nothing else on the page has to animate.
 
-- **Page change:** `page-change.css` cross-fades over `--motion-base`, and [Page nav](/components/page-nav/)'s pill, or [Side nav](/components/side-nav/)'s marker, glides to the new page's link on the spring. Your eye follows it, so you know where you landed. A side nav's column holds still, and its words lie above the marker, so nothing in it flickers.
+- **Page change:** `page-change.css` cross-fades over `--motion-base`, and [Page nav](/components/page-nav/)'s pill, or [Side nav](/components/side-nav/)'s marker, glides to the new page's link on the spring. Your eye follows it, so you know where you landed. A side nav's column holds still, and its words lie above the marker, so nothing in it flickers. Page nav's pill glides as an outline, so the links it passes stay readable, and fills in as it lands. Charts drawn in the page wait for the glide to finish before they draw.
 - **Theme change:** [Theme toggle](/components/theme-toggle/) eases the page into its new colours over `--motion-base`.
 - **A picture that carries over:** a [Link card](/components/link-card/)'s picture grows into the picture with the same name on the page it opens, on the spring. For a portfolio index and its cases, not for data pages.
 

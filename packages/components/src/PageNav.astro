@@ -2,8 +2,10 @@
 /**
  * The row of links across a site's pages, with the current page marked by a pill. The pill is
  * an empty shape behind the link's text, so that with page-change.css it can glide to the next
- * page's link while the words cross-fade, without stretching them. Without page-change.css, or
- * in a browser without cross-document view transitions, the page simply changes.
+ * page's link while the words cross-fade, without stretching them. A shape on the move is drawn
+ * above the page, so while it glides it is only its outline, and the links it passes stay
+ * readable; it fills in as it lands. Without page-change.css, or in a browser without
+ * cross-document view transitions, the page simply changes.
  *
  * One per page: the pill's transition name must be unique.
  */
@@ -88,6 +90,11 @@ const { items, label = 'Pages' } = Astro.props;
     border-radius: inherit;
     background: var(--c-surface);
     view-transition-name: page-nav-current;
+    transition: background-color var(--motion-fast) var(--ease-out);
+  }
+
+  :global(:root:active-view-transition) .pill {
+    background-color: transparent;
   }
 
   /* A fingertip needs more room than a pointer. */

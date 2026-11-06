@@ -5,6 +5,11 @@
 // on a page that asks for it (data-chart-motion="update" on an ancestor). `after` runs after every
 // drawing, such as attaching the pointer, which a new SVG needs again.
 //
+// While the page is still arriving (a view transition, as with page-change.css, is running), the
+// first drawing waits for it to finish: drawing a chart takes the frames the nav pill needs to
+// glide. Called again meanwhile, it keeps the newest figures for that drawing. Returns the first
+// drawing's svg, or a promise of it while that waits; a later call returns nothing.
+//
 //     import { drawn } from '@n1kname/charts/drawn';
 //     drawn(box, (width) => Plot.plot({ style, ...bars({ ...spec, pointer: false }, width) }), {
 //       key: (m) => m.slice(5, 7),
@@ -20,6 +25,20 @@ export const drawn = (box, plot, { key, after } = {}) => {
   const state = known ?? { width: box.clientWidth };
   state.plot = plot;
   state.after = after;
+  if (state.waiting) {
+    state.key = key;
+    return state.waiting;
+  }
+  const arriving = !known && document.activeViewTransition;
+  if (arriving) {
+    boxes.set(box, state);
+    state.key = key;
+    state.waiting = arriving.finished.catch(() => {}).then(() => {
+      boxes.delete(box);
+      return drawn(box, state.plot, { key: state.key, after: state.after });
+    });
+    return state.waiting;
+  }
   const render = () => {
     const svg = state.plot(box.clientWidth);
     svg.setAttribute('aria-hidden', 'true');
@@ -47,4 +66,5 @@ export const drawn = (box, plot, { key, after } = {}) => {
       render();
     }
   }).observe(box);
+  return svg;
 };

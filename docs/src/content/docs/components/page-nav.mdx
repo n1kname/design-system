@@ -41,7 +41,7 @@ None.
 
 - **Hover:** the text darkens, on a soft surface.
 - **Current:** the pill.
-- **Changing page:** with `page-change.css`, the page cross-fades over `--motion-base` and the pill glides to its new place on the spring. A browser without cross-document view transitions simply changes the page.
+- **Changing page:** with `page-change.css`, the page cross-fades over `--motion-base` and the pill glides to its new place on the spring. While it moves it is only its outline, because a moving shape is drawn above the page and a filled one would hide each link it passes. It fills in as it lands, over `--motion-fast`. A browser without cross-document view transitions simply changes the page.
 - **Reduced motion:** the page changes at once.
 
 ## Tokens
