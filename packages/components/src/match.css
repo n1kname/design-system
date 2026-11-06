@@ -1,0 +1,14 @@
+/* Words a search matched, marked in what it found (search.js's mark()). A soft band in the accent,
+   so the eye finds them without the row shouting. Import where the results are drawn. */
+:where(.search-results, [data-search-results]) mark {
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--c-accent) 26%, transparent);
+  color: inherit;
+}
+
+@media (forced-colors: active) {
+  :where(.search-results, [data-search-results]) mark {
+    background: Mark;
+    color: MarkText;
+  }
+}

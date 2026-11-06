@@ -1,0 +1,133 @@
+---
+/**
+ * Rows that open in place to show more, such as recordings or entries with details. Each is a
+ * native <details>, so the keyboard and screen readers get the browser's own. A row tints faintly
+ * on hover, never a dark bar; it opens smoothly where the browser can animate height to auto (and
+ * at once where it can't), and its inside fades and slides a little as it opens. Give `items` for
+ * rows known at build time, or fill the <ul> from script with the same markup (the class
+ * `disclosure-list` styles it).
+ */
+interface Item {
+  /** What the row says closed. HTML. */
+  summary: string;
+  /** What it shows open. HTML. */
+  content: string;
+}
+interface Props {
+  items?: Item[];
+  /** Names the list for a screen reader. */
+  label?: string;
+  id?: string;
+}
+const { items = [], label, id } = Astro.props;
+const chevron = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+---
+
+<ul class="disclosure-list" id={id} aria-label={label}>
+  {
+    items.map((it) => (
+      <li>
+        <details>
+          <summary>
+            <span set:html={it.summary} />
+            <Fragment set:html={chevron} />
+          </summary>
+          <div class="inside" set:html={it.content} />
+        </details>
+      </li>
+    ))
+  }
+  <slot />
+</ul>
+
+<style is:global>
+  .disclosure-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .disclosure-list > li + li {
+    border-top: 1px solid var(--c-border);
+  }
+
+  .disclosure-list summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    min-height: 48px;
+    padding: 0 var(--sp-4);
+    cursor: pointer;
+    list-style: none;
+    transition: background var(--motion-hover) var(--ease-hover);
+  }
+
+  .disclosure-list summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .disclosure-list summary:hover {
+    background: color-mix(in oklab, var(--c-text) 4%, transparent);
+  }
+
+  .disclosure-list summary:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: -2px;
+  }
+
+  .disclosure-list .chev {
+    flex: none;
+    color: var(--c-text-muted);
+    transition: transform var(--motion-spring) var(--ease-spring);
+  }
+
+  .disclosure-list details[open] .chev {
+    transform: rotate(180deg);
+  }
+
+  .disclosure-list .inside {
+    padding: 0 var(--sp-4) var(--sp-4);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .disclosure-list details[open] .inside {
+      animation: disclosure-in var(--motion-slow, 260ms) var(--ease-out) both;
+    }
+
+    @supports (interpolate-size: allow-keywords) {
+      .disclosure-list {
+        interpolate-size: allow-keywords;
+      }
+
+      .disclosure-list details::details-content {
+        height: 0;
+        overflow: clip;
+        transition:
+          height var(--motion-slow, 260ms) var(--ease-out),
+          content-visibility var(--motion-slow, 260ms) allow-discrete;
+      }
+
+      .disclosure-list details[open]::details-content {
+        height: auto;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .disclosure-list summary,
+    .disclosure-list .chev {
+      transition: none;
+    }
+  }
+
+  @keyframes disclosure-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+</style>

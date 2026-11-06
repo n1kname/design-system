@@ -23,14 +23,17 @@ interface Props {
   label?: string;
   /** 40px rows by default; compact is 32px, for dense tables. */
   density?: 'default' | 'compact';
+  /** A long table scrolls in a region of its own this tall (such as "min(70vh, 640px)"), with its
+   *  header staying in view, so what follows the table stays in place. Leave out to show every row. */
+  height?: string;
   id?: string;
 }
-const { columns, rows = [], caption, label, density = 'default', id } = Astro.props;
+const { columns, rows = [], caption, label, density = 'default', height, id } = Astro.props;
 const num = (v: number) => new Intl.NumberFormat('nl-NL').format(v);
 const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) : typeof c === 'string' ? c : '');
 ---
 
-<div class="scroll" tabindex="0" role="region" aria-label={caption ?? label ?? 'Table'}>
+<div class:list={['scroll', { tall: height }]} tabindex="0" role="region" aria-label={caption ?? label ?? 'Table'} style={height ? `--height:${height}` : undefined}>
   <table class:list={['data-table', density]} id={id} data-data-table>
     {caption && <caption>{caption}</caption>}
     <thead>
@@ -76,6 +79,24 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
 <style>
   .scroll {
     overflow-x: auto;
+  }
+
+  /* A long table in a region of its own, the header staying in view. */
+  .scroll.tall {
+    max-height: var(--height);
+    overflow-y: auto;
+  }
+
+  .tall th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--c-surface);
+  }
+
+  .scroll:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
   }
 
   .data-table {

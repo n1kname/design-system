@@ -103,3 +103,15 @@ import DataTable from '@n1kname/components/DataTable.astro';
 ## Keep in mind
 
 - **A cell can be `{ html, sort }`,** to show something other than what it sorts by. `html` is written as is, so escape anything from outside with `esc` from `datatable.js`.
+
+## Columns from data, and long tables
+
+- **`setColumns(table, columns)`** from `datatable.js` writes the header when the columns are known only at runtime (a column per type that appears, say). They sort as the built ones do; then `setRows()` as ever.
+- **`height`** puts a long table in a scrolling region of its own, such as `height="min(70vh, 640px)"`, with the header staying in view. What follows the table stays where it is while rows arrive.
+- **A row that opens something:** put a button in its first cell (the keyboard's way in) and listen for clicks on the row; open the detail with `openPanel()` from [Side panel](/components/side-panel/).
+
+```js
+import { setColumns, setRows } from '@n1kname/components/datatable.js';
+setColumns(table, [{ label: 'Year', align: 'left' }, ...types.map((t) => ({ label: t }))]);
+setRows(table, rows);
+```

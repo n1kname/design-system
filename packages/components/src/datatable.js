@@ -41,3 +41,20 @@ export const makeSortable = (table) => {
     });
   });
 };
+
+// The header from data, for columns known only at runtime (a column per type that appears, say),
+// sortable as the built ones are; then setRows as ever. A column is { label, unit?, align?, wrap?,
+// sortable? }, as DataTable takes them.
+export const setColumns = (table, columns) => {
+  const scope = [...table.attributes].find((a) => a.name.startsWith('data-astro-cid'))?.name;
+  const s = scope ? ` ${scope}` : '';
+  table.tHead.rows[0].innerHTML = columns
+    .map((c) => {
+      const cls = [c.align === 'left' ? 'left' : '', c.wrap ? 'wrap' : ''].filter(Boolean).join(' ');
+      const unit = c.unit ? `<span class="unit"${s}>${esc(c.unit)}</span>` : '';
+      const inner = c.sortable === false ? `<span class="plain"${s}>${esc(c.label)}${unit ? ` ${unit}` : ''}</span>` : `<button type="button"${s}>${esc(c.label)}${unit}</button>`;
+      return `<th scope="col"${cls ? ` class="${cls}"` : ''}${s}>${inner}</th>`;
+    })
+    .join('');
+  makeSortable(table);
+};

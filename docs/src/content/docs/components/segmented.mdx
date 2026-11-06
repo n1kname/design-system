@@ -1,0 +1,66 @@
+---
+title: "Segmented"
+description: "One of a few fixed options, side by side; the marker slides to the chosen one."
+---
+
+import Segmented from '@n1kname/components/Segmented.astro';
+
+<div class="not-content">
+  <Segmented label="How many" value="50" options={[{ value: '20', label: 'Top 20' }, { value: '50', label: 'Top 50' }, { value: '100', label: 'Top 100' }, { value: '200', label: 'Top 200' }]} />
+</div>
+
+## What it's for
+
+To choose one of two to five fixed options that change how something is shown: how many rows, how words match, a view.
+
+## When not to use it
+
+- **Values with counts or colours,** such as categories. Use [Filter chips](/components/filter-chips/).
+- **Periods in a line.** Use the [Period picker](/components/period-picker/).
+- **Navigation between pages.** Use [Page nav](/components/page-nav/).
+
+## Anatomy
+
+- **Track,** sunken.
+- **Marker,** a raised surface under the chosen option.
+- **Options,** buttons.
+
+## Variants
+
+None. Keep the labels short.
+
+## States
+
+- **Chosen:** on the marker, in bold.
+- **Changing:** the marker slides on the spring, and widens or narrows to the option.
+- **Reduced motion:** the marker moves at once.
+
+## Tokens
+
+`--c-bg`, `--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--ease-spring`, `--motion-base`, `--motion-hover`, `--motion-spring`, `--radius-md`, `--sp-3`, `--text-body-sm`.
+
+## Keyboard and screen reader
+
+- **A group named by `label`** of pressed and unpressed buttons. Tab reaches each; Enter or Space chooses.
+
+## Content
+
+- **One or two words per option,** in the same form: "Top 20", "Top 50".
+
+## Status
+
+New. Taken from a dashboard's Places page and its labs.
+
+## Code
+
+```astro wrap
+---
+import Segmented from '@n1kname/components/Segmented.astro';
+---
+
+<Segmented id="top" label="How many" value="50" options={[{ value: '20', label: 'Top 20' }, { value: '50', label: 'Top 50' }]} />
+
+<script>
+  document.getElementById('top').addEventListener('segment-change', (e) => show(Number(e.detail.value)));
+</script>
+```

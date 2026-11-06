@@ -1,0 +1,66 @@
+---
+title: "Swatch"
+description: "A small mark in a colour that stands for something: a series, a category, a kind."
+---
+
+import Swatch from '@n1kname/components/Swatch.astro';
+
+<div class="not-content swatch-demo">
+  <span><Swatch color="var(--c-chart-1)" /> dot</span>
+  <span><Swatch color="var(--c-chart-3)" shape="square" size={10} /> square</span>
+  <span><Swatch color="var(--c-chart-5)" shape="line" size={10} /> line</span>
+  <span><Swatch color="var(--c-chart-6)" shape="ring" size={10} /> ring</span>
+  <span><Swatch color="var(--c-chart-neutral)" /> neutral</span>
+</div>
+
+<style>{`.swatch-demo { display: flex; flex-wrap: wrap; gap: var(--sp-5); font-size: var(--text-caption); color: var(--c-text-secondary); } .swatch-demo span { display: inline-flex; align-items: center; gap: var(--sp-2); }`}</style>
+
+## What it's for
+
+To tie a word to its colour in a chart: a series in a table cell, a category on a chip, a kind in a list. The same shapes a [Legend](/components/legend/) draws.
+
+## When not to use it
+
+- **On its own.** A swatch never tells things apart by itself; a word goes beside it.
+- **Good or bad.** Status takes its icon and label.
+
+## Anatomy
+
+A mark, `aria-hidden`: the word beside it says what it is.
+
+## Variants
+
+- **dot:** a category or a kind (default).
+- **square:** a bar or an area.
+- **line:** a line.
+- **ring:** a second kind of dot.
+
+## States
+
+None.
+
+## Tokens
+
+Any chart token, such as `--c-chart-3` or `--c-chart-neutral`.
+
+## Keyboard and screen reader
+
+Hidden from screen readers; the word beside it is read.
+
+## Content
+
+Beside a word, always.
+
+## Status
+
+New. Six hand-made dots in a dashboard became this.
+
+## Code
+
+```astro
+---
+import Swatch from '@n1kname/components/Swatch.astro';
+---
+
+<Swatch color="var(--c-chart-3)" /> Cycling
+```

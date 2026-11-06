@@ -2,7 +2,8 @@
 /**
  * Detail that opens beside what you were reading. A real dialog, so focus, Escape and the
  * backdrop come from the browser. Any element with data-panel-open="id" opens it; add
- * data-panel-section="id" to scroll to a section inside.
+ * data-panel-section="id" to scroll to a section inside. From script, openPanel() in sidepanel.js
+ * opens it with a title and a loading state, then what arrived or that it failed.
  */
 import Button from './Button.astro';
 
@@ -41,6 +42,66 @@ const titleId = `${id}-title`;
 </script>
 
 <style>
+  /* openPanel's states: a quiet loading shape, then what arrived settling in, or what failed. */
+  .side-panel :global(.panel-loading) {
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .side-panel :global(.panel-loading span) {
+    display: block;
+    height: 14px;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--c-text) 7%, transparent);
+  }
+
+  .side-panel :global(.panel-loading span:nth-child(2)) {
+    width: 70%;
+  }
+
+  .side-panel :global(.panel-loading span:nth-child(3)) {
+    width: 85%;
+  }
+
+  .side-panel :global(.panel-failed p) {
+    margin: 0 0 var(--sp-3);
+    color: var(--c-text-secondary);
+  }
+
+  .side-panel :global(.panel-failed button) {
+    min-height: 40px;
+    padding: 0 var(--sp-4);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .side-panel :global(.panel-loading span) {
+      animation: panel-wait 1.2s ease-in-out infinite;
+    }
+
+    .side-panel :global(.panel-arrived) {
+      animation: panel-in var(--motion-slow, 260ms) var(--ease-out) both;
+    }
+  }
+
+  @keyframes panel-wait {
+    50% {
+      opacity: 0.45;
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
   .side-panel {
     margin: 0 0 0 auto;
     width: min(900px, 100vw);

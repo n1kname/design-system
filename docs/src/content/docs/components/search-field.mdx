@@ -1,0 +1,88 @@
+---
+title: "Search field"
+description: "Search over what a page shows, with the small things that make it pleasant every day."
+---
+
+import SearchField from '@n1kname/components/SearchField.astro';
+import SearchDemo from '../../../components/SearchDemo.astro';
+
+<SearchDemo />
+
+## What it's for
+
+To narrow a list or a table to what someone is after, as they type: workouts, places, rows of a table. The field says what it found, marks why each result matched, and keeps the query in the address.
+
+## When not to use it
+
+- **A few dozen items or fewer that sort well.** A sortable table already finds them.
+- **Searching a server for things not on the page.** That needs a submit and a results page.
+- **One of a few known values.** Use [Filter chips](/components/filter-chips/) or [Segmented](/components/segmented/).
+
+## Anatomy
+
+- **Search icon,** at the start.
+- **Input,** labelled for screen readers by `label`.
+- **Key hint,** the shortcut (`/` by default), shown while the field is empty and without focus.
+- **Clear button,** appearing once there is something to clear.
+- **A polite live region,** for the result, written by `say()`.
+
+## Variants
+
+- **In the address** (`param`): the query lives in the URL, so a link or Back keeps it.
+- **Without a shortcut** (`shortcut=""`): for a page with more than one field.
+
+## States
+
+- **Empty:** the hint shows.
+- **Focused:** a ring in the focus colour; the hint fades.
+- **Filled:** the clear button scales in; the hint is gone.
+- **Nothing found:** the page says so with an [Empty state](/components/empty-state/) `kind="filtered"`, and offers to clear.
+- **Reduced motion:** the hint and the clear button appear in place.
+
+## Tokens
+
+`--c-border-strong`, `--c-focus`, `--c-surface`, `--c-surface-hover`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--c-accent` (marks), `--ease-hover`, `--ease-out`, `--motion-fast`, `--motion-hover`, `--radius-md`, `--text-body-sm`.
+
+## Keyboard and screen reader
+
+- **The shortcut from anywhere** jumps into the field and selects what is there, unless someone is typing elsewhere.
+- **Escape clears; a second Escape leaves.** The clear button is the next stop and says "Clear the search".
+- **The result is said once typing pauses** (400 ms after the last key), never for every letter: "12 of 500 workouts", or "No workouts match". Point `describedBy` at a visible count too.
+
+## Content
+
+- **The placeholder names what can be searched:** "Search route, place, year…", not "Search…".
+- **The count says of what:** "12 of 500 workouts".
+
+## Status
+
+New. Taken from a dashboard's Places and Workouts pages.
+
+## Code
+
+```astro wrap
+---
+import SearchField from '@n1kname/components/SearchField.astro';
+import '@n1kname/components/match.css';
+---
+
+<SearchField id="find" label="Search workouts" placeholder="Search activity, place, year…" param="q" describedBy="count" />
+<p id="count"></p>
+<div data-search-results>…</div>
+
+<script>
+  import { matchWords, mark, say } from '@n1kname/components/search.js';
+  const field = document.getElementById('find');
+  field.addEventListener('search-change', (e) => {
+    const found = matchWords(rows, ['activity', 'place', 'year'], e.detail.query);
+    draw(found, e.detail.query); // mark(text, query) wraps the matched words in <mark>
+    say(field, `${found.length} of ${rows.length} workouts`);
+  });
+</script>
+```
+
+## Keep in mind
+
+- **Every word must match, in any field, ignoring case and accents.** Predictable for names and places. For typos, bring a fuzzy matcher; the field only says what was typed.
+- **Let the list change in place** with `snapshot()` and `flip()` from `flip.js`: rows that stay glide, new ones fade up, only rows in view move.
+- **`search-change` fires once on load** with the address's query, so a page that listens draws the right results from the start.

@@ -1,0 +1,65 @@
+---
+title: "Disclosure list"
+description: "Rows that open in place to show more, smoothly, with the browser's own keyboard."
+---
+
+import DisclosureList from '@n1kname/components/DisclosureList.astro';
+
+<div class="not-content">
+  <DisclosureList label="Recordings" items={[
+    { summary: '<strong>3 Nov 2026</strong> · A ride', content: '<p>12.4 km in 48 minutes, from Northfield.</p>' },
+    { summary: '<strong>1 Nov 2026</strong> · A walk', content: '<p>4.1 km in 52 minutes, around Lakeside.</p>' },
+    { summary: '<strong>30 Oct 2026</strong> · A run', content: '<p>7.8 km in 41 minutes, on the Birch ridge.</p>' },
+  ]} />
+</div>
+
+## What it's for
+
+A list of things that each have more to say than a row can hold: recordings with a trace, entries with details. Open one, read it, close it, without leaving the list.
+
+## When not to use it
+
+- **Rows of the same figures.** Use a [Data table](/components/data-table/).
+- **Detail that needs room,** such as a map or charts. Use a [Side panel](/components/side-panel/).
+
+## Anatomy
+
+- **Rows,** each a native `<details>`.
+- **Summary,** what the row says closed, and a chevron.
+- **Inside,** what it shows open.
+
+## Variants
+
+- **Built** from `items`, or **filled from script** with the same markup in a `ul.disclosure-list`.
+
+## States
+
+- **Hover:** a faint tint of the text colour; never a dark bar.
+- **Open:** the chevron turns on the spring. Where the browser can animate height to auto, the row opens smoothly; elsewhere at once. The inside fades and slides down a little.
+- **Reduced motion:** opens at once.
+
+## Tokens
+
+`--c-border`, `--c-focus`, `--c-text`, `--c-text-muted`, `--ease-hover`, `--ease-out`, `--ease-spring`, `--motion-hover`, `--motion-slow`, `--motion-spring`, `--radius-md`, `--sp-3`, `--sp-4`.
+
+## Keyboard and screen reader
+
+The browser's own for `<details>`: Tab reaches each summary, Enter or Space opens and closes it, and it is read as expanded or collapsed.
+
+## Content
+
+- **The summary names the row** the way someone looks for it: a date, a kind.
+
+## Status
+
+New. A dashboard's ECG recordings became this.
+
+## Code
+
+```astro wrap
+---
+import DisclosureList from '@n1kname/components/DisclosureList.astro';
+---
+
+<DisclosureList label="Recordings" items={[{ summary: '<strong>3 Nov</strong> · Sinus rhythm', content: '<p>…</p>' }]} />
+```

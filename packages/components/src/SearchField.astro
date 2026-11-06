@@ -1,0 +1,158 @@
+---
+/**
+ * Search over what a page shows: a search icon, a clear button that appears once there is
+ * something to clear, and a key from anywhere on the page to jump in (shown as a hint until the
+ * field has focus). Escape clears it; a second Escape leaves it. With `param`, the query lives in
+ * the address, so a link or Back keeps it. Fires `search-change` with the query; search.js has
+ * the matching, the marking and `say()` for the result.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  /** What is searched, for a screen reader: "Search workouts". */
+  label: string;
+  placeholder?: string;
+  /** The key that jumps into the field from anywhere. Leave out for none. */
+  shortcut?: string;
+  /** The address parameter that keeps the query, such as "q". Leave out to keep it in the page. */
+  param?: string;
+  /** The id of what says the result, such as a count, for aria-describedby. */
+  describedBy?: string;
+  id?: string;
+}
+const { label, placeholder, shortcut = '/', param, describedBy, id = 'search' } = Astro.props;
+---
+
+<div class="search-field" id={id} data-search-field data-param={param} data-shortcut={shortcut || undefined}>
+  <span class="icon" aria-hidden="true"><Icon name="search" size={16} /></span>
+  <label class="sr" for={`${id}-input`}>{label}</label>
+  <input id={`${id}-input`} type="search" placeholder={placeholder} autocomplete="off" spellcheck="false" aria-describedby={describedBy} />
+  {shortcut && <kbd class="hint" aria-hidden="true">{shortcut}</kbd>}
+  <button type="button" class="clear" data-search-clear aria-label="Clear the search"><Icon name="x" size={14} stroke={2.5} /></button>
+  <p class="sr" data-search-live aria-live="polite"></p>
+</div>
+
+<script>
+  import { wireSearch } from './search.js';
+  document.querySelectorAll<HTMLElement>('[data-search-field]').forEach(wireSearch);
+</script>
+
+<style>
+  .search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    transition:
+      border-color var(--motion-hover) var(--ease-hover),
+      box-shadow var(--motion-hover) var(--ease-hover);
+  }
+
+  .search-field:focus-within {
+    border-color: var(--c-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-focus) 25%, transparent);
+  }
+
+  .icon {
+    position: absolute;
+    left: 12px;
+    display: flex;
+    color: var(--c-text-muted);
+    pointer-events: none;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 0 48px 0 36px;
+    border: 0;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    outline: none;
+  }
+
+  input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  input::placeholder {
+    color: var(--c-text-muted);
+  }
+
+  .hint,
+  .clear {
+    position: absolute;
+    right: 10px;
+    transition:
+      opacity var(--motion-fast) var(--ease-out),
+      transform var(--motion-fast) var(--ease-out);
+  }
+
+  .hint {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.4em;
+    padding: 0 4px;
+    border: 1px solid var(--c-border-strong);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--c-surface);
+    color: var(--c-text-secondary);
+    font: 600 11px/1.5 var(--font-mono, ui-monospace, monospace);
+  }
+
+  .search-field:focus-within .hint,
+  .search-field[data-filled] .hint {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .clear {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--c-surface-hover);
+    color: var(--c-text-secondary);
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+  }
+
+  .search-field[data-filled] .clear {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .clear:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .search-field,
+    .hint,
+    .clear {
+      transition: none;
+    }
+  }
+</style>

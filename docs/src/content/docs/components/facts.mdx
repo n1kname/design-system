@@ -1,0 +1,84 @@
+---
+title: "Facts"
+description: "Label and figure pairs, as tiles, pills or a list, each figure with an icon and an accent of its own."
+---
+
+import Facts from '@n1kname/components/Facts.astro';
+
+export const items = [
+  { label: 'Distance', value: '12.4 km', icon: 'route', accent: 'var(--c-chart-3)' },
+  { label: 'Duration', value: '48m', icon: 'timer', accent: 'var(--c-chart-7)' },
+  { label: 'Avg HR', value: '132 bpm', icon: 'heart-pulse', accent: 'var(--c-chart-8)' },
+  { label: 'kcal', value: '410', icon: 'flame', accent: 'var(--c-chart-1)' },
+];
+
+<div class="not-content facts-demo">
+  <Facts items={items} />
+  <Facts items={items} highlight />
+  <Facts items={items.slice(0, 3)} variant="pills" />
+  <Facts items={[{ label: 'Date', value: '3 Nov 2026', icon: 'calendar' }, { label: 'Start', value: '07:45', icon: 'clock' }, { label: 'Source', value: 'A watch', icon: 'smartphone' }, { label: 'Kind', value: 'Ride', icon: 'bike' }]} variant="list" />
+</div>
+
+<style>{`.facts-demo { display: grid; gap: var(--sp-6); }`}</style>
+
+The data is made up. The second row shows the highlighter option.
+
+## What it's for
+
+To show a thing's figures as pairs of a label and a value: the figures that lead a page (tiles), a thing's figures in a line (pills), its facts (a list).
+
+## When not to use it
+
+- **Figures that lead a whole page,** read at a glance in a row. Use the [Stat strip](/components/stat-strip/).
+- **Many rows of the same figures.** Use a [Data table](/components/data-table/).
+
+## Anatomy
+
+- **Label,** with an optional icon from the icon set for what the figure measures.
+- **Value,** in figures of one width.
+- **Accent** (optional): a chart token per figure, the same in every form, so distance is always one colour and heart rate another.
+
+## Variants
+
+- **tiles:** the icon in a soft disc of its accent, the value large.
+- **pills:** a tint of the accent, label and value in a line.
+- **list:** hairline rows, the value to the right.
+- **highlight** (tiles, off by default): the landing page's highlighter under the value, in its accent, sweeping in once as the tiles come into view.
+- **iconMotion** (off by default): the icons draw themselves in once, one after the other.
+
+## States
+
+- **Filled later:** `setFacts()` from `facts.js` writes them and plays the options again.
+- **Reduced motion:** no sweep, no drawing; everything is there.
+
+## Tokens
+
+`--c-border`, `--c-surface`, `--c-text-muted`, `--c-text-secondary`, `--c-accent`, chart tokens for `accent`, `--ease-out`, `--radius-lg`, `--sp-1` to `--sp-6`, `--text-body-sm`, `--text-caption`, `--text-h3`, and the highlighter's.
+
+## Keyboard and screen reader
+
+A description list: each label is read with its value. Icons are hidden.
+
+## Content
+
+- **Labels as on the rest of the page,** values with their unit: "12.4 km".
+- **An icon only where it marks what a figure measures,** the same icon for the same measure everywhere.
+
+## Status
+
+New. A dashboard's activity cards and a workout's figures became this.
+
+## Code
+
+```astro wrap
+---
+import Facts from '@n1kname/components/Facts.astro';
+---
+
+<Facts id="figures" variant="pills" items={[{ label: 'Distance', value: '12.4 km', icon: 'route', accent: 'var(--c-chart-3)' }]} />
+
+<script>
+  import { setFacts } from '@n1kname/components/facts.js';
+  setFacts(document.getElementById('figures'), [{ label: 'Distance', value: '13.1 km', icon: 'route', accent: 'var(--c-chart-3)' }]);
+</script>
+```

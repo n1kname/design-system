@@ -1,0 +1,30 @@
+---
+title: Drawn in the page
+description: The helpers for charts drawn in the browser, at the width they have, over months.
+---
+
+A chart that reads its figures in the browser (a logged-in dashboard, say) is drawn there, at the width its box has. These helpers are what every such page needs.
+
+## drawn()
+
+Draws a Plot chart into a box, and again whenever the box's width changes, so its text keeps its real size. The box speaks for the chart (`role="img"` and a label), so the SVG is hidden from screen readers and Plot's labels on its parts move to `data-mark`. The chart [arrives](/foundations/motion/#charts-arriving) once; drawn again with new figures on a page that asks for it (`data-chart-motion="update"`), it [changes in place](/foundations/motion/#charts-changing). `after` runs after every drawing, such as attaching the [pointer](/charts/pointer/).
+
+```js
+import { drawn } from '@n1kname/charts/drawn';
+import { bars } from '@n1kname/charts/bars';
+import { pointer } from '@n1kname/charts/pointer';
+
+drawn(box, (width) => Plot.plot({ style, ...bars({ ...spec, pointer: false }, width) }), {
+  key: (m) => m.slice(5, 7), // bars matched by month of the year when the year changes
+  after: () => pointer(box, { rows, x: 'month', series, format }),
+});
+```
+
+## Months
+
+From `@n1kname/charts/months`, for steps written `YYYY-MM`:
+
+- **`fillMonths(rows)`:** every month from the first to the last, so a month without figures is a gap on the axis, not a closed-up step.
+- **`monthTicks(months, marginLeft)`:** which months the axis names, by the room each has: every month, quarter, half year or January, or every second, third, fifth or tenth January. The first named month and every January carry the year on a second line. Give it to `bars()` or `lines()` as `tick`.
+- **`padFor(width, n)`:** bars too thin for a gap between them touch instead.
+- **`fullMonth('2026-04')`:** "April 2026", for a tooltip or a table.

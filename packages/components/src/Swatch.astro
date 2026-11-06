@@ -1,0 +1,51 @@
+---
+/**
+ * A small mark in a colour that stands for something: a series in a table cell, a category on a
+ * chip, a key beside a figure. The same shapes a Legend draws. Never the only way something is
+ * told apart: there is always a word beside it.
+ */
+interface Props {
+  /** A token, such as var(--c-chart-3). */
+  color: string;
+  shape?: 'dot' | 'square' | 'line' | 'ring';
+  /** In px; 8 by default, 10 in a legend. */
+  size?: number;
+}
+const { color, shape = 'dot', size = 8 } = Astro.props;
+---
+
+<i class="swatch" data-shape={shape} style={`--swatch:${color};--size:${size}px`} aria-hidden="true"></i>
+
+<style>
+  .swatch {
+    display: inline-block;
+    flex: none;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 2px;
+    background: var(--swatch);
+    vertical-align: middle;
+  }
+
+  [data-shape='dot'] {
+    border-radius: 50%;
+  }
+
+  [data-shape='line'] {
+    width: calc(var(--size) * 1.6);
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  [data-shape='ring'] {
+    border: 2px solid var(--swatch);
+    border-radius: 50%;
+    background: none;
+  }
+
+  @media (forced-colors: active) {
+    .swatch {
+      forced-color-adjust: none;
+    }
+  }
+</style>

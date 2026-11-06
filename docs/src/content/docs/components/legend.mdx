@@ -91,3 +91,15 @@ import Legend from '@n1kname/components/Legend.astro';
 
 <Legend keys={[{ label: 'Last year', color: 'var(--c-chart-2)' }, { label: 'This year', color: 'var(--c-chart-1)' }]} />
 ```
+
+## From script
+
+When the keys follow the data, such as the types in the year shown, change them with `setKeys()`. Keys that stay keep their place; new ones fade in, gone ones fade out (at once under reduced motion).
+
+```js
+import { setKeys } from '@n1kname/components/legend.js';
+setKeys(document.getElementById('kinds'), [
+  { label: 'Walking', color: 'var(--c-chart-5)' },
+  { label: 'Other', color: 'var(--c-chart-neutral)' },
+]);
+```

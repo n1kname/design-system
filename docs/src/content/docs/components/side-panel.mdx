@@ -79,3 +79,14 @@ import SidePanel from '@n1kname/components/SidePanel.astro';
   <section id="co2">...</section>
 </SidePanel>
 ```
+
+## From script
+
+`openPanel(id, { title, load })` from `sidepanel.js` opens a panel for detail read on demand, such as a workout from a list. It opens at once with its title and a quiet loading shape; then what arrived settles in, or it says it failed with Try again. `load` returns a promise of HTML, escaped by the caller. The panel's state is in `data-state` (`loading`, `ready`, `failed`).
+
+```js
+import { openPanel } from '@n1kname/components/sidepanel.js';
+row.addEventListener('click', () =>
+  openPanel('workout', { title: 'Cycling', load: () => fetch(url).then((r) => r.json()).then(render) }),
+);
+```

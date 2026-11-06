@@ -1,0 +1,78 @@
+---
+/**
+ * One of a few fixed options side by side, such as Top 20 / 50 / 100 / 200. The marker slides to
+ * the chosen one on the spring. Fires `segment-change` with its value. For a value with many
+ * options, or with counts, use FilterChips.
+ */
+interface Props {
+  /** What is chosen, for a screen reader: "How many". */
+  label: string;
+  options: { value: string; label: string }[];
+  value?: string;
+  id?: string;
+}
+const { label, options, value = options[0]?.value, id } = Astro.props;
+---
+
+<div class="segmented" role="group" aria-label={label} id={id} data-segmented>
+  <span class="marker" aria-hidden="true"></span>
+  {options.map((o) => <button type="button" data-value={o.value} aria-pressed={String(o.value === value)}>{o.label}</button>)}
+</div>
+
+<script>
+  import { wireSegmented } from './segmented.js';
+  document.querySelectorAll<HTMLElement>('[data-segmented]').forEach(wireSegmented);
+</script>
+
+<style>
+  .segmented {
+    position: relative;
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface-sunken, var(--c-bg));
+  }
+
+  .marker {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    border-radius: calc(var(--radius-md) - 3px);
+    background: var(--c-surface);
+    box-shadow:
+      0 0 0 1px var(--c-border-strong),
+      0 1px 2px rgb(0 0 0 / 0.08);
+  }
+
+  button {
+    position: relative;
+    min-height: 34px;
+    padding: 0 var(--sp-3);
+    border: 0;
+    border-radius: calc(var(--radius-md) - 3px);
+    background: none;
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    cursor: pointer;
+    transition: color var(--motion-hover) var(--ease-hover);
+  }
+
+  button[aria-pressed='true'] {
+    color: var(--c-text);
+    font-weight: 600;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 1px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button {
+      transition: none;
+    }
+  }
+</style>

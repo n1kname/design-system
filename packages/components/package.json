@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,7 +14,15 @@
     "./dotrows.js": "./src/dotrows.js",
     "./rangebars.js": "./src/rangebars.js",
     "./daystrips.js": "./src/daystrips.js",
-    "./period.js": "./src/period.js"
+    "./period.js": "./src/period.js",
+    "./search.js": "./src/search.js",
+    "./chips.js": "./src/chips.js",
+    "./segmented.js": "./src/segmented.js",
+    "./flip.js": "./src/flip.js",
+    "./facts.js": "./src/facts.js",
+    "./legend.js": "./src/legend.js",
+    "./sidepanel.js": "./src/sidepanel.js",
+    "./match.css": "./src/match.css"
   },
   "scripts": {},
   "dependencies": {

@@ -1,0 +1,68 @@
+---
+/**
+ * SearchField, FilterChips and the list moving, on synthetic outings: type, press "/", Escape, and
+ * pick a kind. Drawn in the browser, as a search is.
+ */
+import FilterChips from '@n1kname/components/FilterChips.astro';
+import SearchField from '@n1kname/components/SearchField.astro';
+import '@n1kname/components/match.css';
+---
+
+<div class="search-demo not-content">
+  <SearchField id="demo-search" label="Search outings" placeholder="Search route, place, year…" describedBy="demo-count" />
+  <FilterChips id="demo-kinds" label="Kind" />
+  <p class="count" id="demo-count"><b id="demo-shown">–</b> of 40 outings</p>
+  <div class="results" data-search-results>
+    <table><thead><tr><th scope="col">Route</th><th scope="col">Kind</th><th scope="col">Place</th><th scope="col">Year</th><th scope="col" class="num">km</th></tr></thead><tbody id="demo-rows"></tbody></table>
+  </div>
+  <p class="none" id="demo-none" hidden>No outings match. Try fewer words.</p>
+</div>
+
+<script>
+  import { setChips } from '@n1kname/components/chips.js';
+  import { flip, snapshot } from '@n1kname/components/flip.js';
+  import { mark, matchWords, say } from '@n1kname/components/search.js';
+  import { outings } from '../lib/data.mjs';
+
+  const field = document.getElementById('demo-search')!;
+  const chips = document.getElementById('demo-kinds')!;
+  const rows = document.getElementById('demo-rows')!;
+  const kinds = [...new Map(outings.map((o) => [o.kind, o])).values()];
+  let query = '';
+  let kind = 'all';
+  const draw = () => {
+    const found = matchWords(outings, ['route', 'place', 'kindLabel', 'year'], query);
+    setChips(chips, kinds.map((k) => ({ value: k.kind, label: k.kindLabel, color: k.color, count: found.filter((o) => o.kind === k.kind).length })), kind);
+    const shown = found.filter((o) => kind === 'all' || o.kind === kind);
+    const before = snapshot(rows);
+    rows.innerHTML = shown
+      .map((o) => `<tr data-key="${o.id}"><td>${mark(o.route, query)}</td><td><i style="background:${o.color}"></i>${mark(o.kindLabel, query)}</td><td>${mark(o.place, query)}</td><td>${mark(o.year, query)}</td><td class="num">${o.km}</td></tr>`)
+      .join('');
+    flip(rows, before);
+    document.getElementById('demo-shown')!.textContent = String(shown.length);
+    document.getElementById('demo-none')!.hidden = shown.length > 0;
+    say(field, shown.length ? `${shown.length} of 40 outings` : 'No outings match');
+  };
+  field.addEventListener('search-change', (e) => {
+    query = (e as CustomEvent).detail.query;
+    draw();
+  });
+  chips.addEventListener('chips-change', (e) => {
+    kind = (e as CustomEvent).detail.value;
+    draw();
+  });
+  draw();
+</script>
+
+<style>
+  .search-demo { display: grid; gap: var(--sp-3); }
+  .count { margin: 0; font-size: var(--text-caption); color: var(--c-text-muted); }
+  .count b { color: var(--c-text); }
+  .results { max-height: 320px; overflow: auto; border: 1px solid var(--c-border); border-radius: var(--radius-md); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--text-body-sm); }
+  th, td { padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--c-border); text-align: left; white-space: nowrap; }
+  :global(#demo-rows i) { display: inline-block; width: 8px; height: 8px; margin-right: var(--sp-2); border-radius: 50%; }
+  thead th { position: sticky; top: 0; background: var(--c-surface); font-size: var(--text-caption); color: var(--c-text-muted); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .none { margin: 0; color: var(--c-text-muted); }
+</style>

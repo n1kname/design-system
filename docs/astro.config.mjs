@@ -26,6 +26,7 @@ export default defineConfig({
             { label: 'Palette', link: '/charts/palette/' },
             { label: 'Examples', link: '/charts/examples/' },
             { label: 'Under the pointer', link: '/charts/pointer/' },
+            { label: 'Drawn in the page', link: '/charts/drawn/' },
           ],
         },
         {
@@ -48,7 +49,12 @@ export default defineConfig({
           items: [
             { label: 'Stat strip', link: '/components/stat-strip/' },
             { label: 'Period picker', link: '/components/period-picker/' },
+            { label: 'Search field', link: '/components/search-field/' },
+            { label: 'Filter chips', link: '/components/filter-chips/' },
+            { label: 'Segmented', link: '/components/segmented/' },
             { label: 'Data table', link: '/components/data-table/' },
+            { label: 'Facts', link: '/components/facts/' },
+            { label: 'Disclosure list', link: '/components/disclosure-list/' },
             { label: 'Side panel', link: '/components/side-panel/' },
             { label: 'Empty state', link: '/components/empty-state/' },
             { label: 'Caveats', link: '/components/caveats/' },
@@ -69,6 +75,7 @@ export default defineConfig({
             { label: 'Buttons', link: '/components/buttons/' },
             { label: 'Tags and links', link: '/components/tags/' },
             { label: 'Icons', link: '/components/icons/' },
+            { label: 'Swatch', link: '/components/swatch/' },
             { label: 'Quote', link: '/components/quote/' },
             { label: 'Timeline', link: '/components/timeline/' },
             { label: 'Outcome table', link: '/components/outcome-table/' },

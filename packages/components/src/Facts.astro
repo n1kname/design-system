@@ -1,0 +1,197 @@
+---
+/**
+ * Label and figure pairs, three ways: tiles (a few figures that lead), pills (a thing's figures in
+ * a line) and a list (its facts). Each figure can carry an icon and an accent of its own, the same
+ * in every form, so distance is always one colour and heart rate another. Two options, off by
+ * default: the highlighter under a tile's figure, sweeping in once; and icons that draw themselves
+ * in once. Fill it at build time with `items`, or later with setFacts() from facts.js.
+ */
+import type { IconName } from './icons';
+import Icon from './Icon.astro';
+import './highlight.css';
+
+interface Fact {
+  label: string;
+  value?: string;
+  /** What the figure measures, from the icon set: route, timer, heart-pulse, flame, … */
+  icon?: IconName;
+  /** A chart token, such as var(--c-chart-3), for the icon and the highlighter. */
+  accent?: string;
+}
+interface Props {
+  items?: Fact[];
+  variant?: 'tiles' | 'pills' | 'list';
+  /** The highlighter under a tile's figure, sweeping in once. Tiles only. */
+  highlight?: boolean;
+  /** Icons that draw themselves in once, as the facts come into view. */
+  iconMotion?: boolean;
+  id?: string;
+}
+const { items = [], variant = 'tiles', highlight = false, iconMotion = false, id } = Astro.props;
+const size = variant === 'tiles' ? 16 : 14;
+---
+
+<dl class:list={['facts', variant]} id={id} data-facts data-variant={variant} data-highlight={highlight && variant === 'tiles' ? '' : undefined} data-icon-motion={iconMotion ? '' : undefined}>
+  {
+    items.map((f, n) => (
+      <div style={`--n:${n}${f.accent ? `;--accent:${f.accent}` : ''}`}>
+        <dt>
+          {f.icon && (
+            <span class="fact-icon">
+              <Icon name={f.icon} size={size} />
+            </span>
+          )}
+          {f.label}
+        </dt>
+        <dd>{highlight && variant === 'tiles' ? <mark class="highlight">{f.value ?? '–'}</mark> : (f.value ?? '–')}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<script>
+  import { arrive } from './facts.js';
+  document.querySelectorAll<HTMLElement>('[data-facts]').forEach(arrive);
+</script>
+
+<style>
+  .facts {
+    margin: 0;
+  }
+
+  .facts :global(.fact-icon) {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    color: var(--accent, var(--c-text-muted));
+  }
+
+  .facts :global(.fact-icon svg) {
+    display: block;
+  }
+
+  /* Tiles: the icon in a soft disc of its accent. */
+  .tiles {
+    display: grid;
+    gap: var(--sp-3);
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  }
+
+  .tiles > :global(div) {
+    display: grid;
+    gap: var(--sp-2);
+    padding: var(--sp-4);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+  }
+
+  .tiles :global(dt) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--text-caption);
+    color: var(--c-text-secondary);
+  }
+
+  .tiles :global(.fact-icon) {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--accent, var(--c-text-muted)) 16%, var(--c-surface));
+  }
+
+  .tiles :global(dd) {
+    margin: 0;
+    font-size: var(--text-h3, 1.35rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+
+  .tiles :global(dd mark) {
+    --highlight: color-mix(in oklab, var(--accent, var(--c-accent)) 34%, var(--c-bg));
+  }
+
+  /* The highlighter waits until the tiles are in view. */
+  .tiles:not(:global(.in)) :global(dd mark) {
+    animation: none;
+    background-size: 0% var(--highlight-band);
+  }
+
+  /* Pills: a tint of the accent. */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+
+  .pills > :global(div) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-2);
+    border: 1px solid color-mix(in oklab, var(--accent, var(--c-text-muted)) 22%, var(--c-surface));
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--accent, var(--c-text-muted)) 12%, var(--c-surface));
+  }
+
+  .pills :global(dt) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    font-size: var(--text-caption);
+    color: var(--c-text-secondary);
+  }
+
+  .pills :global(dd) {
+    margin: 0;
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A list: hairlines, no fills. */
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    column-gap: var(--sp-6);
+  }
+
+  .list > :global(div) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) 0;
+    border-bottom: 1px solid var(--c-border);
+    font-size: var(--text-body-sm);
+  }
+
+  .list :global(dt) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-text-muted);
+  }
+
+  .list :global(dd) {
+    margin: 0 0 0 auto;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  /* Icons that draw themselves in, once, as the facts come into view. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-icon-motion]:global(.in) :global(.fact-icon :is(path, circle, line, rect, polyline)) {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: draw-icon 900ms var(--ease-out) calc(var(--n, 0) * 90ms + 120ms) forwards;
+    }
+  }
+
+  @keyframes draw-icon {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+</style>

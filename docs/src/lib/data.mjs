@@ -58,3 +58,15 @@ export const months = (() => {
   const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return names.map((month) => ({ month, alder: Math.round(20 + r() * 14), birch: Math.round(8 + r() * 8), cedar: Math.round(4 + r() * 6) }));
 })();
+
+// Forty fictional outings, for the search demo: a route, its kind, a place and a year.
+export const outings = (() => {
+  const r = random(59);
+  const routes = ['Alder loop', 'Birch ridge', 'Cedar trail', 'Dogwood lane', 'Elm circuit', 'Fir path', 'Ginkgo walk', 'Hazel climb'];
+  const places = ['Northfield', 'Café Rivière', 'Old Harbour', 'Sint-Jacob', 'Lakeside', 'Mill Green'];
+  const kinds = [['walk', 'Walk', 'var(--c-chart-5)'], ['ride', 'Ride', 'var(--c-chart-3)'], ['run', 'Run', 'var(--c-chart-6)'], ['swim', 'Swim', 'var(--c-chart-2)']];
+  return Array.from({ length: 40 }, (_, i) => {
+    const k = kinds[Math.floor(r() * (i % 7 === 0 ? 4 : 3))];
+    return { id: `o${i}`, route: routes[Math.floor(r() * routes.length)], place: places[Math.floor(r() * places.length)], kind: k[0], kindLabel: k[1], color: k[2], year: String(2023 + Math.floor(r() * 3)), km: Math.round((2 + r() * 30) * 10) / 10 };
+  });
+})();

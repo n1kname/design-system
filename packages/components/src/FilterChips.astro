@@ -1,0 +1,118 @@
+---
+/**
+ * One of several values to filter by, each a chip with a swatch and, under a search, how many
+ * items it has. The chosen one takes a tint of its own colour, never an inverted fill; states fade
+ * into each other. A second press goes back to All. Fires `chips-change`; fill or update it with
+ * setChips() from chips.js.
+ */
+interface Option {
+  value: string;
+  label: string;
+  /** A token, such as var(--c-chart-3), for the swatch and the tint. */
+  color?: string;
+  count?: number;
+}
+interface Props {
+  /** What the chips choose, for a screen reader: "Activity". */
+  label: string;
+  options?: Option[];
+  /** The words for every value at once, first. Leave out for none. */
+  all?: string;
+  selected?: string;
+  id?: string;
+}
+const { label, options = [], all = 'All', selected = all ? 'all' : options[0]?.value, id } = Astro.props;
+const list = all ? [{ value: 'all', label: all, count: options.every((o) => o.count !== undefined) && options.length ? options.reduce((s, o) => s + (o.count ?? 0), 0) : undefined }, ...options] : options;
+---
+
+<div class="filter-chips" role="group" aria-label={label} id={id} data-filter-chips data-all={all || undefined}>
+  {
+    list.map((o) => (
+      <button type="button" data-value={o.value} aria-pressed={String(o.value === selected)} disabled={o.count === 0 && o.value !== selected} style={`--chip:${(o as Option).color ?? 'var(--c-accent)'}`}>
+        {(o as Option).color && <i class="chip-swatch" style={`background:${(o as Option).color}`} />}
+        {o.label}
+        {o.count !== undefined && <span class="n">{o.count}</span>}
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  import { wireChips } from './chips.js';
+  document.querySelectorAll<HTMLElement>('[data-filter-chips]').forEach(wireChips);
+</script>
+
+<style>
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1);
+    min-height: 32px;
+  }
+
+  .filter-chips :global(button) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 32px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+    background: var(--c-surface);
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-caption);
+    cursor: pointer;
+    transition:
+      background var(--motion-base) var(--ease-out),
+      border-color var(--motion-base) var(--ease-out),
+      color var(--motion-base) var(--ease-out),
+      opacity var(--motion-base) var(--ease-out);
+  }
+
+  .filter-chips :global(button:hover:not(:disabled)) {
+    background: color-mix(in oklab, var(--chip) 8%, var(--c-surface));
+  }
+
+  .filter-chips :global(button[aria-pressed='true']) {
+    background: color-mix(in oklab, var(--chip) 16%, var(--c-surface));
+    border-color: color-mix(in oklab, var(--chip) 55%, var(--c-surface));
+    color: var(--c-text);
+    font-weight: 600;
+  }
+
+  .filter-chips :global(button:disabled) {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .filter-chips :global(button:focus-visible) {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .filter-chips :global(.n) {
+    color: var(--c-text-muted);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .filter-chips :global(.chip-swatch) {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: transform var(--motion-spring) var(--ease-spring);
+  }
+
+  .filter-chips :global(button[aria-pressed='true'] .chip-swatch) {
+    transform: scale(1.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .filter-chips :global(button),
+    .filter-chips :global(.chip-swatch) {
+      transition: none;
+    }
+  }
+</style>
