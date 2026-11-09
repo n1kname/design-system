@@ -28,6 +28,9 @@ export const heatmap = (
     rowHeight = 30,
     // The tooltip's text per cell.
     title,
+    // Plot's own tooltip. Leave on for a chart drawn at build time; turn off when the page says
+    // what is under the pointer itself, with `pointerCells` from ./pointer.mjs.
+    pointer = true,
     // The labels on each axis. xTick gets (value, index, width).
     xTick = (v) => v,
     yTick = (v) => v,
@@ -45,5 +48,5 @@ export const heatmap = (
   x: { domain: xDomain, label: null, tickSize: 0, tickFormat: (v, i) => xTick(v, i, width) },
   y: { domain: yDomain, label: null, tickSize: 0, tickFormat: yTick },
   color: { type: 'threshold', domain: steps, range: colors },
-  marks: [Plot.cell(cells, { x, y, fill: value, tip: tipStyle, title, className: 'enter-cell' })],
+  marks: [Plot.cell(cells, { x, y, fill: value, ...(pointer ? { tip: tipStyle, title } : {}), className: 'enter-cell' })],
 });

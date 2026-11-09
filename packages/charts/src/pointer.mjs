@@ -56,12 +56,31 @@ const layer = (box) => {
   return l;
 };
 
-// The card's words: the step's name, then one figure, or a row per series with its swatch.
-const words = (title, items) =>
-  `<p class="chart-pointer-title">${esc(title)}</p>` +
-  (items.length === 1 && !items[0].swatch
-    ? `<p class="chart-pointer-one">${esc(items[0].value)}</p>`
-    : `<dl>${items.map((i) => `<div><dt><i style="background:${i.color}"></i>${esc(i.label)}</dt><dd>${esc(i.value)}</dd></div>`).join('')}</dl>`);
+// The card's words: the step's name, then one figure, or a row per series with its swatch. Then
+// any extra: a [label, value] pair is a row without a swatch, under a hairline, such as a total;
+// text is a quiet line at the foot, such as the unit.
+const words = (title, items, extra = []) => {
+  const pairs = extra.filter(Array.isArray);
+  const notes = extra.filter((e) => !Array.isArray(e));
+  const one = items.length === 1 && !items[0].swatch;
+  const rows = [
+    ...(one ? [] : items.map((i) => `<div><dt><i style="background:${i.color}"></i>${esc(i.label)}</dt><dd>${esc(i.value)}</dd></div>`)),
+    ...pairs.map(([label, value]) => `<div class="is-extra"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`),
+  ];
+  return (
+    `<p class="chart-pointer-title">${esc(title)}</p>` +
+    (one ? `<p class="chart-pointer-one">${esc(items[0].value)}</p>` : '') +
+    (rows.length ? `<dl>${rows.join('')}</dl>` : '') +
+    notes.map((n) => `<p class="chart-pointer-note">${esc(n)}</p>`).join('')
+  );
+};
+
+// The same words, said: for the live region, from the keyboard.
+const said = (title, items, extra = []) =>
+  `${title}: ${[
+    ...items.map((t) => (items.length > 1 ? `${t.label} ${t.value}` : t.value)),
+    ...extra.map((e) => (Array.isArray(e) ? e.join(' ') : e)),
+  ].join(', ')}`;
 
 // Appearing, moving, leaving. The first showing is in place; after that, everything glides.
 const presence = (l, onLeave) => {
@@ -102,10 +121,17 @@ const keys = (box, count, at, go, leave) => {
 // box: the element holding the chart's svg. rows: the rows drawn, one per x. x: the rows' x key.
 // series: [{ key, label, color }], as given to bars() or lines(). format: (value, series) → text.
 // label: (row) → the step's name. kind: 'bars' or 'lines'. focus (bars): 'dim', 'rule' or 'both'.
-export const pointer = (box, { rows, x, series, format, label = (r) => String(r[x]), kind = 'bars', focus = 'dim' }) => {
-  const steps = rows.map((r, i) => (series.some((s) => has(r, s.key)) ? i : -1)).filter((i) => i >= 0);
-  // The card lists a stack from the top down, as it is drawn.
-  const listed = kind === 'bars' ? [...series].reverse() : series;
+// grouped: bars side by side rather than stacked, as with bars({ grouped }).
+// extra: (row) → more for the card after the series: [label, value] pairs and lines of text.
+// empty: the text for a series with no value at a step, such as '–', so a missing figure is said
+// rather than left out, and every row is a step, one without any figure too; by default such a
+// series isn't listed, and such a row is passed over.
+export const pointer = (box, { rows, x, series, format, label = (r) => String(r[x]), kind = 'bars', focus = 'dim', grouped = false, extra = () => [], empty }) => {
+  const steps = rows.map((r, i) => (empty !== undefined || series.some((s) => has(r, s.key)) ? i : -1)).filter((i) => i >= 0);
+  // The card lists a stack from the top down, as it is drawn; bars side by side from the left. On lines, as lines() tells it: a
+  // silent series (the dashed rest of another line) only where the line it continues has none.
+  const listed = kind === 'bars' ? (grouped ? series : [...series].reverse()) : [...series.filter((s) => !s.silent), ...series.filter((s) => s.silent)];
+  const told = (r, s) => (kind === 'lines' && s.silent ? s.continues && has(r, s.key) && !has(r, s.continues) : has(r, s.key) || empty !== undefined);
   const l = layer(box);
   const live = voice(box);
   const ruled = kind === 'lines' || focus !== 'dim';
@@ -122,11 +148,14 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
   });
 
   const svg = () => box.querySelector('svg');
-  // A bar's top: what its positive pieces add up to. A step on lines: its highest value.
-  const top = (r) =>
-    kind === 'bars'
-      ? series.reduce((s, k) => s + (has(r, k.key) && r[k.key] > 0 ? r[k.key] : 0), 0)
-      : Math.max(...series.filter((k) => has(r, k.key)).map((k) => r[k.key]));
+  // A bar's top: what its positive pieces add up to, or the tallest of bars side by side. A step
+  // on lines: its highest value.
+  // A step without any figure: null, and the card sits on the baseline.
+  const top = (r) => {
+    const values = series.filter((k) => has(r, k.key)).map((k) => r[k.key]);
+    if (!values.length) return null;
+    return kind === 'bars' && !grouped ? values.reduce((s, v) => s + (v > 0 ? v : 0), 0) : Math.max(...values);
+  };
   const where = (i) => {
     const s = svg();
     const xs = s.scale('x');
@@ -137,7 +166,7 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
     return {
       cx: r.left - b.left + xs.apply(rows[i][x]) + (xs.bandwidth ?? 0) / 2,
       bw: xs.bandwidth ?? 0,
-      y: r.top - b.top + ys.apply(top(rows[i])),
+      y: r.top - b.top + (top(rows[i]) === null ? Math.max(...ys.range) : ys.apply(top(rows[i]))),
       y0,
       y1,
       width: b.width,
@@ -148,8 +177,11 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
     if (i < 0) return;
     at = i;
     const r = rows[i];
-    const items = listed.filter((s) => has(r, s.key)).map((s) => ({ label: s.label, color: s.color, value: format(r[s.key], s), swatch: series.length > 1 }));
-    card.innerHTML = words(label(r), items);
+    const items = listed
+      .filter((s) => told(r, s))
+      .map((s) => ({ label: s.label, color: s.color, value: has(r, s.key) ? format(r[s.key], s) : empty, swatch: series.length > 1 }));
+    const more = extra(r) ?? [];
+    card.innerHTML = words(label(r), items, more);
     const q = where(i);
     if (ruled) {
       rule.style.transform = `translateX(${q.cx}px)`;
@@ -161,7 +193,8 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
       const left = box.getBoundingClientRect().left;
       for (const m of box.querySelectorAll('svg .enter-bar > *')) {
         const b = m.getBoundingClientRect();
-        m.classList.toggle('is-on', Math.abs(b.left + b.width / 2 - left - q.cx) <= Math.max(b.width, 2) / 2 + 1);
+        // Every bar in the step's band: one when stacked, each of a group side by side.
+        m.classList.toggle('is-on', Math.abs(b.left + b.width / 2 - left - q.cx) <= Math.max(q.bw, b.width, 2) / 2 + 1);
       }
       box.classList.add('is-dimming');
     }
@@ -182,7 +215,7 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
     }
     card.style.transform = `translate(${cx}px, ${cy}px)`;
     p.show();
-    if (fromKeys) live.textContent = `${label(r)}: ${items.map((t) => (items.length > 1 ? `${t.label} ${t.value}` : t.value)).join(', ')}`;
+    if (fromKeys) live.textContent = said(label(r), items, more);
   };
 
   // The nearest step with a figure, as Plot's pointer picks it.
@@ -202,6 +235,85 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
   box.onpointermove = (e) => show(nearest(e.clientX));
   box.onpointerleave = () => p.leave();
   keys(box, steps.length, () => steps.indexOf(at), (k) => show(steps[k], true), () => p.leave());
+};
+
+// A heatmap drawn with heatmap({ pointer: false }): a frame round the cell pointed at, gliding from
+// cell to cell, and the card beside it on the side with room. Keyboard: left and right step
+// through the cells in reading order, up and down go to the same hour in the row above or below,
+// Home and End to the first and last. cells, x, y and value as given to heatmap(); format:
+// (value) → text; label: (cell) → its name; extra as for pointer().
+export const pointerCells = (box, { cells, x, y, value, format = String, label = (c) => `${c[x]}, ${c[y]}`, extra = () => [] }) => {
+  const l = layer(box);
+  const live = voice(box);
+  const frame = el('div', 'chart-pointer-cell', l);
+  const card = el('div', 'chart-pointer-card', l);
+  const svg = () => box.querySelector('svg');
+  const scales = () => ({ xs: svg().scale('x'), ys: svg().scale('y') });
+  // Reading order: row by row, then across.
+  const { xs: x0, ys: y0 } = scales();
+  const order = cells
+    .filter((c) => typeof c[value] === 'number')
+    .sort((a, b) => y0.domain.indexOf(a[y]) - y0.domain.indexOf(b[y]) || x0.domain.indexOf(a[x]) - x0.domain.indexOf(b[x]));
+  let at = -1;
+  const p = presence(l, () => {
+    at = -1;
+  });
+  const place = (c) => {
+    const { xs, ys } = scales();
+    const r = svg().getBoundingClientRect();
+    const b = box.getBoundingClientRect();
+    return { left: r.left - b.left + xs.apply(c[x]), top: r.top - b.top + ys.apply(c[y]), w: xs.bandwidth, h: ys.bandwidth, width: b.width };
+  };
+  const show = (i, fromKeys) => {
+    if (i < 0) return;
+    at = i;
+    const c = order[i];
+    const items = [{ value: format(c[value]) }];
+    const more = extra(c) ?? [];
+    card.innerHTML = words(label(c), items, more);
+    const q = place(c);
+    frame.style.width = `${q.w}px`;
+    frame.style.height = `${q.h}px`;
+    frame.style.transform = `translate(${q.left}px, ${q.top}px)`;
+    const cw = card.offsetWidth;
+    const ch = card.offsetHeight;
+    const cx = q.left + q.w + 8 + cw > q.width ? q.left - 8 - cw : q.left + q.w + 8;
+    card.style.transform = `translate(${cx}px, ${Math.max(q.top + q.h / 2 - ch / 2, 0)}px)`;
+    p.show();
+    if (fromKeys) live.textContent = said(label(c), items, more);
+  };
+  const nearest = (e) => {
+    const { xs, ys } = scales();
+    const r = svg().getBoundingClientRect();
+    let best = -1;
+    let gap = Infinity;
+    order.forEach((c, i) => {
+      const d = Math.hypot(r.left + xs.apply(c[x]) + xs.bandwidth / 2 - e.clientX, r.top + ys.apply(c[y]) + ys.bandwidth / 2 - e.clientY);
+      if (d < gap) [best, gap] = [i, d];
+    });
+    return best;
+  };
+  // The same x in the row `by` rows away, or the nearest x there.
+  const vertical = (i, by) => {
+    const { xs, ys } = scales();
+    const row = ys.domain[ys.domain.indexOf(order[i][y]) + by];
+    const there = order.map((c, k) => [c, k]).filter(([c]) => c[y] === row);
+    if (!there.length) return i;
+    const want = xs.domain.indexOf(order[i][x]);
+    return there.reduce((a, b) => (Math.abs(xs.domain.indexOf(b[0][x]) - want) < Math.abs(xs.domain.indexOf(a[0][x]) - want) ? b : a))[1];
+  };
+  box.onpointermove = (e) => show(nearest(e));
+  box.onpointerleave = () => p.leave();
+  box.tabIndex = 0;
+  box.onkeydown = (e) => {
+    if (e.key === 'Escape') return p.leave();
+    const from = at < 0 ? 0 : at;
+    const to = { ArrowRight: from + 1, ArrowLeft: from - 1, ArrowDown: vertical(from, 1), ArrowUp: vertical(from, -1), Home: 0, End: order.length - 1 }[e.key];
+    if (to === undefined) return;
+    e.preventDefault();
+    show(at < 0 ? 0 : Math.min(Math.max(to, 0), order.length - 1), true);
+  };
+  box.onblur = () => p.leave();
 };
 
 // A donut drawn with donutRing, as in the Donut component: pointing at a slice, or at its row in

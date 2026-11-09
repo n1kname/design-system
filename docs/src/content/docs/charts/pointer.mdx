@@ -11,7 +11,8 @@ A chart drawn in the page says what is under the pointer in a small card, in the
 
 ## What it does
 
-- **The card** names the step quietly and gives each series' figure in bold, in figures of one width, with a swatch when there is more than one series. A stack is listed from the top down, as it is drawn.
+- **The card** names the step quietly and gives each series' figure in bold, in figures of one width, with a swatch when there is more than one series. A stack is listed from the top down, as it is drawn; bars side by side from the left. Below the series it can carry more: a figure that isn't a series, such as a total, under a hairline and without a swatch, and quiet lines at the foot, such as the unit.
+- **An unknown figure is said, not left out,** when you give `empty` (a dash, say): a series without a value at that step is listed with it, so empty never reads as zero or as missing from the chart.
 - **It never covers what it describes.** Above a bar, centred; beside a bar too tall for that, and beside a point on a line, on the side with room. In a donut it sits in the hole, over the title.
 - **Bars and slices dim.** While one is pointed at, the others step back to 55%, and so do the swatches in a donut's list beside its ring; the words in the list keep full contrast. Nothing is drawn behind the bars. On a line, a rule runs through the step and a dot sits on the line, in front of it.
 - **It glides.** The card, rule and dot move from step to step on the spring. The figures change at once, so reading is never delayed. It fades in fast and out a moment after the pointer leaves, so crossing a gap doesn't blink. Nothing moves under reduced motion.
@@ -38,6 +39,13 @@ pointer(box, { rows, x: 'month', series, format: (v) => `${v} h`, label: (r) => 
 | `focus` | `'dim'`, `'rule'` or `'both'` | Bars only. Default `'dim'` |
 | `format` | `(value, series) → text` | Each figure in the card |
 | `label` | `(row) → text` | The step's name. Default the x value |
+| `extra` | `(row) → [[label, value] or text]` | After the series: a pair is a row without a swatch, under a hairline; text is a quiet line at the foot |
+| `empty` | text | Lists a series with no value at a step, with this text. Default: such a series isn't listed |
+| `grouped` | `true` | Bars side by side, as with `bars({ grouped })`: listed from the left, the card above the tallest |
+
+On lines, a `silent` series (the dashed rest of another line) is listed only where the line it `continues` has no value, as `lines()` itself does.
+
+For a heatmap, draw it with `heatmap({ ..., pointer: false })` and use `pointerCells(box, { cells, x, y, value, format, label, extra })`, with the same cells and keys. A frame goes round the cell pointed at and glides from cell to cell; the card sits beside it on the side with room. From the keyboard, left and right step through the cells in reading order, and up and down go to the same column in the row above or below.
 
 For a donut from the [Donut](/components/donut/) component, `pointerDonut(element, { parts, format })` with the same slices.
 

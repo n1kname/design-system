@@ -84,6 +84,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* A total or another figure that isn't a series: under a hairline, without a swatch. */
+.chart-pointer-card dl div:not(.is-extra) + .is-extra {
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid var(--c-border);
+}
+
+.chart-pointer-one + dl {
+  margin-top: var(--sp-1);
+}
+
+/* A line at the foot, such as the unit. */
+.chart-pointer-note {
+  margin-top: var(--sp-1) !important;
+  color: var(--c-text-muted);
+}
+
 .chart-pointer-card i {
   display: inline-block;
   width: 8px;
@@ -114,6 +131,13 @@
   border-radius: 50%;
   background: var(--c-text);
   box-shadow: 0 0 0 2px var(--c-surface);
+}
+
+/* A heatmap's cell: a frame round it, in the text colour, gliding from cell to cell. */
+.chart-pointer-cell {
+  border: 2px solid var(--c-text);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px var(--c-surface);
 }
 
 /* Dimming: while one is pointed at, the other bars and slices step back to 55%, and so do the

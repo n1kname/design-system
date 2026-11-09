@@ -44,4 +44,9 @@ assert.deepEqual(labels(renderPlot(heatmap(spec, 280))), ['20h', '22h'], 'fewer 
 
 assert.equal(options.marks[0].channels.title.value(cells[1]), 'D1 21:00\n650 units', "the tooltip's own words");
 
+// pointer: false leaves out Plot's tooltip, for a page that says what is under the pointer itself.
+const own = heatmap({ ...spec, pointer: false }, 400);
+assert.ok(options.marks[0].channels.title, 'a title by default');
+assert.ok(!own.marks[0].channels.title, 'no title with pointer: false');
+
 console.log('heatmap: all assertions pass');
