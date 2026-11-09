@@ -89,6 +89,13 @@ const DIV = {
 
 const TAG_FOCUS_HUE = 200;
 
+// Heat: cold to warm, blue through yellow to red, for a map's density (hexagons, columns). Taken
+// as they were from the dashboard that first drew them, not computed: the same six in both themes,
+// because they sit on a basemap, not on the page. They tell low from high by hue, not by lightness
+// (both ends sit near L 0.6), so a map pairs them with height or a legend. check.mjs says how far
+// they hold.
+const HEAT = ['#1A98D0', '#53BD9F', '#A6D96A', '#FDE725', '#FD8D3C', '#D73027'];
+
 // ------------------------------------------------------------------- semantics
 
 // Role notes:
@@ -101,6 +108,7 @@ const TAG_FOCUS_HUE = 200;
 //   text-secondary between text and text-muted, for a third ink level.
 //   chart-*        marks, not text. Text in a chart wears text tokens.
 //   status-*       reserved meaning, never "series 4", always icon plus label.
+//   heat-*         a map's density, cold to warm. The same in both themes.
 //   state-*        the state of each day in a long record, as day strips draw it.
 //                  Complete is the soft teal, because it is most of the strip; missing is
 //                  the orange, the one that asks for something. Set aside is drawn in stripes.
@@ -182,6 +190,7 @@ const semantics = (mode) => {
   DIV[mode].neg.forEach((x, i) => (out[`div-neg-${i + 1}`] = x));
   out['div-mid'] = DIV[mode].mid;
   DIV[mode].pos.forEach((x, i) => (out[`div-pos-${i + 1}`] = x));
+  HEAT.forEach((x, i) => (out[`heat-${i + 1}`] = x));
   // Old names, kept for the sites that still use them.
   for (const k of Object.keys(out)) {
     if (k.startsWith('diagram-')) out[k.replace('diagram-', 'dg-')] = { ref: `c.${k}` };

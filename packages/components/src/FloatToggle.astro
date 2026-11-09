@@ -1,0 +1,60 @@
+---
+/**
+ * Puts a side FloatPanel away and brings it back. Sits in a row of map controls, the same height
+ * as a Segmented. Hidden below 760px, where the side panel follows the map and is always open.
+ */
+interface Props {
+  /** The side panel's id. */
+  for: string;
+  /** Open when the page loads. */
+  open?: boolean;
+  [key: string]: unknown;
+}
+
+const { for: target, open = true, class: className, ...rest } = Astro.props;
+---
+
+<button type="button" class:list={['float-toggle', className]} aria-controls={target} aria-expanded={String(open)} data-float-toggle={target} {...rest}><slot /></button>
+
+<style>
+  .float-toggle {
+    min-height: 40px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    cursor: pointer;
+    transition:
+      color var(--motion-hover) var(--ease-hover),
+      border-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .float-toggle:hover,
+  .float-toggle[aria-expanded='true'] {
+    color: var(--c-text);
+  }
+
+  .float-toggle[aria-expanded='true'] {
+    border-color: var(--c-border-strong);
+  }
+
+  .float-toggle:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 760px) {
+    .float-toggle {
+      display: none;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .float-toggle {
+      min-height: 44px;
+    }
+  }
+</style>

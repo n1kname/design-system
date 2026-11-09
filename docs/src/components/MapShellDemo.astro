@@ -1,0 +1,258 @@
+---
+/**
+ * A whole dashboard page that is one map, in an app shell, to compare the ways its title can sit:
+ * framed (the header above the map), and fill with the title in a panel or on a scrim. Synthetic
+ * routes and figures, on a plain grid around 0° 0°. Its own page, outside Starlight, because a
+ * fill map reaches past the content column.
+ */
+import '@n1kname/tokens/tokens.css';
+import '@n1kname/components/type.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource-variable/bitter/index.css';
+import AppShell from '@n1kname/components/AppShell.astro';
+import Facts from '@n1kname/components/Facts.astro';
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import FloatToggle from '@n1kname/components/FloatToggle.astro';
+import MapStage from '@n1kname/components/MapStage.astro';
+import PageHeader from '@n1kname/components/PageHeader.astro';
+import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+import SkipLink from '@n1kname/components/SkipLink.astro';
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+import { KINDS } from '../lib/map-demo.js';
+
+interface Props {
+  variant: 'framed' | 'box' | 'scrim';
+}
+const { variant } = Astro.props;
+const fill = variant !== 'framed';
+const NAMES = { framed: 'Framed', box: 'Fill, title in a panel', scrim: 'Fill, title on a scrim' };
+
+const groups = [
+  {
+    label: 'Map stage',
+    items: [
+      { href: '/demos/map-framed/', label: NAMES.framed, icon: 'layout-dashboard' as const, current: variant === 'framed' },
+      { href: '/demos/map-fill/', label: NAMES.box, icon: 'map' as const, current: variant === 'box' },
+      { href: '/demos/map-fill-scrim/', label: NAMES.scrim, icon: 'layers' as const, current: variant === 'scrim' },
+    ],
+  },
+  {
+    label: 'Docs',
+    items: [
+      { href: '/components/map-stage/', label: 'Map stage', icon: 'file-text' as const },
+      { href: '/components/float-panel/', label: 'Floating panel', icon: 'file-text' as const },
+    ],
+  },
+];
+const months = ['Jun 2031', 'Jul 2031', 'Aug 2031', 'Sep 2031', 'Oct 2031', 'Nov 2031'];
+const moves = [
+  { kind: KINDS[0], n: 6, km: '18.4 km' },
+  { kind: KINDS[1], n: 4, km: '61.0 km' },
+  { kind: KINDS[2], n: 4, km: '22.7 km' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{NAMES[variant]} · Map stage demo</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved) document.documentElement.dataset.theme = saved;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <SkipLink target="#page" />
+    <AppShell brand={{ label: 'Map demos', href: '/demos/map-framed/' }} groups={groups} storageKey="map-demo-nav">
+      <ThemeToggle slot="rail-foot" id="theme-rail" />
+      <ThemeToggle slot="top-end" id="theme-top" />
+      <main id="page" class:list={['page', { fill }]}>
+        {
+          !fill && (
+            <PageHeader title="Routes" rule>
+              <Fragment slot="actions">
+                <PeriodPicker id="month" periods={months} labels={{ name: 'Month', previous: 'Previous month', next: 'Next month', list: 'Choose a month' }} />
+              </Fragment>
+            </PageHeader>
+          )
+        }
+        <MapStage
+          id="map"
+          mode={fill ? 'fill' : 'framed'}
+          head={variant === 'scrim' ? 'scrim' : 'box'}
+          label="Fictional routes in a month, on a plain grid"
+          failed="This map needs WebGL, which this browser has turned off."
+        >
+          {
+            fill && (
+              <FloatPanel slot="head" place="head">
+                <PageHeader title="Routes" rule compact>
+                  <Fragment slot="actions">
+                    <PeriodPicker id="month" periods={months} labels={{ name: 'Month', previous: 'Previous month', next: 'Next month', list: 'Choose a month' }} />
+                  </Fragment>
+                </PageHeader>
+              </FloatPanel>
+            )
+          }
+          <FloatPanel place="top-left" layout="row" label="Map controls">
+            <Segmented id="mode" label="Routes" value="foot" options={[{ value: 'foot', label: 'On foot' }, { value: 'all', label: 'All' }]} />
+            <Segmented id="view" label="View" value="2d" options={[{ value: '2d', label: '2D' }, { value: '3d', label: '3D' }]} />
+            <FloatToggle for="figures">Figures</FloatToggle>
+          </FloatPanel>
+          <FloatPanel slot="aside" place="side" id="figures" label="The month in figures">
+            <Facts
+              variant="tiles"
+              items={[
+                { label: 'Routes', value: '14', icon: 'route', accent: 'var(--c-chart-1)' },
+                { label: 'Distance', value: '102 km', icon: 'map-pin', accent: 'var(--c-chart-3)' },
+                { label: 'Active hours', value: '9.5', icon: 'timer', accent: 'var(--c-chart-5)' },
+                { label: 'Days out', value: '17', icon: 'calendar', accent: 'var(--c-chart-8)' },
+              ]}
+            />
+            <section class="moves">
+              <h2 class="t-label">Movement</h2>
+              <ul>
+                {
+                  moves.map((m) => (
+                    <li>
+                      <i style={`--swatch: ${m.kind.color}`} aria-hidden="true" />
+                      <span class="what">{m.kind.label}</span>
+                      <span class="n">×{m.n}</span>
+                      <span class="km">{m.km}</span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </section>
+          </FloatPanel>
+        </MapStage>
+      </main>
+    </AppShell>
+  </body>
+</html>
+
+<script>
+  import { room, setStage } from '@n1kname/components/mapstage.js';
+  import { bounds, groundMap, kindColour, maplibregl, reduced, routes } from '../lib/map-demo.js';
+
+  const box = document.getElementById('map')!;
+  const data = routes(9, 18);
+  const fit = (animate = false) => map?.fitBounds(bounds(data), { padding: room(box), maxZoom: 15, duration: animate && !reduced() ? 400 : 0 });
+  const map = groundMap(box, {
+    layers: (m) => {
+      m.addSource('routes', { type: 'geojson', data });
+      m.addLayer({ id: 'routes', type: 'line', source: 'routes', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': kindColour(), 'line-width': 2.5, 'line-opacity': 0.85 } });
+      fit();
+    },
+    repaint: (m) => m.setPaintProperty('routes', 'line-color', kindColour()),
+  });
+
+  if (map) {
+    // The figures float at the right, so the map's own buttons sit at the bottom left.
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
+    let size = '';
+    new ResizeObserver(() => {
+      const now = `${box.clientWidth}x${box.clientHeight}`;
+      if (now === size) return;
+      size = now;
+      if (map.loaded()) fit();
+    }).observe(box);
+    document.getElementById('figures')!.addEventListener('float-toggle', () => fit(true));
+    document.getElementById('view')!.addEventListener('segment-change', (e) => {
+      const tall = (e as CustomEvent).detail.value === '3d';
+      map.easeTo({ pitch: tall ? 55 : 0, bearing: tall ? -15 : 0, duration: reduced() ? 0 : 600 });
+    });
+  } else setStage(box, 'failed');
+</script>
+
+<style>
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    margin: 0;
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: var(--font-body);
+  }
+
+  .page {
+    display: grid;
+    gap: var(--sp-5);
+    padding-block: var(--sp-6);
+  }
+
+  /* A fill map starts at the column's top, with nothing above it. */
+  .page.fill {
+    padding-block: 0;
+  }
+
+  @media (max-width: 760px) {
+    .page.fill {
+      padding-bottom: var(--sp-6);
+    }
+  }
+
+  .moves {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .moves h2 {
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  .moves ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .moves li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    padding-block: var(--sp-2);
+    border-bottom: 1px solid var(--c-border);
+    font-size: var(--text-body-sm);
+  }
+
+  .moves li:last-child {
+    border-bottom: 0;
+  }
+
+  .moves i {
+    flex: none;
+    align-self: center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--swatch);
+  }
+
+  .what {
+    flex: 1;
+  }
+
+  .n {
+    color: var(--c-text-muted);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .km {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

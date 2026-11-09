@@ -8,6 +8,9 @@
  * title or else the lede, gets a highlighter that sweeps in once. A page that writes its title
  * or lede once its data arrives wraps those words in <mark> itself; the sweep plays as they
  * land.
+ *
+ * `compact` is the header made small enough to float over a map (MapStage fill mode): the title
+ * at the h3 size, a shorter rule, and the actions beside it in one row while there is room.
  */
 import './highlight.css';
 
@@ -23,8 +26,10 @@ interface Props {
   rule?: boolean;
   /** Words in the title or lede to highlight. */
   mark?: string;
+  /** Small enough to float over a map. */
+  compact?: boolean;
 }
-const { eyebrow, title, lede, meta, ids = {}, rule = false, mark } = Astro.props;
+const { eyebrow, title, lede, meta, ids = {}, rule = false, mark, compact = false } = Astro.props;
 
 // The text around the marked words, or the text alone when they aren't in it.
 const split = (text?: string) => {
@@ -35,7 +40,7 @@ const inTitle = split(title);
 const inLede = inTitle ? null : split(lede);
 ---
 
-<header class="page-header">
+<header class:list={['page-header', { compact }]}>
   <div class="text">
     {(eyebrow || ids.eyebrow) && <p class="eyebrow" id={ids.eyebrow}>{eyebrow}</p>}
     <h1 id={ids.title}>{inTitle ? <>{inTitle[0]}<mark>{inTitle[1]}</mark>{inTitle[2]}</> : title}</h1>
@@ -124,5 +129,31 @@ const inLede = inTitle ? null : split(lede);
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-2);
+  }
+
+  /* Over a map: the title a step down, the rule shorter and closer, the actions centred beside it. */
+  .compact {
+    align-items: center;
+    gap: var(--sp-3) var(--sp-5);
+  }
+
+  .compact .text {
+    flex: 0 1 auto;
+  }
+
+  .compact h1 {
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    letter-spacing: var(--tracking-h3);
+  }
+
+  .compact .rule {
+    width: var(--sp-6);
+    height: 4px;
+    margin: var(--sp-2) 0 0;
+  }
+
+  .compact .lede {
+    min-height: 0;
   }
 </style>

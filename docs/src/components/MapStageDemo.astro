@@ -1,0 +1,59 @@
+---
+/**
+ * A map stage at its real height, with synthetic routes on a plain ground, and a control to show
+ * each message it can put over the map.
+ */
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import Legend from '@n1kname/components/Legend.astro';
+import MapStage from '@n1kname/components/MapStage.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+import { KINDS } from '../lib/map-demo.js';
+---
+
+<div class="not-content">
+  <MapStage id="stage-demo-map" label="Fictional routes on a plain grid" loading="Reading the routes…" empty="No routes this month." failed="This map needs WebGL, which this browser has turned off.">
+    <FloatPanel place="top-left" layout="row" label="Demo controls">
+      <Segmented
+        id="stage-demo-state"
+        label="Show"
+        value="ready"
+        options={[
+          { value: 'ready', label: 'Routes' },
+          { value: 'loading', label: 'Loading' },
+          { value: 'empty', label: 'Nothing' },
+          { value: 'failed', label: 'No WebGL' },
+        ]}
+      />
+    </FloatPanel>
+    <FloatPanel place="bottom-left">
+      <Legend keys={KINDS.map((k) => ({ label: k.label, color: k.color, mark: 'line' }))} label="Kinds of route" style="margin: 0" />
+    </FloatPanel>
+  </MapStage>
+</div>
+
+<script>
+  import { room, setStage } from '@n1kname/components/mapstage.js';
+  import { bounds, groundMap, kindColour, maplibregl, routes } from '../lib/map-demo.js';
+
+  const box = document.getElementById('stage-demo-map')!;
+  const data = routes();
+  const fit = () => map?.fitBounds(bounds(data), { padding: room(box), duration: 0 });
+  const map = groundMap(box, {
+    layers: (m) => {
+      m.addSource('routes', { type: 'geojson', data });
+      m.addLayer({ id: 'routes', type: 'line', source: 'routes', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': kindColour(), 'line-width': 2.5, 'line-opacity': 0.85 } });
+      fit();
+      // A moment of reading, as a page waiting on its data would have.
+      setTimeout(() => setStage(box, 'ready'), 600);
+    },
+    repaint: (m) => m.setPaintProperty('routes', 'line-color', kindColour()),
+  });
+  if (map) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+  else setStage(box, 'failed');
+
+  document.getElementById('stage-demo-state')!.addEventListener('segment-change', (e) => {
+    const state = (e as CustomEvent).detail.value;
+    setStage(box, state);
+    if (map?.getLayer('routes')) map.setLayoutProperty('routes', 'visibility', state === 'empty' ? 'none' : 'visible');
+  });
+</script>

@@ -38,6 +38,7 @@ CSS names: `--c-*` for colour, `--sp-*`, `--radius-*`, `--layout-*`, `--font-*`,
 | How much | `--c-seq-1` to `7`, `--c-seq2-1` to `7` | One hue. Step 1 means little, in both themes. |
 | Above or below | `--c-div-neg-*`, `--c-div-mid`, `--c-div-pos-*` | Two hues, near-grey midpoint. |
 | Good or bad | `--c-status-*` | Reserved. Always with an icon and a label. |
+| How dense, on a map | `--c-heat-1` to `6` | Cold to warm, the same in both themes. Reads by hue, so pair it with height or a legend. |
 
 Text in a chart wears text tokens, never a series colour. Scatter plots, maps and small multiples stop at three series:
 past that, some non-neighbouring pairs get too close for colour-blind readers. A label inside a fill takes white or the

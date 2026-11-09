@@ -42,6 +42,8 @@ export default defineConfig({
             { label: 'App shell', link: '/components/app-shell/' },
             { label: 'Side nav', link: '/components/side-nav/' },
             { label: 'Figure', link: '/components/figure/' },
+            { label: 'Map stage', link: '/components/map-stage/' },
+            { label: 'Floating panel', link: '/components/float-panel/' },
           ],
         },
         {
@@ -59,6 +61,7 @@ export default defineConfig({
             { label: 'Empty state', link: '/components/empty-state/' },
             { label: 'Caveats', link: '/components/caveats/' },
             { label: 'Legend', link: '/components/legend/' },
+            { label: 'Ramp legend', link: '/components/ramp-legend/' },
             { label: 'Lines', link: '/components/lines/' },
             { label: 'Bars', link: '/components/bars/' },
             { label: 'Range bars', link: '/components/range-bars/' },

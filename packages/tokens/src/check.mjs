@@ -3,7 +3,7 @@
 // before shipping. Exits non-zero on any failure.
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { contrast, deltaE, hexToOklch } from './color.mjs';
+import { contrast, deltaE, hexToOklch, over } from './color.mjs';
 
 const values = JSON.parse(readFileSync(new URL('../dist/values.json', import.meta.url), 'utf8'));
 
@@ -69,6 +69,13 @@ const ANY_PAIR_FLOOR = 10;
 // Neighbours stay apart when printed in grey. A project floor: no standard sets one.
 const GREY_FLOOR = 1.25;
 const LABEL_INK = '#FFFFFF';
+const HEAT = [1, 2, 3, 4, 5, 6].map((i) => `heat-${i}`);
+// A floating panel over a map (FloatPanel.astro) is the surface at this opacity: it must hold
+// every text token at AA over whatever map is under it, pure black and white included.
+const FLOAT_ALPHA = 0.93;
+// A title on the scrim over a full-bleed map (MapStage fill, head="scrim") sits on the page
+// background at this opacity, where the band is solid behind the words.
+const SCRIM_ALPHA = 0.95;
 const cvd = (a, b) => Math.min(deltaE(a, b, 'protan'), deltaE(a, b, 'deutan'));
 
 let total = 0;
@@ -175,6 +182,30 @@ for (const mode of ['light', 'dark']) {
   for (const bg of CHART_SURFACES) ratio(contrast(t['state-set-aside'], t[bg]), 3, `state-set-aside stripes on ${bg}`, t['state-set-aside'], t[bg]);
   assert(deltaE(t['state-complete'], t['state-waiting']) >= NORMAL_FLOOR, `state-complete vs state-waiting deltaE ${deltaE(t['state-complete'], t['state-waiting']).toFixed(1)} >= ${NORMAL_FLOOR}`);
   assert(cvd(t['state-complete'], t['state-waiting']) >= CVD_TARGET, `state-complete vs state-waiting colour-blind deltaE ${cvd(t['state-complete'], t['state-waiting']).toFixed(1)} >= ${CVD_TARGET}`);
+
+  // Heat: a map's density, cold to warm. It reads by hue, so neighbours must stay apart for
+  // colour-blind readers too, and a label inside any step must reach AA with one of the two inks.
+  // Lightness is not asserted: it rises to the yellow and falls to the red, both ends near L 0.6.
+  heading(`${mode}: heat and map panels`);
+  for (const k of HEAT) assert(t[k] === values[mode === 'light' ? 'dark' : 'light'][k], `${k} ${t[k]} is the same in both themes`);
+  HEAT.slice(1).forEach((k, i) => {
+    const prev = HEAT[i];
+    assert(deltaE(t[prev], t[k]) >= ANY_PAIR_FLOOR, `${prev} vs ${k} normal deltaE ${deltaE(t[prev], t[k]).toFixed(1)} >= ${ANY_PAIR_FLOOR}`);
+    assert(cvd(t[prev], t[k]) >= CVD_TARGET, `${prev} vs ${k} colour-blind deltaE ${cvd(t[prev], t[k]).toFixed(1)} >= ${CVD_TARGET}`);
+    const tritan = deltaE(t[prev], t[k], 'tritan');
+    assert(tritan >= TRITAN_FLOOR, `${prev} vs ${k} tritan deltaE ${tritan.toFixed(1)} >= ${TRITAN_FLOOR}`);
+  });
+  assert(cvd(t['heat-1'], t['heat-6']) >= CVD_TARGET, `heat-1 vs heat-6 colour-blind deltaE ${cvd(t['heat-1'], t['heat-6']).toFixed(1)} >= ${CVD_TARGET}, low is not taken for high`);
+  for (const k of HEAT) {
+    const [w, d] = [contrast(LABEL_INK, t[k]), contrast(values.light.text, t[k])];
+    assert(Math.max(w, d) >= 4.5, `label on ${k} ${t[k]} reaches ${Math.max(w, d).toFixed(2)}:1 in ${w > d ? 'white' : 'dark ink'} >= 4.5`);
+  }
+  for (const under of ['#000000', '#FFFFFF', ...HEAT.map((k) => t[k])]) {
+    const panel = over(t.surface, FLOAT_ALPHA, under);
+    for (const fg of ['text', 'text-secondary', 'text-muted']) ratio(contrast(t[fg], panel), 4.5, `${fg} on a floating panel over ${under}`, t[fg], panel);
+    const band = over(t.bg, SCRIM_ALPHA, under);
+    for (const fg of ['text', 'text-muted']) ratio(contrast(t[fg], band), 4.5, `${fg} on the title scrim over ${under}`, t[fg], band);
+  }
 }
 
 writeFileSync(new URL('../dist/report.json', import.meta.url), JSON.stringify({ total, failures, results }, null, 2) + '\n');

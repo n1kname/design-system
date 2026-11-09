@@ -404,6 +404,78 @@
         "hex": "#A7420D"
       }
     },
+    "heat-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.102,
+          0.5961,
+          0.8157
+        ],
+        "hex": "#1A98D0"
+      }
+    },
+    "heat-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.3255,
+          0.7412,
+          0.6235
+        ],
+        "hex": "#53BD9F"
+      }
+    },
+    "heat-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.651,
+          0.851,
+          0.4157
+        ],
+        "hex": "#A6D96A"
+      }
+    },
+    "heat-4": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9922,
+          0.9059,
+          0.1451
+        ],
+        "hex": "#FDE725"
+      }
+    },
+    "heat-5": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9922,
+          0.5529,
+          0.2353
+        ],
+        "hex": "#FD8D3C"
+      }
+    },
+    "heat-6": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8431,
+          0.1882,
+          0.1529
+        ],
+        "hex": "#D73027"
+      }
+    },
     "dg-primary-bg": {
       "$type": "color",
       "$value": "{c.diagram-primary-bg}"

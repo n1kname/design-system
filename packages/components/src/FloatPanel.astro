@@ -1,0 +1,150 @@
+---
+/**
+ * A panel over a map: the surface, a little see-through and blurred, so the map reads under its
+ * edge and the words keep their contrast. Put it inside a MapStage.
+ *
+ *   top-left, top-right, bottom-left, bottom-right   a corner: controls, a legend
+ *   head   the page's title, in MapStage's `head` slot: the stage places it (fill mode) or
+ *          lays it out as a plain header (framed, and on a phone)
+ *   side   the right edge, full height, scrolling inside when taller. It goes in MapStage's
+ *          `aside` slot, and below 760px it stops floating and follows the map on the page.
+ *
+ * `layout="row"` lines controls up and wraps them (Segmenteds, a FloatToggle); `stack`, the default,
+ * stacks its content with room around it. Give it a `label` and it is a named group.
+ *
+ * A side panel can be put away with a FloatToggle. It fires `float-toggle` with { open }, so the
+ * map can fit what it shows to the room the panels leave (room() in mapstage.js).
+ */
+interface Props {
+  place: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'side' | 'head';
+  layout?: 'row' | 'stack';
+  /** Names the panel for a screen reader: "Map controls". A row of controls becomes a group. */
+  label?: string;
+  as?: 'div' | 'aside' | 'section';
+  id?: string;
+  [key: string]: unknown;
+}
+
+const { place, layout = 'stack', label, as: Tag = place === 'side' ? 'aside' : 'div', id, class: className, ...rest } = Astro.props;
+const role = label && layout === 'row' && Tag === 'div' ? 'group' : undefined;
+---
+
+<Tag class:list={['float', place, layout, className]} id={id} data-float={place} role={role} aria-label={label} {...rest}><slot /></Tag>
+
+<script>
+  import { wireFloatToggles } from './mapstage.js';
+  wireFloatToggles();
+</script>
+
+<style>
+  /* The surface at 93%: over any map, pure black and white included, every text token keeps AA
+     (tokens' check.mjs, "heat and map panels"). */
+  .float {
+    position: absolute;
+    z-index: 2;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--c-surface) 93%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    backdrop-filter: blur(12px) saturate(1.2);
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.16);
+    color: var(--c-text);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2);
+  }
+
+  .stack {
+    display: grid;
+    align-content: start;
+    gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+  }
+
+  /* Corners leave room at the far side for the map's own buttons. */
+  .top-left,
+  .top-right,
+  .bottom-left,
+  .bottom-right {
+    max-width: calc(100% - var(--sp-3) * 2 - 48px);
+  }
+
+  /* Under the title when it floats too (MapStage fill mode sets the room it takes). */
+  .top-left {
+    top: calc(var(--sp-3) + var(--map-stage-head-room, 0px));
+    left: var(--sp-3);
+  }
+
+  .top-right {
+    top: var(--sp-3);
+    right: var(--sp-3);
+  }
+
+  .bottom-left {
+    bottom: var(--sp-3);
+    left: var(--sp-3);
+  }
+
+  .bottom-right {
+    bottom: var(--sp-3);
+    right: var(--sp-3);
+  }
+
+  .side {
+    top: var(--sp-3);
+    right: var(--sp-3);
+    width: var(--float-side-width, 300px);
+    max-height: calc(100% - var(--sp-3) * 2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    gap: var(--sp-5);
+    padding: var(--sp-4);
+  }
+
+  .side[data-closed] {
+    display: none;
+  }
+
+  /* On a phone the map keeps the width, and the side panel follows it on the page, always open:
+     FloatToggle hides itself there, so nothing can be put away out of reach. */
+  @media (max-width: 760px) {
+    .side,
+    .side[data-closed] {
+      position: static;
+      display: grid;
+      width: auto;
+      max-height: none;
+      margin-top: var(--sp-4);
+      background: var(--c-surface);
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  /* Where the blur isn't drawn, the panel is solid instead. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .float {
+      background: var(--c-surface);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .float {
+      background: var(--c-surface);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .float {
+      border-color: CanvasText;
+    }
+  }
+</style>

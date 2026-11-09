@@ -1,0 +1,159 @@
+---
+title: "Map stage"
+description: "A map that fills the content column to the bottom of the window, with a message over it while it reads."
+---
+
+import MapStage from '@n1kname/components/MapStage.astro';
+import MapStageDemo from '../../../components/MapStageDemo.astro';
+
+<MapStageDemo />
+
+The routes are synthetic, on a plain grid with no basemap: a real page brings its own map style.
+
+A fill map reaches past this column, so its demos are whole pages in an app shell. Switch between them in their side nav:
+
+- [Framed](/demos/map-framed/): the header above the map, in the column.
+- [Fill, title on a scrim](/demos/map-fill-scrim/): the map covers the column, and the title sits on a band of the page's background that fades into the map. The default for fill.
+- [Fill, title in a panel](/demos/map-fill/): the map covers the column, and the title floats in a panel like the others.
+
+## What it's for
+
+A page that is one big map, such as routes in a month or where points fall in a year. The map fills the content column down to the bottom of the window, or the whole column, past its gutters, with the title floating over it. Its controls, legend and figures float over it in [floating panels](/components/float-panel/).
+
+## When not to use it
+
+- **A map that is one part of a page,** beside text or charts. Set `--map-stage-height` so it doesn't fill the window, or put the map in a [Figure](/components/figure/).
+- **A place that needs only a pin.** A sentence and a link to a map app say it in less.
+- **Figures that matter more than where they happened.** Put the figures first, and the map under them.
+
+## Anatomy
+
+- **Stage:** holds the title (fill mode), the frame and a side panel, if there is one.
+- **Title:** the `head` slot, a FloatPanel with `place="head"` holding a `compact` [page header](/components/page-header/). It comes before the map in the page, so the h1 is still the first heading.
+- **Frame:** the height. It is at least 28rem tall, and otherwise the window's height minus what sits above it.
+- **Map:** fills the frame, with a hairline border and the large radius. Your map library draws into it.
+- **Message:** a veil that dims the map, with the words on a solid chip in the middle.
+- **Floating panels:** whatever goes in the default slot. A side panel goes in the `aside` slot.
+
+## Variants
+
+| Prop | Values | For |
+|---|---|---|
+| `mode` | `framed` (default) | The header stands above the map, and the map sits in the column with a border and radius. For a page with more than the map, or a map that is one part of a page. |
+| | `fill` | The map covers the whole column: past its gutters, from the column's top to the window's bottom, up to the side nav, with no border. The title floats over it from the `head` slot. Put the stage first in the column with nothing above it, and take away the page's top padding. |
+| `head` | `scrim` (default) | In fill mode the title sits on a band across the top of the map: the page's background at 95%, solid behind the words and `--sp-3` below them, then fading out over `--sp-5`. Its height is the title row's. Every panel at the top, and the map's own buttons in its top corners, start `--sp-4` below the band's lower edge, so none sits under it. |
+| | `box` | In fill mode the title floats in a panel, like the controls, which stack `--sp-2` under it. |
+
+Below 760px fill falls back to framed: the title stands above the map as a plain header, and the map takes the gutters and border back. A small map under a floating title and floating controls would be mostly covered.
+
+| Custom property | Default | For |
+|---|---|---|
+| `--map-stage-offset` | `10.5rem` | What sits above the frame from 1024px up: the header and the page title. |
+| `--map-stage-min` | `28rem` | The least height from 1024px up. |
+| `--map-stage-offset-narrow` | `14rem` | The same below 1024px, where the header is taller. |
+| `--map-stage-min-narrow` | `26rem` | The least height below 1024px. |
+| `--map-stage-height` | none | One fixed height, for a map that is one part of a page. |
+| `--map-stage-fill-offset` | `0` | Fill: what sits above the column from 1024px up. |
+| `--map-stage-fill-offset-narrow` | `57px` | Fill from 760 to 1023px: the app shell's top bar. |
+| `--map-stage-bleed` | `--layout-gutter` | Fill: how far the map reaches past each side of the column. |
+
+## States
+
+`setStage(stage, state)` in `mapstage.js` chooses which message covers the map. Each message shows only if the stage was given it.
+
+- **`loading`:** the map dims to half and the loading message shows. This is how the stage starts when it has a `loading` message.
+- **`empty`:** the map has nothing to show, such as a month with no routes.
+- **`failed`:** the map can't start, such as in a browser with WebGL turned off. Hide the map's buttons then too.
+- **`ready`:** no message.
+- **Reduced motion:** the map's dimming changes at once.
+- **Title floating:** in fill mode the stage measures the title and sets `--map-stage-head-room`, so the panels at the top start below it, and `room()` keeps what the map fits clear of it. It is `0px` while the title doesn't float.
+
+## Tokens
+
+`--c-bg`, `--c-border`, `--c-surface`, `--c-surface-sunken`, `--c-text-secondary`, `--ease-out`, `--leading-body-sm`, `--motion-base`, `--radius-lg`, `--radius-md`, `--sp-2`, `--sp-3`, `--sp-4`, `--text-body-sm`.
+
+The title scrim is `--c-bg` at 95%. At 94%, muted text over a black map reaches only 4.48:1 in light mode, so 95% is the lowest that keeps AA. Checks, "heat and map panels", asserts it.
+
+The veil alone can't keep words readable over every map. Over a dark satellite picture it reaches only 2.4:1. So the words sit on a solid surface chip, where `--c-text-secondary` passes AA on any map.
+
+## Keyboard and screen reader
+
+- **The h1 stays in the page in fill mode,** in the title over the map, and comes before the map, so headings and reading order are the same as framed.
+- **The map is a region** named by `label`, such as "Routes in November", so it can be found from the landmarks list.
+- **The loading message is a status,** so it is read out when it appears.
+- **A map can't be read without sight.** Say what it shows in text too: the figures in the side panel, or a table beside it.
+- **MapLibre's own keyboard controls** work once the map has focus: arrows pan, plus and minus zoom.
+
+## Content
+
+- **Name the region by what it shows,** with the period: "Routes in November", not "Map".
+- **Say why a map is empty** in words that fit it: "No routes this month", not "No data".
+- **Say what to do when it fails,** if there is anything: "This map needs WebGL, which this browser has turned off."
+
+## Status
+
+New. Taken from the Map and Monthly pages of a dashboard, and fill mode from the React pages before them. Changed from there: the message sits on a solid chip, and the height can be set from outside.
+
+## Code
+
+```astro wrap
+---
+import MapStage from '@n1kname/components/MapStage.astro';
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+---
+
+<MapStage id="map" label="Routes in November" loading="Reading the routes…" empty="No routes this month." failed="This map needs WebGL.">
+  <FloatPanel place="top-left" layout="row" label="Map controls">
+    <Segmented id="view" label="View" value="2d" options={[{ value: '2d', label: '2D' }, { value: '3d', label: '3D' }]} />
+  </FloatPanel>
+</MapStage>
+```
+
+Fill mode, with the title on its scrim:
+
+```astro wrap
+---
+import MapStage from '@n1kname/components/MapStage.astro';
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import FloatToggle from '@n1kname/components/FloatToggle.astro';
+import PageHeader from '@n1kname/components/PageHeader.astro';
+import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+---
+
+<main>
+  <MapStage id="map" mode="fill" label="Routes in November">
+    <FloatPanel slot="head" place="head">
+      <PageHeader title="Monthly" rule compact>
+        <PeriodPicker slot="actions" id="month" param="month" />
+      </PageHeader>
+    </FloatPanel>
+    <FloatPanel place="top-left" layout="row" label="Map controls">
+      <Segmented id="view" label="View" value="2d" options={[{ value: '2d', label: '2D' }, { value: '3d', label: '3D' }]} />
+      <FloatToggle for="figures">Figures</FloatToggle>
+    </FloatPanel>
+    <FloatPanel slot="aside" place="side" id="figures" label="The month in figures">…</FloatPanel>
+  </MapStage>
+</main>
+```
+
+## From script
+
+```js
+import maplibregl from 'maplibre-gl';
+import { room, setStage } from '@n1kname/components/mapstage.js';
+
+const box = document.getElementById('map');
+let map;
+try {
+  map = new maplibregl.Map({ container: box, style });
+} catch {
+  setStage(box, 'failed');
+}
+const rows = await fetch(url).then((r) => r.json());
+setStage(box, rows.length ? 'ready' : 'empty');
+map.fitBounds(bounds, { padding: room(box) });
+```
+
+A MapLibre popup with `className: 'place-card'` loses MapLibre's own box and tip. Fill it with the charts' pointer card, `<div class="chart-pointer-card">…</div>`, and hover over a map looks like hover over a chart. The [heat ramp](/components/ramp-legend/) demo shows one.

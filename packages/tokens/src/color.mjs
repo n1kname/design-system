@@ -50,6 +50,12 @@ const oklabToRgb = ([L, a, b]) => {
   ];
 };
 
+// A colour at `alpha` over another, composited in sRGB as the browser paints a see-through layer.
+export const over = (top, alpha, under) => {
+  const [t, u] = [hexToRgb(top), hexToRgb(under)];
+  return rgbToHex(t.map((c, i) => c * alpha + u[i] * (1 - alpha)));
+};
+
 const lchToLab = (L, C, h) => [L, C * Math.cos((h * Math.PI) / 180), C * Math.sin((h * Math.PI) / 180)];
 
 export const hexToOklch = (hex) => {

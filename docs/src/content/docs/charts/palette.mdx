@@ -7,6 +7,7 @@ import Swatches from '../../../components/Swatches.astro';
 import Ramp from '../../../components/Ramp.astro';
 import { sequential, diverging } from '../../../lib/examples.mjs';
 
+export const heat = [1, 2, 3, 4, 5, 6].map((i) => `var(--c-heat-${i})`);
 export const seq2 = [1, 2, 3, 4, 5, 6, 7].map((i) => `var(--c-seq2-${i})`);
 
 Every chart colour does one job. Pick the job first, then the colour.
@@ -18,6 +19,7 @@ Every chart colour does one job. Pick the job first, then the colour.
 | How much | `--c-seq-*`, `--c-seq2-*` | One hue. Step 1 means little, in both themes. |
 | Above or below | `--c-div-*` | Two hues around a near-grey midpoint. |
 | Good or bad | `--c-status-*` | Reserved. Always with an icon and a label. |
+| How dense, on a map | `--c-heat-*` | Cold to warm, the same in both themes. On a basemap, with a second cue. |
 | Where each day of a record stands | `--c-state-*` | Complete, waiting, set aside, missing. For [day strips](/components/day-strips/). |
 
 ## Categorical
@@ -54,6 +56,14 @@ Teal below the baseline, orange above it. The midpoint has almost no chroma, bec
   <Ramp colors={diverging} labels={['neg-3', 'neg-2', 'neg-1', 'mid', 'pos-1', 'pos-2', 'pos-3']} />
 </div>
 
+## Heat
+
+Six steps from cold to warm, for a map's density: hexagons or columns coloured by rank. It is the same in both themes, because it sits on a basemap, not on the page. It reads by hue, not by lightness, so pair it with a second cue, such as height in 3D or a [ramp legend](/components/ramp-legend/), which has a live demo.
+
+<div className="not-content">
+  <Ramp colors={heat} labels={['1', '2', '3', '4', '5', '6']} />
+</div>
+
 ## Status
 
 Reserved meaning, never "series 4". Good and critical differ in lightness as well as hue, because at the same lightness they collapse for colour-blind readers.
@@ -83,4 +93,5 @@ The state of each day in a long record, all from the palette above. Complete is 
 - **Deep teal sits under the usual chroma floor.** Slot 2 in light reaches 0.08, where the guideline asks for 0.10, because sRGB can't go further at that lightness. It stays far from the orange, which is what the floor protects.
 - **Dark mode goes above the usual lightness limit.** The common guideline stops at 0.67. The brand orange sits at 0.69, and I'd rather keep the real orange, so the checks allow up to 0.76.
 - **Complete and waiting are soft on purpose,** under 3:1 against the card. They are most of a strip, and the tooltip and a table carry the detail. Missing and set aside reach 3:1.
+- **Heat reads by hue, not by lightness.** Both ends sit near the same lightness and the yellow is the lightest, so in greyscale low and high look alike. The yellow vanishes on a light surface (1.3:1 on white). Use it on a map, with a second cue.
 - **The simulations are models.** None of this has been tested with colour-blind readers yet. If it fails for you, please tell me.

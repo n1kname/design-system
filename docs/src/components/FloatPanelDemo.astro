@@ -1,0 +1,140 @@
+---
+/**
+ * Floating panels over a map: controls at the top left, and figures at the right that can be put
+ * away. The routes fit the room the panels leave, again when the figures go or come back.
+ * Synthetic routes and figures.
+ */
+import Facts from '@n1kname/components/Facts.astro';
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import FloatToggle from '@n1kname/components/FloatToggle.astro';
+import MapStage from '@n1kname/components/MapStage.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+import { KINDS } from '../lib/map-demo.js';
+
+const moves = [
+  { kind: KINDS[0], n: 6, km: '18.4 km' },
+  { kind: KINDS[1], n: 4, km: '61.0 km' },
+  { kind: KINDS[2], n: 4, km: '22.7 km' },
+];
+---
+
+<div class="not-content" style="--map-stage-height: 34rem">
+  <MapStage id="float-demo-map" label="Fictional routes on a plain grid" failed="This map needs WebGL, which this browser has turned off.">
+    <FloatPanel place="top-left" layout="row" label="Map controls">
+      <Segmented id="float-demo-view" label="View" value="2d" options={[{ value: '2d', label: '2D' }, { value: '3d', label: '3D' }]} />
+      <FloatToggle for="float-demo-figures">Figures</FloatToggle>
+    </FloatPanel>
+    <FloatPanel slot="aside" place="side" id="float-demo-figures" label="The month in figures">
+      <Facts
+        variant="tiles"
+        items={[
+          { label: 'Routes', value: '14', icon: 'route', accent: 'var(--c-chart-1)' },
+          { label: 'Distance', value: '102 km', icon: 'map-pin', accent: 'var(--c-chart-3)' },
+        ]}
+      />
+      <section class="moves">
+        <h3 class="t-label">Movement</h3>
+        <ul>
+          {
+            moves.map((m) => (
+              <li>
+                <i style={`--swatch: ${m.kind.color}`} aria-hidden="true" />
+                <span class="what">{m.kind.label}</span>
+                <span class="n">×{m.n}</span>
+                <span class="km">{m.km}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </FloatPanel>
+  </MapStage>
+</div>
+
+<script>
+  import { room, setStage } from '@n1kname/components/mapstage.js';
+  import { bounds, groundMap, kindColour, maplibregl, reduced, routes } from '../lib/map-demo.js';
+
+  const box = document.getElementById('float-demo-map')!;
+  const data = routes(9);
+  const fit = (animate = false) => map?.fitBounds(bounds(data), { padding: room(box), duration: animate && !reduced() ? 400 : 0 });
+  const map = groundMap(box, {
+    layers: (m) => {
+      m.addSource('routes', { type: 'geojson', data });
+      m.addLayer({ id: 'routes', type: 'line', source: 'routes', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': kindColour(), 'line-width': 2.5, 'line-opacity': 0.85 } });
+      fit();
+    },
+    repaint: (m) => m.setPaintProperty('routes', 'line-color', kindColour()),
+  });
+
+  if (map) {
+    // The figures float at the right, so the map's own buttons sit at the bottom left.
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
+    let width = 0;
+    new ResizeObserver(() => {
+      if (Math.abs(box.clientWidth - width) < 1) return;
+      width = box.clientWidth;
+      if (map.loaded()) fit();
+    }).observe(box);
+    document.getElementById('float-demo-figures')!.addEventListener('float-toggle', () => fit(true));
+    document.getElementById('float-demo-view')!.addEventListener('segment-change', (e) => {
+      const tall = (e as CustomEvent).detail.value === '3d';
+      map.easeTo({ pitch: tall ? 55 : 0, bearing: tall ? -15 : 0, duration: reduced() ? 0 : 600 });
+    });
+  } else setStage(box, 'failed');
+</script>
+
+<style>
+  .moves {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .moves h3 {
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  .moves ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .moves li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    padding-block: var(--sp-2);
+    border-bottom: 1px solid var(--c-border);
+    font-size: var(--text-body-sm);
+  }
+
+  .moves li:last-child {
+    border-bottom: 0;
+  }
+
+  .moves i {
+    flex: none;
+    align-self: center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--swatch);
+  }
+
+  .what {
+    flex: 1;
+  }
+
+  .n {
+    color: var(--c-text-muted);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .km {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

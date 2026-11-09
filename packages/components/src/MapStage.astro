@@ -1,0 +1,284 @@
+---
+/**
+ * A page that is one big map, in one of two modes:
+ *
+ *   framed  the default. The map sits in the content column under the page's header, at least
+ *           28rem tall and otherwise down to the bottom of the window, with a border and radius.
+ *   fill    the map covers the whole column: past its gutters, from the top of the column to the
+ *           bottom of the window, up to the side nav. The page's title floats over it, from the
+ *           `head` slot. Put the stage first in the column, with nothing above it. Below 760px it
+ *           falls back to framed, with the title above the map.
+ *
+ * What goes with the map floats over it in FloatPanels, put in the default slot; a side panel goes
+ * in the `aside` slot, so on a phone it can leave the map and follow it on the page. The title goes
+ * in the `head` slot, as a FloatPanel with place="head" holding a compact PageHeader: it comes
+ * before the map in the page, so the h1 is the first thing read. `head` says how it floats in fill
+ * mode: on a band that fades into the map (`scrim`, the default), or in a panel like the others
+ * (`box`). Every panel at the top starts below it. In framed mode, and on a phone, it is a plain
+ * header above the map.
+ *
+ * Give the map to MapLibre (or any canvas map) by the id: new maplibregl.Map({ container: id }).
+ * While it reads, or when it has nothing, a message covers it: setStage() in mapstage.js picks one.
+ * Hover cards in a MapLibre popup with className 'place-card' wear the charts' pointer card.
+ *
+ * The framed height comes from custom properties a page can set: --map-stage-offset (what sits
+ * above it: the header and the page title, 10.5rem), --map-stage-min (28rem), and below 1024px
+ * --map-stage-offset-narrow and --map-stage-min-narrow (14rem and 26rem). --map-stage-height
+ * overrides them all, for a map that is one part of a page. In fill mode --map-stage-fill-offset
+ * (0) and, from 760 to 1023px, --map-stage-fill-offset-narrow (57px, the shell's top bar) are what
+ * sits above the column, and --map-stage-bleed (the shell's --layout-gutter) is how far it reaches
+ * past each side of the column.
+ */
+import '@n1kname/charts/pointer.css';
+
+interface Props {
+  /** The map element's id, for the map library. */
+  id: string;
+  /** What the map shows, for a screen reader: "Routes in November". */
+  label: string;
+  /** In the column under the header, or over the whole column. */
+  mode?: 'framed' | 'fill';
+  /** In fill mode, how the title floats: on a band that fades into the map (the default), or in a panel. */
+  head?: 'box' | 'scrim';
+  /** Shown over the map while it reads. Shown from the start; setStage(stage, 'ready') hides it. */
+  loading?: string;
+  /** Shown over the map when it has nothing to show. */
+  empty?: string;
+  /** Shown instead of the map when it can't start, such as without WebGL. */
+  failed?: string;
+  [key: string]: unknown;
+}
+
+const { id, label, mode = 'framed', head = 'scrim', loading, empty, failed, class: className, ...rest } = Astro.props;
+// Rendered, not just asked: a slot filled by an expression that renders nothing still "has" it.
+const headHtml = Astro.slots.has('head') ? (await Astro.slots.render('head')).trim() : '';
+const hasHead = headHtml !== '';
+---
+
+<div
+  class:list={['map-stage', className]}
+  data-map-stage
+  data-mode={mode}
+  data-head={hasHead ? head : undefined}
+  data-loading={loading ? '' : undefined}
+  {...rest}
+>
+  {hasHead && <div class="head" set:html={headHtml} />}
+  <div class="frame">
+    <div id={id} class="map" role="region" aria-label={label}></div>
+    {loading && <p class="over" data-over="loading" role="status"><span>{loading}</span></p>}
+    {empty && <p class="over" data-over="empty" hidden><span>{empty}</span></p>}
+    {failed && <p class="over" data-over="failed" hidden><span>{failed}</span></p>}
+    <slot />
+  </div>
+  <slot name="aside" />
+</div>
+
+<script>
+  // In fill mode the title floats over the map, and the panels at the top start below it: the room
+  // it takes, as --map-stage-head-room, measured from the stage's top inset. In a box, the panels
+  // stack --sp-2 under the title's box; on a scrim, they start --sp-4 under the band's lower edge,
+  // where its fade ends, so no panel sits under it. Nothing while the title doesn't float.
+  document.querySelectorAll<HTMLElement>('[data-map-stage][data-head]').forEach((stage) => {
+    const head = stage.querySelector<HTMLElement>(':scope > .head')!;
+    const px = (name: string, fallback: number) => parseFloat(getComputedStyle(stage).getPropertyValue(name)) || fallback;
+    const measure = () => {
+      if (getComputedStyle(head).position !== 'absolute') return stage.style.setProperty('--map-stage-head-room', '0px');
+      const scrim = stage.dataset.head === 'scrim';
+      // The band itself, or the panel that holds the title (Astro can put a script first in the slot).
+      const edge = scrim ? head : (head.querySelector<HTMLElement>(':scope > :not(script, style)') ?? head);
+      const room = edge.getBoundingClientRect().bottom - stage.getBoundingClientRect().top - px('--sp-3', 12) + (scrim ? px('--sp-4', 16) : px('--sp-2', 8));
+      stage.style.setProperty('--map-stage-head-room', `${Math.round(room)}px`);
+    };
+    new ResizeObserver(measure).observe(head);
+    matchMedia('(max-width: 760px)').addEventListener('change', measure);
+    measure();
+  });
+</script>
+
+<style>
+  /* The wrapper holds the title, the frame and a side panel, which floats over the frame's right
+     edge on a wide screen and comes after it on a phone. */
+  .map-stage {
+    position: relative;
+  }
+
+  .frame {
+    position: relative;
+    height: var(--map-stage-height, max(var(--map-stage-min, 28rem), calc(100dvh - var(--map-stage-offset, 10.5rem))));
+  }
+
+  @media (max-width: 1023px) {
+    .frame {
+      height: var(--map-stage-height, max(var(--map-stage-min-narrow, 26rem), calc(100dvh - var(--map-stage-offset-narrow, 14rem))));
+    }
+  }
+
+  /* Absolute over MapLibre's own position: relative on the same element. */
+  .frame > .map {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface-sunken, var(--c-bg));
+    overflow: hidden;
+    transition: opacity var(--motion-base) var(--ease-out);
+  }
+
+  .map-stage[data-loading] .map {
+    opacity: 0.5;
+  }
+
+  /* The title, when it doesn't float: a plain header above the map, unboxed, as a page header
+     stands. In framed mode, and in fill mode on a phone. */
+  .head {
+    margin-bottom: var(--sp-5);
+  }
+
+  .head :global(.float) {
+    position: static;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Fill: the whole column, past its gutters and down to the window's bottom, with no frame of its
+     own. From 760px up; narrower, it is framed. */
+  @media (min-width: 761px) {
+    .map-stage[data-mode='fill'] {
+      margin-inline: calc(-1 * var(--map-stage-bleed, var(--layout-gutter, 0px)));
+    }
+
+    .map-stage[data-mode='fill'] .frame {
+      height: calc(100dvh - var(--map-stage-fill-offset, 0px));
+    }
+
+    .map-stage[data-mode='fill'] .map,
+    .map-stage[data-mode='fill'] .over {
+      border: 0;
+      border-radius: 0;
+    }
+
+    .map-stage[data-mode='fill'] .head {
+      position: absolute;
+      top: var(--sp-3);
+      left: var(--sp-3);
+      z-index: 3;
+      max-width: calc(100% - var(--sp-3) * 2 - 48px);
+      margin: 0;
+    }
+
+    /* In a panel, like everything else over the map. */
+    .map-stage[data-mode='fill'][data-head='box'] .head :global(.float) {
+      padding: var(--sp-3) var(--sp-4);
+      border: 1px solid var(--c-border);
+      background: color-mix(in srgb, var(--c-surface) 93%, transparent);
+      -webkit-backdrop-filter: blur(12px) saturate(1.2);
+      backdrop-filter: blur(12px) saturate(1.2);
+      box-shadow: 0 8px 28px rgb(0 0 0 / 0.16);
+    }
+
+    /* On a band across the top of the map: the page's own background, solid behind the words and
+       --sp-3 below them, then fading out over --sp-5, so the title reads as the page's and the map
+       runs on under it. Its height is the title row's; the panels start below it (head-room). */
+    .map-stage[data-mode='fill'][data-head='scrim'] .head {
+      top: 0;
+      left: 0;
+      right: 0;
+      max-width: none;
+      padding: var(--sp-4) var(--sp-5) calc(var(--sp-3) + var(--sp-5));
+      background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--c-bg) 95%, transparent) 0,
+        color-mix(in srgb, var(--c-bg) 95%, transparent) calc(100% - var(--sp-5)),
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    .map-stage[data-mode='fill'][data-head='scrim'] .head :global(*) {
+      pointer-events: auto;
+    }
+
+    /* The band spans the map, so everything at its top starts below it: the side panel, a
+       top-right panel, and the map's own buttons in the top corners. */
+    .map-stage[data-mode='fill'][data-head='scrim'] > :global(.side) {
+      top: calc(var(--sp-3) + var(--map-stage-head-room, 0px));
+      max-height: calc(100% - var(--map-stage-head-room, 0px) - var(--sp-3) * 2);
+    }
+
+    .map-stage[data-mode='fill'][data-head='scrim'] .frame > :global(.top-right) {
+      top: calc(var(--sp-3) + var(--map-stage-head-room, 0px));
+    }
+
+    .map-stage[data-mode='fill'][data-head='scrim'] :global(.maplibregl-ctrl-top-left),
+    .map-stage[data-mode='fill'][data-head='scrim'] :global(.maplibregl-ctrl-top-right) {
+      top: var(--map-stage-head-room, 0px);
+    }
+  }
+
+  @media (min-width: 761px) and (max-width: 1023px) {
+    .map-stage[data-mode='fill'] .frame {
+      height: calc(100dvh - var(--map-stage-fill-offset-narrow, 57px));
+    }
+  }
+
+  /* Fill falls back to framed on a phone: room above for the title, as a page has. */
+  @media (max-width: 760px) {
+    .map-stage[data-mode='fill'] {
+      padding-top: var(--sp-5);
+    }
+  }
+
+  /* What covers the map while it reads, or when it has nothing: a veil that dims the map, and
+     the words on a solid chip, because no veil keeps text readable over every map under it. */
+  .over {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: var(--sp-4);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--c-bg) 55%, transparent);
+    pointer-events: none;
+  }
+
+  .over[hidden] {
+    display: none;
+  }
+
+  .over span {
+    max-width: 40ch;
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    color: var(--c-text-secondary);
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    text-align: center;
+  }
+
+  /* The hover card: the charts' pointer card, without MapLibre's own box and tip. */
+  .map-stage :global(.place-card .maplibregl-popup-content) {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .map-stage :global(.place-card .maplibregl-popup-tip) {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame > .map {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,110 @@
+---
+title: "Floating panel"
+description: "Controls, a legend or figures, floating over a map on a see-through, blurred surface."
+---
+
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import FloatToggle from '@n1kname/components/FloatToggle.astro';
+import FloatPanelDemo from '../../../components/FloatPanelDemo.astro';
+
+<FloatPanelDemo />
+
+Put the figures away and the routes move to fill the room. Narrow the window below 760px and the figures come under the map. The routes and figures are synthetic.
+
+## What it's for
+
+To keep what goes with a map on the map: the controls that change it, the legend that explains it, and the figures it adds up to. The map keeps the whole column.
+
+## When not to use it
+
+- **Over anything but a map** in a [map stage](/components/map-stage/). On a page, a card or a [side panel](/components/side-panel/) does it.
+- **More than three panels on one map.** They cover what they explain. Move the rest under the map.
+- **A long read.** A side panel scrolls, but past a screen of figures, give them a page of their own.
+
+## Anatomy
+
+- **Surface:** the card surface at 93%, blurred 12px behind, with a hairline border, the large radius and a soft shadow.
+- **Place:** a corner, or the right edge from top to bottom.
+- **Content:** a row of controls, or anything stacked with room around it.
+- **Toggle:** a [FloatToggle](#floattoggle) in the controls puts a side panel away and brings it back.
+
+## Variants
+
+| `place` | For |
+|---|---|
+| `top-left` | The map's controls, such as a [Segmented](/components/segmented/) for 2D or 3D. |
+| `top-right`, `bottom-right` | Something small, when the map's own buttons sit elsewhere. |
+| `bottom-left` | A [legend](/components/legend/) or a [ramp legend](/components/ramp-legend/). |
+| `head` | The page's title over a [map stage](/components/map-stage/) in fill mode, in its `head` slot. The stage places it, and the panels at the top start below it. In framed mode and on a phone it is a plain header above the map. |
+| `side` | Figures, at the right, 300px wide (`--float-side-width`). It goes in MapStage's `aside` slot. Below 760px it stops floating and follows the map on the page. |
+
+`layout="row"` lines controls up in a row that wraps, with tight padding. `stack`, the default, stacks content with room around it.
+
+A corner panel leaves 48px at the far side for the map's own buttons. When a side panel floats at the right, put the map's buttons at the bottom left.
+
+## States
+
+- **Open and put away:** a side panel with a FloatToggle. While it's away, the toggle reads as off.
+- **On a phone:** a side panel is always open, under the map, solid and without the shadow. The toggle hides, so nothing is put away out of reach.
+- **Less transparency:** with the system's reduce transparency setting on, or where blur isn't drawn, the panel is solid.
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-text`, `--c-text-secondary`, `--ease-hover`, `--motion-hover`, `--radius-lg`, `--radius-md`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--text-body-sm`.
+
+The surface is 93% opaque, not 90%. At 90%, muted text drops to 4.28:1 over a black map in light mode. At 93%, every text token keeps AA over any map, pure black and white included. The tokens' checks assert this for each theme (Checks, "heat and map panels").
+
+## Keyboard and screen reader
+
+- **A row of controls with a `label` is a group,** so a screen reader says what the buttons are for.
+- **A side panel is an `aside`,** a complementary landmark, named by its `label`.
+- **The toggle is a disclosure button:** `aria-expanded` and `aria-controls` say what it opens and whether it's open.
+- **Tab order follows the page:** the controls come before the side panel, which comes after the map.
+
+## Content
+
+- **Controls first, in the order they are used.** What the map shows comes before how it is drawn.
+- **Name the toggle by what it shows,** such as "Figures", not "Hide".
+- **Keep the side panel to what the map adds up to.** Detail about one place goes in its hover card.
+
+## Status
+
+New. Taken from the Map and Monthly pages of a dashboard. Changed from there: the surface is 93% instead of 90%, and it turns solid with reduce transparency.
+
+## FloatToggle
+
+Puts a side panel away and brings it back. It is the same height as a Segmented and hides below 760px. `for` is the side panel's id, and `open` says whether it starts open (the default).
+
+## Code
+
+```astro wrap
+---
+import MapStage from '@n1kname/components/MapStage.astro';
+import FloatPanel from '@n1kname/components/FloatPanel.astro';
+import FloatToggle from '@n1kname/components/FloatToggle.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+import Facts from '@n1kname/components/Facts.astro';
+---
+
+<MapStage id="map" label="Routes in November">
+  <FloatPanel place="top-left" layout="row" label="Map controls">
+    <Segmented id="view" label="View" value="2d" options={[{ value: '2d', label: '2D' }, { value: '3d', label: '3D' }]} />
+    <FloatToggle for="figures">Figures</FloatToggle>
+  </FloatPanel>
+  <FloatPanel slot="aside" place="side" id="figures" label="The month in figures">
+    <Facts id="tiles" variant="tiles" />
+  </FloatPanel>
+</MapStage>
+```
+
+## From script
+
+`room()` in `mapstage.js` measures the panels that float over the map. It returns padding for MapLibre's `fitBounds` and `easeTo`, so what the map shows stays clear of them. It goes under a top panel, above a bottom one, and left of a side panel while that floats. Fit again when a side panel opens or closes, and when the map changes width.
+
+```js
+import { room } from '@n1kname/components/mapstage.js';
+
+const box = document.getElementById('map');
+const fit = () => map.fitBounds(bounds, { padding: room(box), maxZoom: 14 });
+document.getElementById('figures').addEventListener('float-toggle', fit);
+```
