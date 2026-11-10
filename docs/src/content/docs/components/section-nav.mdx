@@ -1,0 +1,88 @@
+---
+title: "Section nav"
+description: "The sections of a long page in the margin beside it: where you are, and any section one click or one Tab away."
+---
+
+import SectionNav from '@n1kname/components/SectionNav.astro';
+
+<div class="not-content section-nav-demo">
+  <SectionNav
+    title="Contents"
+    items={[
+      { href: 'what-its-for', text: "What it's for" },
+      { href: 'when-not-to-use-it', text: 'When not to use it' },
+      { href: 'anatomy', text: 'Anatomy' },
+      { href: 'states', text: 'States' },
+      { href: 'keyboard-and-screen-reader', text: 'Keyboard and screen reader' },
+      { href: 'code', text: 'Code' },
+    ]}
+  />
+</div>
+
+This one lists this page's sections: scroll and the current one is marked. The [full-page demo](/demos/section-nav/) shows it in a margin beside a long read.
+
+<style>{`
+  .section-nav-demo { margin-block: 1.5rem; padding: 1.25rem 1.5rem; border: 1px solid var(--c-border); border-radius: var(--radius-lg); background: var(--c-bg); }
+  .section-nav-demo .section-nav { position: static; max-height: none; }
+`}</style>
+
+## What it's for
+
+A long page whose sections a reader may want to jump between, such as a case study: the list stays in view in the margin beside the text, marks the section you're in, and puts every section one click or one Tab away. It replaces a menu that has to be found and opened.
+
+## When not to use it
+
+- **Moving between pages.** That's [Side nav](/components/side-nav/) or [Page nav](/components/page-nav/).
+- **Fewer than three sections.** There's nothing to navigate.
+- **No margin to put it in.** On a phone, keep a compact menu instead; this never hides itself.
+
+## Anatomy
+
+- **Title:** optional, small capitals above the list, such as "Contents". The navigation is named for screen readers by `label` either way.
+- **List:** one link per section, on a hairline rule. The current section's link is at full strength with the accent bar on the rule.
+
+## Variants
+
+None. The page decides where it sits.
+
+## States
+
+- **Current:** the last section whose heading has passed the top third of the window. Its link gets `aria-current="location"`. It changes at once as you scroll, never gliding: it changes too often for motion.
+- **Before the first section:** nothing is current.
+- **Taller than the window:** the list scrolls itself to keep the current link in view; the page never moves for it.
+- **Hover and focus:** hover brings a link to full strength; focus gets the focus ring.
+- **Without script:** a plain list of links.
+
+## Tokens
+
+`--c-accent`, `--c-border`, `--c-focus`, `--c-text`, `--c-text-muted`, `--ease-hover`, `--motion-hover`, `--radius-sm`, `--sp-1`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-8`, `--text-body-sm`, `--text-overline`. `--section-nav-top` sets how far from the top it sticks, 64px by default; set it below a sticky header.
+
+## Keyboard and screen reader
+
+- **Every link is in the tab order, always.** It never hides, so a keyboard user reaches it from the top of the page.
+- **Enter follows a link** to its heading, and the next Tab continues from there.
+- **The current link is `aria-current="location"`,** so a screen reader says which section you're in.
+
+## Content
+
+- **Links:** the sections' own headings, word for word, so a reader recognises where they land.
+
+## Status
+
+New. Used by a portfolio's case studies, where a menu in the header was easy to miss and couldn't be reached by keyboard until you scrolled.
+
+## Code
+
+```astro wrap
+---
+import SectionNav from '@n1kname/components/SectionNav.astro';
+const { headings } = await render(entry);
+---
+
+<div class="with-margin">
+  <SectionNav title="Contents" items={headings.filter((h) => h.depth === 2).map((h) => ({ href: h.slug, text: h.text }))} />
+  <article>…</article>
+</div>
+```
+
+The list sticks inside whatever holds it, so give it a column or a margin as long as the text.

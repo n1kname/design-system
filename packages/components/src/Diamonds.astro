@@ -1,0 +1,385 @@
+---
+/**
+ * A design process as diamonds: each phase opens out (diverge) and narrows again (converge), with
+ * the moments between them on the line, such as kick-off and launch. A last phase can repeat
+ * instead, as smaller diamonds that fade out, for the work that goes on after launch.
+ *
+ * Drawn in HTML and SVG, so the words are text: they wrap, scale with the page, and are read out
+ * in order (moment, phase, its two halves and their notes, its name). Below 560px wide the phases
+ * stack. The halves use three fixed tones, the closing half paler, with the dark text on them, so
+ * they read the same in either theme.
+ *
+ * Once, as it comes into view, the parts arrive left to right. Nothing moves under reduced
+ * motion, and without script it is simply there.
+ */
+type Tone = 'cool' | 'accent' | 'sun';
+
+interface Half {
+  /** Inside the half, such as "Discover". */
+  label: string;
+  /** Above the half: a short title ("Diverge") and the question it asks. */
+  note?: { title: string; text: string };
+}
+
+interface Phase {
+  /** Under the diamond, such as "Discovery". */
+  name: string;
+  /** Under the name, such as "Design the right thing". */
+  motto?: string;
+  tone?: Tone;
+  /** The two halves: opening out, then narrowing. Leave out with `repeat`. */
+  halves?: [Half, Half];
+  /** Smaller diamonds that fade out, for work that keeps going. */
+  repeat?: boolean;
+  /** Above a repeating phase, as a half's note is above a half. */
+  note?: { title: string; text: string };
+}
+
+interface Props {
+  /** What the diagram is, for a screen reader: the list is named by it. */
+  title: string;
+  phases: Phase[];
+  /** The moment before each phase, in order: "Kick off", "Plan", "Launch". */
+  milestones?: (string | undefined)[];
+  caption?: string;
+  class?: string;
+}
+
+const { title, phases, milestones = [], caption, class: className } = Astro.props;
+const tones: Tone[] = ['cool', 'accent', 'sun'];
+const items = phases.flatMap((p, i) => {
+  const tone = p.tone ?? tones[i % tones.length];
+  return [...(milestones[i] ? [{ kind: 'moment' as const, label: milestones[i]!, tone }] : []), { kind: 'phase' as const, phase: p, tone }];
+});
+const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repeat ? 'minmax(0, 0.8fr)' : 'minmax(0, 1fr)')).join(' ');
+---
+
+<figure class:list={['diamonds', className]} data-diamonds>
+  <ol class="row" aria-label={title} style={`--cols: ${columns}`}>
+    {
+      items.map((it, i) =>
+        it.kind === 'moment' ? (
+          <li class="moment" data-tone={it.tone} style={`--i: ${i}`}>
+            <span class="dot" aria-hidden="true" />
+            <span class="moment-label">{it.label}</span>
+          </li>
+        ) : (
+          <li class:list={['phase', { repeat: it.phase.repeat }]} data-tone={it.tone} style={`--i: ${i}`}>
+            <div class="notes">
+              {it.phase.repeat
+                ? it.phase.note && (
+                    <p class="note wide">
+                      <strong>{it.phase.note.title}</strong> {it.phase.note.text}
+                    </p>
+                  )
+                : it.phase.halves?.map(
+                    (h) =>
+                      h.note && (
+                        <p class="note">
+                          <strong>{h.note.title}</strong> {h.note.text}
+                        </p>
+                      ),
+                  )}
+            </div>
+            <div class="shape">
+              {it.phase.repeat ? (
+                <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                  {[0, 1, 2].map((k) => (
+                    <g opacity={[1, 0.55, 0.25][k]}>
+                      <polygon class="open" points={`${k * 100},60 ${k * 100 + 50},24 ${k * 100 + 50},96`} />
+                      <polygon class="close" points={`${k * 100 + 50},24 ${k * 100 + 100},60 ${k * 100 + 50},96`} />
+                    </g>
+                  ))}
+                </svg>
+              ) : (
+                <>
+                  <svg viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon class="open" points="0,60 100,0 100,120" />
+                    <polygon class="close" points="100,0 200,60 100,120" />
+                  </svg>
+                  <p class="halves">
+                    {it.phase.halves?.map((h) => (
+                      <span>{h.label}</span>
+                    ))}
+                  </p>
+                </>
+              )}
+            </div>
+            <p class="name">
+              {it.phase.name}
+              {it.phase.motto && <span class="motto">{it.phase.motto}</span>}
+            </p>
+          </li>
+        ),
+      )
+    }
+  </ol>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script is:inline>
+  // Before the first paint, so parts waiting to arrive never show and then vanish.
+  (() => {
+    const all = document.querySelectorAll('[data-diamonds]:not(.arrive):not(.seen)');
+    const fig = all[all.length - 1];
+    if (fig && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) fig.classList.add('arrive');
+  })();
+</script>
+
+<style>
+  .diamonds {
+    min-width: 0;
+    margin: 0;
+    container-type: inline-size;
+  }
+
+  [data-tone='cool'] {
+    --tone: var(--c-seq2-4);
+  }
+
+  [data-tone='accent'] {
+    --tone: var(--c-accent);
+  }
+
+  [data-tone='sun'] {
+    --tone: var(--c-heat-4);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: var(--cols);
+    grid-template-rows: auto auto auto;
+    column-gap: var(--sp-1);
+    row-gap: var(--sp-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .row > li {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    min-width: 0;
+  }
+
+  /* A moment on the line: a dot level with the diamonds' points, its name under it. */
+  .moment {
+    justify-items: center;
+  }
+
+  .dot {
+    grid-row: 2;
+    align-self: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--tone);
+    box-shadow: 0 0 0 4px var(--c-bg);
+  }
+
+  .moment-label {
+    grid-row: 3;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text-secondary);
+    white-space: nowrap;
+  }
+
+  .notes {
+    grid-row: 1;
+    align-self: end;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+  }
+
+  .note {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-secondary);
+    text-wrap: pretty;
+  }
+
+  .note strong {
+    display: block;
+    font-weight: 600;
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text);
+  }
+
+  .note.wide {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  /* Its width is the column's and its height follows, so a narrower phase is a smaller diamond,
+   * centred on the line. */
+  .shape {
+    grid-row: 2;
+    align-self: center;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5 / 3;
+  }
+
+  .shape svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Opening out in the tone itself; narrowing in a paler one. */
+  .open {
+    fill: var(--tone);
+  }
+
+  .close {
+    fill: color-mix(in oklab, var(--tone) 55%, #fff);
+  }
+
+  .halves {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    margin: 0;
+    color: var(--c-on-accent);
+    font-weight: 600;
+    font-size: clamp(0.6875rem, 2.4cqi, var(--text-label));
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  /* Each label leans toward the middle, where its half is widest. */
+  .halves span:first-child {
+    justify-self: end;
+    padding-right: 10%;
+    text-align: right;
+  }
+
+  .halves span:last-child {
+    padding-left: 10%;
+  }
+
+  .name {
+    grid-row: 3;
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    color: var(--c-text);
+  }
+
+  .motto {
+    display: block;
+    margin-top: var(--sp-1);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+  }
+
+  figcaption {
+    margin-top: var(--sp-5);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  /* Too narrow for a row: the phases stack, each moment a dot and its name between them. */
+  @container (max-width: 560px) {
+    .row {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      row-gap: var(--sp-5);
+    }
+
+    .row > li {
+      grid-row: auto;
+      grid-template-rows: none;
+      row-gap: var(--sp-3);
+    }
+
+    .moment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-3);
+    }
+
+    .shape {
+      grid-row: auto;
+      width: min(100%, 420px);
+      justify-self: center;
+    }
+
+    .notes,
+    .name {
+      grid-row: auto;
+    }
+
+    .notes {
+      width: min(100%, 420px);
+      justify-self: center;
+    }
+
+    .halves {
+      font-size: var(--text-label);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .arrive li {
+      opacity: 0;
+      translate: 0 8px;
+    }
+
+    .arrive.seen li {
+      opacity: 1;
+      translate: 0 0;
+      transition:
+        opacity var(--motion-base) var(--ease-out) calc(var(--i) * 80ms),
+        translate var(--motion-spring) var(--ease-spring) calc(var(--i) * 80ms);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .open,
+    .close {
+      fill: CanvasText;
+    }
+
+    .close {
+      fill-opacity: 0.6;
+    }
+
+    .halves {
+      color: Canvas;
+    }
+  }
+</style>
+
+<script>
+  // Once, as it comes into view, the parts arrive left to right.
+  const seen = new IntersectionObserver(
+    (entries) => {
+      entries
+        .filter((e) => e.isIntersecting)
+        .forEach((e) => {
+          e.target.classList.add('seen');
+          seen.unobserve(e.target);
+        });
+    },
+    { threshold: 0.3 },
+  );
+  document.querySelectorAll('[data-diamonds].arrive').forEach((fig) => seen.observe(fig));
+</script>

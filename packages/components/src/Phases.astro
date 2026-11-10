@@ -1,0 +1,363 @@
+---
+/**
+ * A way of working in phases: each phase a band that points on to the next, its steps as rings
+ * under it, and a short text on what happens in it. Below them, spans for what runs across
+ * phases, such as discovery that never quite stops.
+ *
+ * Drawn in HTML, so the words are text that wraps and is read out in order. Below 640px wide the
+ * phases stack and each span says which phases it runs across in words. The bands use three
+ * fixed tones with the dark text on them, so they read the same in either theme.
+ *
+ * Once, as it comes into view, the phases arrive left to right. Nothing moves under reduced
+ * motion, and without script it is simply there.
+ */
+type Tone = 'cool' | 'accent' | 'sun';
+
+interface Phase {
+  /** On the band, such as "Define & validate". */
+  title: string;
+  /** Under the title on the band: what the phase is for. */
+  sub?: string;
+  /** The steps in it, as rings under the band. */
+  steps?: string[];
+  /** What happens in it, under the rings. */
+  text?: string;
+  tone?: Tone;
+}
+
+interface Span {
+  label: string;
+  /** The first and last phase it runs across, 0 first. To the last phase by default. */
+  from: number;
+  to?: number;
+}
+
+interface Props {
+  /** What the diagram is, for a screen reader: the list is named by it. */
+  title: string;
+  phases: Phase[];
+  spans?: Span[];
+  caption?: string;
+  class?: string;
+}
+
+const { title, phases, spans = [], caption, class: className } = Astro.props;
+const tones: Tone[] = ['cool', 'accent', 'sun'];
+const last = phases.length - 1;
+---
+
+<figure class:list={['phases', className]} data-phases>
+  <ol class="row" aria-label={title} style={`--n: ${phases.length}`}>
+    {
+      phases.map((p, i) => (
+        <li data-tone={p.tone ?? tones[i % tones.length]} style={`--i: ${i}`}>
+          <p class="band">
+            <strong>{p.title}</strong>
+            {p.sub && <span>{p.sub}</span>}
+          </p>
+          {p.steps && p.steps.length > 0 ? (
+            <ol class="steps">
+              {p.steps.map((s) => (
+                <li>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <span />
+          )}
+          {p.text ? <p class="text">{p.text}</p> : <span />}
+        </li>
+      ))
+    }
+  </ol>
+  {
+    spans.length > 0 && (
+      <ul class="spans" style={`--n: ${phases.length}`}>
+        {spans.map((s) => {
+          const to = Math.min(s.to ?? last, last);
+          return (
+            <li style={`grid-column: ${s.from + 1} / ${to + 2}`}>
+              <span class="label">
+                {s.label}<span class="range">{`: ${phases[s.from].title}${to !== s.from ? ` to ${phases[to].title}` : ''}`}</span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script is:inline>
+  // Before the first paint, so phases waiting to arrive never show and then vanish.
+  (() => {
+    const all = document.querySelectorAll('[data-phases]:not(.arrive):not(.seen)');
+    const fig = all[all.length - 1];
+    if (fig && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) fig.classList.add('arrive');
+  })();
+</script>
+
+<style>
+  .phases {
+    --notch: 22px;
+    min-width: 0;
+    margin: 0;
+    container-type: inline-size;
+  }
+
+  [data-tone='cool'] {
+    --tone: var(--c-seq2-4);
+  }
+
+  [data-tone='accent'] {
+    --tone: var(--c-accent);
+  }
+
+  [data-tone='sun'] {
+    --tone: var(--c-heat-4);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    grid-template-rows: auto auto auto;
+    row-gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .row > li {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    min-width: 0;
+  }
+
+  /* The band points on to the next; the next is cut to take the point, a hairline apart. */
+  .band {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 64px;
+    margin: 0 calc(var(--notch) * -1 + 3px) 0 0;
+    padding: var(--sp-3) calc(var(--notch) + var(--sp-3));
+    background: var(--tone);
+    color: var(--c-on-accent);
+    text-align: center;
+    clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%, var(--notch) 50%);
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+  }
+
+  .row > li:first-child .band {
+    clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%);
+    border-radius: 999px 0 0 999px;
+    padding-left: var(--sp-5);
+  }
+
+  .row > li:last-child .band {
+    margin-right: 0;
+  }
+
+  .band strong {
+    color: inherit;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-body);
+  }
+
+  .steps {
+    display: flex;
+    justify-content: center;
+    gap: var(--sp-3);
+    list-style: none;
+    margin: 0;
+    padding: 0 var(--sp-3);
+  }
+
+  .steps li {
+    flex: 0 1 132px;
+    min-width: 0;
+  }
+
+  .steps span {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    padding: var(--sp-3);
+    border: 5px solid var(--tone);
+    border-radius: 50%;
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+
+  .text {
+    margin: 0;
+    padding-inline: var(--sp-3) var(--sp-4);
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-secondary);
+    text-wrap: pretty;
+  }
+
+  /* What runs across phases: a dashed line from the first to the last, the label in the middle. */
+  .spans {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: var(--sp-2) 0;
+    list-style: none;
+    margin: var(--sp-5) 0 0;
+    padding: 0;
+  }
+
+  .spans li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding-inline: var(--sp-3);
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  .spans li::before,
+  .spans li::after {
+    content: '';
+    flex: 1;
+    border-top: 1.5px dashed var(--c-border-strong);
+  }
+
+  .spans li::before {
+    border-left: 1.5px solid var(--c-border-strong);
+    height: 8px;
+    margin-top: 8px;
+  }
+
+  .spans li::after {
+    border-right: 1.5px solid var(--c-border-strong);
+    height: 8px;
+    margin-top: 8px;
+  }
+
+  .label {
+    white-space: nowrap;
+  }
+
+  .range {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  figcaption {
+    margin-top: var(--sp-5);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  @container (max-width: 640px) {
+    .row {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      row-gap: var(--sp-6);
+    }
+
+    .row > li {
+      grid-row: auto;
+      grid-template-rows: none;
+      row-gap: var(--sp-4);
+    }
+
+    .band,
+    .row > li:first-child .band {
+      margin-right: 0;
+      clip-path: none;
+      border-radius: var(--radius-md);
+      padding-inline: var(--sp-4);
+    }
+
+    .spans {
+      grid-template-columns: 1fr;
+    }
+
+    .spans li {
+      grid-column: 1 !important;
+      padding: 0;
+    }
+
+    .spans li::before,
+    .spans li::after {
+      display: none;
+    }
+
+    .label {
+      white-space: normal;
+    }
+
+    .range {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .arrive .row > li {
+      opacity: 0;
+      translate: 0 8px;
+    }
+
+    .arrive.seen .row > li {
+      opacity: 1;
+      translate: 0 0;
+      transition:
+        opacity var(--motion-base) var(--ease-out) calc(var(--i) * 110ms),
+        translate var(--motion-spring) var(--ease-spring) calc(var(--i) * 110ms);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .band {
+      border: 1px solid CanvasText;
+      clip-path: none;
+      margin-right: 0;
+    }
+
+    .steps span {
+      border-color: CanvasText;
+    }
+  }
+</style>
+
+<script>
+  // Once, as it comes into view, the phases arrive left to right.
+  const seen = new IntersectionObserver(
+    (entries) => {
+      entries
+        .filter((e) => e.isIntersecting)
+        .forEach((e) => {
+          e.target.classList.add('seen');
+          seen.unobserve(e.target);
+        });
+    },
+    { threshold: 0.3 },
+  );
+  document.querySelectorAll('[data-phases].arrive').forEach((fig) => seen.observe(fig));
+</script>

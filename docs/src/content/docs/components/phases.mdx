@@ -1,0 +1,90 @@
+---
+title: "Phases"
+description: "A way of working in phases: bands that point on to the next, the steps in each as rings, and what runs across them."
+---
+
+import Phases from '@n1kname/components/Phases.astro';
+
+<div class="not-content">
+  <Phases
+    title="A product process in three phases"
+    phases={[
+      { title: 'Understand', sub: 'Find out what matters', steps: ['Talk to people', 'Frame the problem'], text: 'Research, product and design look at the problem together, and agree which part to take on first.' },
+      { title: 'Shape', sub: 'Try it before it is built', steps: ['Sketch and prototype', 'Test with people'], text: 'Prototypes go in front of the people who will use them, and change between rounds.' },
+      { title: 'Build', sub: 'Make it real', steps: ['Detail the design', 'Ship it'], text: 'Design works next to engineering until it ships, and checks what was built.' },
+    ]}
+    spans={[
+      { label: 'Research', from: 0 },
+      { label: 'Measuring', from: 1 },
+    ]}
+    caption="A made-up example."
+  />
+</div>
+
+## What it's for
+
+How a team works, in phases: each phase a band that points on to the next, with what it is for under its title, the steps in it as rings, and a short text on what happens. Spans under the phases show what runs across them, such as research that doesn't stop when design starts.
+
+## When not to use it
+
+- **The idea of opening out and narrowing.** That's [Diamonds](/components/diamonds/).
+- **What happened, when.** Use a [Timeline](/components/timeline/).
+- **More than four phases, or more than three steps in one.** The rings get too small to read; write it as a list.
+
+## Anatomy
+
+- **Band:** the phase's title in the display face and what it is for under it, on its tone. Each band points on to the next; the first is rounded at its start.
+- **Steps:** rings in the phase's tone with the step's name inside, side by side.
+- **Text:** what happens in the phase, under the rings.
+- **Spans:** a dashed line with a stop at each end, across the phases it runs through, its label in the middle.
+- **Caption:** optional, under it all.
+
+## Variants
+
+None. Leave out `sub`, `steps` or `text` where a phase has none; the others still line up.
+
+Tones run `cool`, `accent`, `sun` by default, one per phase. Set `tone` on a phase to change it.
+
+## States
+
+- **Arriving:** once, as it comes into view, the phases rise into place left to right. Nothing moves under reduced motion, and without script it is simply there.
+- **Narrow:** below 640px wide the phases stack, the bands become plain blocks, and each span says in words which phases it runs across ("Research: Understand to Build").
+- **Forced colours:** bands and rings get a border in the system's text colour.
+
+## Tokens
+
+`--c-seq2-4` (cool), `--c-accent` (accent), `--c-heat-4` (sun), with `--c-on-accent` text on the bands. Also `--c-surface`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--c-border-strong`, `--font-display`, `--text-body`, `--text-body-sm`, `--text-caption`, `--radius-md`, `--motion-base`, `--motion-spring`, `--ease-out`, `--ease-spring`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate,** so nothing takes focus.
+- **The phases are a list named by `title`,** each read as its title, what it is for, its steps (a list of their own) and its text.
+- **Each span is read with the phases it runs across,** which the line only shows.
+
+## Content
+
+- **Title:** a verb and what it is about: "Define & validate".
+- **Steps:** a few words each; they sit in a ring.
+- **Text:** two or three sentences on who does what.
+
+## Status
+
+New. Used by a portfolio, for a design practice's process that had been a picture.
+
+## Code
+
+```astro wrap
+---
+import Phases from '@n1kname/components/Phases.astro';
+---
+
+<Phases
+  title="How we work"
+  phases={[
+    { title: 'Understand', steps: ['Talk to people', 'Frame it'] },
+    { title: 'Shape', steps: ['Prototype', 'Test'] },
+    { title: 'Build', steps: ['Detail', 'Ship'] },
+  ]}
+  spans={[{ label: 'Research', from: 0 }]}
+/>
+```

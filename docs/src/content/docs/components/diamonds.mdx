@@ -1,0 +1,102 @@
+---
+title: "Diamonds"
+description: "A design process as diamonds that open out and narrow again, with the moments between them on the line."
+---
+
+import Diamonds from '@n1kname/components/Diamonds.astro';
+
+<div class="not-content">
+  <Diamonds
+    title="A double diamond, then continuous improvement"
+    milestones={['Brief', 'Plan', 'Launch']}
+    phases={[
+      {
+        name: 'Problem',
+        motto: 'Find the right problem',
+        halves: [
+          { label: 'Discover', note: { title: 'Diverge', text: 'What is going on?' } },
+          { label: 'Define', note: { title: 'Converge', text: 'Which part do we take on?' } },
+        ],
+      },
+      {
+        name: 'Solution',
+        motto: 'Solve it well',
+        halves: [
+          { label: 'Develop', note: { title: 'Diverge', text: 'Try many answers.' } },
+          { label: 'Deliver', note: { title: 'Converge', text: 'Ship the one that works.' } },
+        ],
+      },
+      { name: 'After launch', motto: 'Learn and keep it working', repeat: true, note: { title: 'Listen', text: 'Improve it from what people tell you.' } },
+    ]}
+    caption="A made-up example in the shape of the Design Council's double diamond."
+  />
+</div>
+
+## What it's for
+
+A way of working drawn as diamonds: each phase opens out to look wide and narrows to a decision, with the moments between phases, such as a kick-off or a launch, as dots on the line. A last phase can repeat instead, as smaller diamonds that fade out, for the work that keeps going after launch.
+
+## When not to use it
+
+- **Steps with their own names and owners.** Use [Phases](/components/phases/): bands with steps under them say who does what, which diamonds can't.
+- **Who works with whom.** That's a [Flow diagram](/components/flow-diagram/).
+- **A plan with dates.** Use a [Timeline](/components/timeline/): a diamond has no time axis.
+
+## Anatomy
+
+- **Moments:** a dot level with the diamonds' points, its name in small capitals under it.
+- **Phases:** a diamond in two halves, the closing half paler. Each half's label sits inside it, and its note (a short title and the question it asks) above it. The phase's name and motto sit under the diamond.
+- **A repeating phase:** three smaller diamonds that fade out, one note above them, and the name under them.
+- **Caption:** optional, under it all.
+
+## Variants
+
+| Phase | For |
+|---|---|
+| `halves` | A phase that opens out and narrows: two labels, and a note on each |
+| `repeat` | Work that goes on after launch, with no end to draw |
+
+Tones run `cool`, `accent`, `sun` by default, one per phase. Set `tone` on a phase to change it.
+
+## States
+
+- **Arriving:** once, as it comes into view, the parts rise into place left to right, 80ms apart. Nothing moves under reduced motion, and without script it is simply there.
+- **Narrow:** below 560px wide the phases stack, each moment between them as a dot and its name.
+- **Forced colours:** the halves are drawn in the system's text colour, the closing half paler.
+
+## Tokens
+
+`--c-seq2-4` (cool), `--c-accent` (accent), `--c-heat-4` (sun): middle tones that stay the same in both themes, with `--c-on-accent` text on them, so the labels pass AA on either half. Also `--c-bg`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--font-display`, `--font-body`, `--text-h3`, `--text-label`, `--text-body-sm`, `--text-caption`, `--motion-base`, `--motion-spring`, `--ease-out`, `--ease-spring`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate,** so nothing takes focus.
+- **It is a list named by `title`,** read in order: a moment, then a phase's notes, its two labels and its name.
+- **The shapes are hidden** from screen readers; every word is text.
+
+## Content
+
+- **Labels:** one or two words, a verb where you can: Discover, Define.
+- **Notes:** the question each half asks, in a few words.
+- **Name and motto:** what the phase is called, and what it is for in one short line.
+
+## Status
+
+New. Used by a portfolio, for a design practice's way of working that had been a picture.
+
+## Code
+
+```astro wrap
+---
+import Diamonds from '@n1kname/components/Diamonds.astro';
+---
+
+<Diamonds
+  title="A double diamond"
+  milestones={['Brief', 'Plan']}
+  phases={[
+    { name: 'Problem', halves: [{ label: 'Discover' }, { label: 'Define' }] },
+    { name: 'Solution', halves: [{ label: 'Develop' }, { label: 'Deliver' }] },
+  ]}
+/>
+```

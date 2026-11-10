@@ -1,0 +1,149 @@
+---
+/**
+ * The sections of one long page, as a list that stays in view beside the text: where you are is
+ * marked, and any section is one click or one Tab away. For a case study or a long read, in the
+ * margin beside the reading column.
+ *
+ * It finds where you are from the headings its links point to: the last one above the top third of
+ * the window is current, and its link gets `aria-current="location"`. That changes as you scroll,
+ * many times a minute, so it changes at once rather than gliding. Before the first heading nothing
+ * is current. Without script it is a plain list of links.
+ *
+ * The page places it: it is sticky inside whatever holds it, so give it a column or a margin that
+ * runs the length of the text. It never hides itself, so it is always in the tab order.
+ */
+interface Item {
+  /** The heading's id, with or without the #. */
+  href: string;
+  text: string;
+}
+
+interface Props {
+  items: Item[];
+  /** Names the navigation for a screen reader. */
+  label?: string;
+  /** A short visible title above the list, such as "Contents". None by default. */
+  title?: string;
+  id?: string;
+  class?: string;
+}
+
+const { items, label = 'Sections', title, id, class: className } = Astro.props;
+const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
+---
+
+<nav id={id} class:list={['section-nav', className]} aria-label={label} data-section-nav>
+  {title && <p class="title" aria-hidden="true">{title}</p>}
+  <ol>
+    {
+      items.map((item) => (
+        <li>
+          <a href={hash(item.href)}>{item.text}</a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .section-nav {
+    position: sticky;
+    top: var(--section-nav-top, var(--sp-8));
+    max-height: calc(100dvh - var(--section-nav-top, var(--sp-8)) - var(--sp-5));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+  }
+
+  .title {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--text-overline);
+    line-height: var(--leading-overline);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--c-border);
+  }
+
+  a {
+    display: block;
+    margin-left: -1px;
+    padding: var(--sp-1) 0 var(--sp-1) var(--sp-4);
+    border-left: 2px solid transparent;
+    background: none;
+    color: var(--c-text-muted);
+    text-decoration: none;
+    text-wrap: pretty;
+    transition: color var(--motion-hover) var(--ease-hover);
+  }
+
+  a:hover {
+    color: var(--c-text);
+  }
+
+  /* Where you are: the text at full strength and the accent bar on the rule. */
+  a[aria-current] {
+    color: var(--c-text);
+    font-weight: 600;
+    border-left-color: var(--c-accent);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  @media (forced-colors: active) {
+    a[aria-current] {
+      border-left-color: CanvasText;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-section-nav]').forEach((nav) => {
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')];
+    const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
+    let current = -2;
+    const update = () => {
+      let now = -1;
+      heads.forEach((h, i) => {
+        if (h && h.getBoundingClientRect().top < innerHeight * 0.3) now = i;
+      });
+      if (now === current) return;
+      current = now;
+      links.forEach((a, i) => (i === now ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+      // Keep the current link in view when the list is taller than the window. The list scrolls
+      // itself; the page never moves for it.
+      const a = links[now];
+      if (a && nav.scrollHeight > nav.clientHeight) {
+        if (a.offsetTop < nav.scrollTop) nav.scrollTop = a.offsetTop - 8;
+        else if (a.offsetTop + a.offsetHeight > nav.scrollTop + nav.clientHeight) nav.scrollTop = a.offsetTop + a.offsetHeight - nav.clientHeight + 8;
+      }
+      nav.dispatchEvent(new CustomEvent('section-change', { detail: { index: now }, bubbles: true }));
+    };
+    let queued = false;
+    addEventListener(
+      'scroll',
+      () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          update();
+        });
+      },
+      { passive: true },
+    );
+    addEventListener('resize', update, { passive: true });
+    update();
+  });
+</script>

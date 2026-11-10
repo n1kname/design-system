@@ -1,0 +1,64 @@
+---
+/**
+ * A long read with its sections in the margin, outside Starlight, as a site would lay it out. The
+ * text is made up.
+ */
+import '@n1kname/tokens/tokens.css';
+import '@n1kname/components/type.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '@fontsource-variable/bitter/index.css';
+import SectionNav from '@n1kname/components/SectionNav.astro';
+import SkipLink from '@n1kname/components/SkipLink.astro';
+
+const sections = [
+  ['the-question', 'The question we started with'],
+  ['what-people-said', 'What people said'],
+  ['three-options', 'Three options, and the one we took'],
+  ['building-it', 'Building it with engineering'],
+  ['where-it-stands', 'Where it stands'],
+  ['next', 'What I would do next'],
+];
+const para =
+  'This paragraph stands in for the text of a case study. It is long enough to scroll, so the list in the margin has something to follow: as each heading passes the top third of the window, its link is marked as the one you are in.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Section nav demo</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      body { margin: 0; background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); }
+      html { scroll-behavior: smooth; scroll-padding-top: 32px; }
+      .page { display: grid; grid-template-columns: 14rem minmax(0, 46rem); gap: 3rem; justify-content: center; padding: 4rem 1.5rem 30vh; }
+      .page > .section-nav { --section-nav-top: 2rem; }
+      h1 { font-family: var(--font-display); font-size: var(--text-display); line-height: var(--leading-display); margin: 0 0 2rem; }
+      h2 { font-family: var(--font-display); font-size: var(--text-h2); margin: 3rem 0 1rem; }
+      p { font-size: var(--text-body-lg); line-height: var(--leading-body-lg); color: var(--c-text-secondary); }
+      @media (max-width: 800px) { .page { grid-template-columns: 1fr; } .page > .section-nav { position: static; } }
+    </style>
+  </head>
+  <body>
+    <SkipLink />
+    <div class="page">
+      <SectionNav title="Contents" items={sections.map(([href, text]) => ({ href, text }))} />
+      <main id="main">
+        <h1>A case study, made up</h1>
+        {
+          sections.map(([id, text]) => (
+            <section>
+              <h2 id={id}>{text}</h2>
+              <p>{para}</p>
+              <p>{para}</p>
+              <p>{para}</p>
+            </section>
+          ))
+        }
+      </main>
+    </div>
+  </body>
+</html>
