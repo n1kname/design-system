@@ -1,0 +1,92 @@
+---
+// Made-up projects, in the three shapes a case uses: a history in years, a plan in phases (the
+// first under way, the rest to come) and checks by area, with icons.
+import Timeline from '@n1kname/components/Timeline.astro';
+---
+
+<div class="not-content timeline-demo" id="timeline-demo">
+  <div class="td-head">
+    <h3>A history, in years</h3>
+    <button type="button" class="td-replay" id="td-replay">Play again</button>
+  </div>
+  <Timeline
+    entries={[
+      { period: '2019', label: 'First sketch', body: 'A fictional team draws the idea on a whiteboard and visits four customers to see if it holds.' },
+      { period: '2020–21', label: 'A pilot', body: 'Three customers try it for a winter and say plainly what breaks.' },
+      { period: '2022–23', label: 'Scaling up', body: 'One platform for every customer, and the old portal switched off in stages.' },
+      { period: 'Now', label: 'In use', body: 'It runs without anyone thinking about it, which was the point.' },
+    ]}
+  />
+
+  <h3>A plan, in phases</h3>
+  <Timeline
+    current={0}
+    entries={[
+      { period: 'Phase 1', label: 'Through partners', icon: 'workflow', body: 'Partners build it into their own portals first, so it can go live before our own screens exist.' },
+      { period: 'Phase 2', label: 'In our own app', icon: 'smartphone', body: 'Drivers set it up without leaving the product.' },
+      { period: 'Phase 3', label: 'Insight', icon: 'trending-up', body: 'Partners see how it is going overall, not one transaction at a time.' },
+    ]}
+  />
+
+  <h3>Checks, by area</h3>
+  <Timeline
+    current={false}
+    entries={[
+      { period: 'Approvals', label: 'Checked against the real API', icon: 'shield-check', body: 'Walked through with the team, then matched to what the API actually returns rather than what we assumed.' },
+      { period: 'Scheduling', label: 'Partner interviews', icon: 'users', body: 'Five partners on how their days are really planned, written up so the decision can be revisited.' },
+      { period: 'Sign-up', label: 'Gap analysis', icon: 'search', body: 'The written spec set against the vision, with the gaps staged for review.' },
+    ]}
+  />
+</div>
+
+<script>
+  // Takes the entries back to before they arrived, then lets them arrive again, a beat apart.
+  document.getElementById('td-replay')?.addEventListener('click', () => {
+    const items = [...document.querySelectorAll<HTMLElement>('#timeline-demo .arrive li')];
+    items.forEach((li) => li.classList.remove('in'));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        items.forEach((li, k) => {
+          li.style.setProperty('--d', `${(k % 4) * 110}ms`);
+          li.classList.add('in');
+        }),
+      ),
+    );
+  });
+</script>
+
+<style>
+  .timeline-demo h3 {
+    margin: var(--sp-7) 0 0;
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  .td-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+
+  .td-head h3 {
+    margin-top: 0;
+  }
+
+  .td-replay {
+    padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    cursor: pointer;
+  }
+
+  .td-replay:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+</style>

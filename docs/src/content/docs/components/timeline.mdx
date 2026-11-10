@@ -1,58 +1,68 @@
 ---
 title: "Timeline"
-description: "A project timeline, with the current state marked by the last entry."
+description: "What happened in order, where things stand now, and what is still to come."
 ---
 
-import Timeline from '@n1kname/components/Timeline.astro';
+import TimelineDemo from '../../../components/TimelineDemo.astro';
 
-<div class="not-content">
-  <Timeline entries={[
-    { period: '2021', label: 'First sketch', body: 'A fictional team draws the idea on a whiteboard.' },
-    { period: '2022-23', label: 'A pilot', body: 'Three fictional customers try it and tell them what breaks.' },
-    { period: 'Now', label: 'In use', body: 'It runs without anyone thinking about it, which was the point.' },
-  ]} />
-</div>
+<TimelineDemo />
+
+The projects are made up. Each entry arrives once as it scrolls into view. "Play again" repeats that.
 
 ## What it's for
 
-To show the order things happened in. The last entry is the current state, so its marker looks different.
+To show the order things happened in and where they stand now: a project's history, a plan in phases, or the checks a piece of work went through.
 
 ## When not to use it
 
 - **Steps someone has to follow.** Use a numbered list.
 - **A long history with no turning points.** Say it in a sentence.
+- **Dates to compare,** such as how long each phase took. Use a chart.
 
 ## Anatomy
 
-- **Period:** mono, in a column that fits the longest one.
-- **Label and body:** what happened.
-- **Line and marker:** the last marker is filled.
+- **Marker and line:** down the left, from each entry to the next, with a small gap either side of each marker.
+- **Period:** small and bold, above the title, in the body face with figures of one width. A year, a phase or the name of an area all read the same. Now's period takes the accent.
+- **Title and text:** what happened. The text takes the full width beside the line.
+- **Icon** (optional): what the step was, in a soft disc of the accent. If one entry has an icon, every marker becomes a disc.
 
 ## Variants
 
-None.
+| Option | For |
+|---|---|
+| `current` | Which entry is now, 0 first. The last by default. |
+| `current={false}` | A history that is over, or entries that aren't in time, such as checks by area: every marker is done and none is now. |
+| `icon` on an entry | A disc with the icon instead of a dot. Use icons on every entry or none. |
 
 ## States
 
-It has no states of its own.
+| State | Marker | Line on to the next |
+|---|---|---|
+| Done | Filled with the accent, or a soft disc of it with an icon | Solid, a muted accent |
+| Now | Filled, with a halo; the accent itself with an icon. Its halo ripples out twice as it arrives | Dashed when what follows is still to come |
+| Still to come | Hollow, with a quieter text | Dashed |
+| Arriving | Once, as each entry comes into view: the marker settles in on the spring, the text rises a little, then the line draws on to the next entry. Entries that come into view together follow one another a beat apart. | |
+| Reduced motion, or no script | Everything is there from the start, and nothing moves. | |
 
 ## Tokens
 
-`--c-accent`, `--c-bg`, `--c-border`, `--c-text`, `--c-text-muted`, `--radius-full`, `--sp-1`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`. Needs `type.css`.
+`--c-accent`, `--c-on-accent`, `--c-text-accent`, `--c-bg`, `--c-surface`, `--c-border`, `--c-border-strong`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--font-body`, `--text-caption`, `--text-sub`, `--leading-sub`, `--tracking-sub`, `--radius-full`, `--sp-1`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`, `--motion-base`, `--motion-gentle`, `--motion-spring`, `--ease-out`, `--ease-soft`, `--ease-spring`.
 
 ## Keyboard and screen reader
 
-- **It's an ordered list,** so screen readers announce how many entries there are.
-- **The line and markers are decoration,** so the period has to say when.
+- **It's an ordered list,** so screen readers say how many entries there are.
+- **Now is marked with `aria-current="step"`.**
+- **The markers, line and icons are decoration,** so the period has to say when, and the text what is done and what is still to come.
 
 ## Content
 
-- **Keep periods short.** The column fits the longest one, so one long period pushes every entry's text across. Past 200px it wraps.
+- **Keep periods short:** "2022–23", "Phase 2", "Approvals".
 - **Say what changed,** not what the team did.
+- **Pick icons for what the step was,** not for decoration, such as users for interviews and search for an analysis.
 
 ## Status
 
-Used by the portfolio.
+Restyled in components 0.21.0. The period moved from a mono column to above the title, and the timeline gained a halo for now, entries still to come, icons, and an arrival. Used by the portfolio.
 
 ## Code
 
@@ -61,12 +71,16 @@ Used by the portfolio.
 import Timeline from '@n1kname/components/Timeline.astro';
 ---
 
-<Timeline entries={[
-  { period: '2021', label: 'First sketch', body: 'What happened.' },
-  { period: 'Now', label: 'In use', body: 'Where it stands.' },
-]} />
+<Timeline
+  current={0}
+  entries={[
+    { period: 'Phase 1', label: 'Through partners', icon: 'workflow', body: 'What happens first.' },
+    { period: 'Phase 2', label: 'In our own app', icon: 'smartphone', body: 'What comes next.' },
+  ]}
+/>
 ```
 
 ## Keep in mind
 
-- **It stacks below 560px of screen,** and the line still reaches the next marker.
+- **It no longer needs `type.css`.** It sets its own type from the tokens.
+- **Without `current`, nothing changes for a page:** the last entry is now, as before.

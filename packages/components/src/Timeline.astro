@@ -1,134 +1,298 @@
 ---
 /**
- * A project timeline: mono period in a left column, content on the right. The column
- * fits the longest period, so every entry lines up, and wraps past 200px.
- * Needs type.css for its t-meta and t-sub classes.
+ * A project timeline: a marker and a line down the left, and each entry's period, title and text
+ * beside it. The period sits above the title, small, so a year, a phase or a name all read the
+ * same, and the text keeps the width.
  *
- * The final entry is the current state, so its marker is filled.
+ * Entries up to `current` are done (filled markers on a solid line); `current` is now (a marker
+ * with a halo); any after it are still to come (hollow markers on a dashed line). By default the
+ * last entry is now. An entry can carry an icon, shown in a soft disc of the accent.
+ *
+ * Once, as each entry comes into view, its marker settles in, its text rises and its line draws on
+ * to the next. Nothing moves under reduced motion, and without script everything is simply there.
  */
+import type { IconName } from './icons';
+import Icon from './Icon.astro';
+
 interface Entry {
   period: string;
   label: string;
   body: string;
+  /** What the step was, from the icon set: users, search, route, … */
+  icon?: IconName;
 }
 
 interface Props {
   entries: Entry[];
+  /** Which entry is now, 0 first. The last by default; false for a history that is over. */
+  current?: number | false;
 }
 
-const { entries } = Astro.props;
+const { entries, current = entries.length - 1 } = Astro.props;
+const icons = entries.some((e) => e.icon);
+const state = (i: number) => (current === false || i < current ? 'done' : i === current ? 'current' : 'next');
 ---
 
-<ol class="timeline">
+<ol class="timeline" data-icons={icons ? '' : undefined} data-timeline>
   {
     entries.map((e, i) => (
-      <li class={i === entries.length - 1 ? 'last' : ''}>
-        <span class="rail" aria-hidden="true" />
-        <span class="period t-meta">{e.period}</span>
-        <div class="body">
-          <p class="t-sub">{e.label}</p>
+      <li data-state={state(i)} aria-current={state(i) === 'current' ? 'step' : undefined} data-to={i < entries.length - 1 ? state(i + 1) : undefined}>
+        <span class="marker" aria-hidden="true">
+          {e.icon && <Icon name={e.icon} size={16} />}
+        </span>
+        <div class="content">
+          <p class="period">{e.period}</p>
+          <p class="label">{e.label}</p>
           <p class="text">{e.body}</p>
         </div>
       </li>
     ))
   }
 </ol>
+<script is:inline>
+  // Before the first paint, so entries waiting to arrive never show and then vanish.
+  (function (list) {
+    if (list && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) list.classList.add('arrive');
+  })(document.currentScript && document.currentScript.previousElementSibling);
+</script>
+
+<script>
+  // Each entry arrives once, as it comes into view. Entries that come into view together follow
+  // one another a beat apart.
+  document.querySelectorAll<HTMLElement>('[data-timeline].arrive').forEach((list) => {
+    const seen = new IntersectionObserver(
+      (entries) => {
+        entries
+          .filter((e) => e.isIntersecting)
+          .forEach((e, k) => {
+            const li = e.target as HTMLElement;
+            li.style.setProperty('--d', `${k * 110}ms`);
+            li.classList.add('in');
+            seen.unobserve(li);
+          });
+      },
+      { threshold: 0.25, rootMargin: '0px 0px -8% 0px' },
+    );
+    list.querySelectorAll('li').forEach((li) => seen.observe(li));
+  });
+</script>
 
 <style>
   .timeline {
-    display: grid;
-    grid-template-columns: 20px fit-content(200px) minmax(0, 1fr);
-    column-gap: var(--sp-4);
+    /* The marker's size and how far it sits down the first line, so the line can meet it. */
+    --m: 12px;
+    --mt: 4px;
+    --col: 16px;
+    --gap: var(--sp-6);
+    --done: var(--c-accent);
+    --rail-done: color-mix(in oklab, var(--c-accent) 45%, var(--c-border));
+    --rail-next: var(--c-border-strong);
     list-style: none;
     margin: var(--sp-5) 0 var(--sp-7);
     padding: 0;
   }
 
-  /* Each entry shares the list's columns, so the periods all take the same width. */
+  .timeline[data-icons] {
+    --m: 32px;
+    --mt: 0px;
+    --col: 32px;
+  }
+
   li {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-    padding-bottom: var(--sp-6);
     position: relative;
+    display: grid;
+    grid-template-columns: var(--col) minmax(0, 1fr);
+    column-gap: var(--sp-4);
+    padding-bottom: var(--gap);
   }
 
   li:last-child {
     padding-bottom: 0;
   }
 
-  /* Marker plus the connecting line, drawn as one element. */
-  .rail {
-    position: relative;
-    width: 20px;
-    margin-top: 3px;
-  }
-
-  .rail::before {
+  /* The line from this marker to the next, a small gap clear of each. */
+  li:not(:last-child)::before {
     content: '';
     position: absolute;
-    inset-inline-start: 0;
-    top: 0;
-    width: 14px;
-    height: 14px;
-    border-radius: var(--radius-full);
-    border: 3px solid var(--c-accent);
-    background: var(--c-bg);
-  }
-
-  .last .rail::before {
-    border-color: var(--c-text);
-  }
-
-  .rail::after {
-    content: '';
-    position: absolute;
-    inset-inline-start: 6px;
-    top: 18px;
-    bottom: calc(var(--sp-6) * -1);
+    inset-inline-start: calc(var(--col) / 2 - 1px);
+    top: calc(var(--mt) + var(--m) + 6px);
+    bottom: calc(6px - var(--mt));
     width: 2px;
-    background: var(--c-border);
+    border-radius: 1px;
+    background: var(--rail-done);
+    transform-origin: top;
   }
 
-  .last .rail::after {
-    display: none;
+  /* On to what's still to come: dashed, and quieter. */
+  li[data-to='next']::before {
+    background: repeating-linear-gradient(to bottom, var(--rail-next) 0 4px, transparent 4px 9px);
+    opacity: 0.7;
+  }
+
+  /* ── Markers ─────────────────────────────────────────────────────────────── */
+  .marker {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--m);
+    height: var(--m);
+    margin-top: var(--mt);
+    justify-self: center;
+    border-radius: var(--radius-full);
+    background: var(--done);
+    color: var(--c-text-accent);
+  }
+
+  .marker :global(svg) {
+    display: block;
+  }
+
+  /* Now: a halo round it, so it reads as where things stand. */
+  [data-state='current'] .marker {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-accent) 28%, transparent);
+  }
+
+  /* Still to come: hollow. */
+  [data-state='next'] .marker {
+    background: var(--c-bg);
+    box-shadow: inset 0 0 0 2px var(--c-border-strong);
+  }
+
+  /* With icons: a soft disc of the accent for what's done, the accent itself for now. */
+  [data-icons] [data-state='done'] .marker {
+    background: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
+  }
+
+  [data-icons] [data-state='current'] .marker {
+    background: var(--c-accent);
+    color: var(--c-on-accent);
+  }
+
+  [data-icons] [data-state='next'] .marker {
+    color: var(--c-text-muted);
+    box-shadow: inset 0 0 0 1.5px var(--c-border-strong);
+  }
+
+  /* ── Text ────────────────────────────────────────────────────────────────── */
+  .content {
+    min-width: 0;
+  }
+
+  /* With icons, the period sits level with the middle of the disc. */
+  [data-icons] .content {
+    padding-top: calc((var(--m) - var(--text-caption) * 1.5) / 2);
+  }
+
+  .content p {
+    max-width: none;
+    margin: 0;
   }
 
   .period {
-    min-width: 84px;
-    padding-top: 1px;
-  }
-
-  .body p {
-    max-width: none;
-  }
-
-  .t-sub {
-    margin-bottom: var(--sp-1);
-  }
-
-  .text {
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    line-height: 1.5;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
     color: var(--c-text-muted);
   }
 
-  /* Below the fold of a phone the three columns stop earning their keep. */
-  @media (max-width: 560px) {
-    .timeline {
-      grid-template-columns: 20px minmax(0, 1fr);
+  [data-state='current'] .period {
+    color: var(--c-text-accent);
+  }
+
+  .label {
+    margin-top: 2px;
+    font-family: var(--font-body);
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    letter-spacing: var(--tracking-sub);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  .text {
+    margin-top: var(--sp-1);
+    color: var(--c-text-secondary);
+    text-wrap: pretty;
+  }
+
+  [data-state='next'] .text {
+    color: var(--c-text-muted);
+  }
+
+  /* ── Arriving, once ─────────────────────────────────────────────────────────
+     Only on a page whose script has run and that allows motion, so the timeline is never hidden
+     without it. The marker settles on the spring, the text rises a little, then the line draws on
+     to the next entry. Now's halo ripples out twice. */
+  .arrive li:not(.in) .marker {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  .arrive li:not(.in) .content {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  .arrive li:not(.in)::before {
+    transform: scaleY(0);
+  }
+
+  /* The transitions belong to arriving only: going back to waiting is instant. */
+  .arrive li.in .marker {
+    transition:
+      opacity var(--motion-base) var(--ease-out) var(--d, 0ms),
+      transform var(--motion-spring) var(--ease-spring) var(--d, 0ms);
+  }
+
+  .arrive li.in .content {
+    transition:
+      opacity var(--motion-gentle) var(--ease-out) calc(var(--d, 0ms) + 60ms),
+      transform var(--motion-gentle) var(--ease-out) calc(var(--d, 0ms) + 60ms);
+  }
+
+  .arrive li.in::before {
+    transition: transform 520ms var(--ease-soft) calc(var(--d, 0ms) + 200ms);
+  }
+
+  .arrive [data-state='current'].in .marker::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 2px var(--c-accent);
+    opacity: 0;
+    animation: ripple 1100ms var(--ease-out) calc(var(--d, 0ms) + 260ms) 2;
+  }
+
+  @keyframes ripple {
+    from {
+      opacity: 0.6;
+      transform: scale(1);
     }
 
-    li {
-      row-gap: var(--sp-1);
+    to {
+      opacity: 0;
+      transform: scale(2.2);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .marker {
+      forced-color-adjust: none;
+      background: CanvasText;
+      color: Canvas;
     }
 
-    /* Spans both rows so the connecting line still reaches the next marker. */
-    .rail {
-      grid-row: span 2;
+    [data-state='next'] .marker {
+      background: Canvas;
+      box-shadow: inset 0 0 0 2px CanvasText;
     }
 
-    .period,
-    .body {
-      grid-column: 2;
+    li:not(:last-child)::before {
+      background: CanvasText;
     }
   }
 </style>
