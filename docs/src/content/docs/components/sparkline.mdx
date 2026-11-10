@@ -1,0 +1,90 @@
+---
+title: "Sparkline"
+description: "A small chart beside a figure, for the shape of its recent run: bars, a line or an area, with a reference dashed across."
+---
+
+import SparkDemo from '../../../components/SparkDemo.astro';
+
+<SparkDemo />
+
+The figures are synthetic.
+
+## What it's for
+
+To show the shape of a figure's recent run beside the figure itself, such as the last twelve months of a daily average, and how it sits against a benchmark or a target.
+
+## When not to use it
+
+- **Values to read.** It has no axes and no labels. Use [lines](/components/lines/) or [bars](/components/bars/).
+- **On its own.** It needs a figure beside it that says the number.
+- **Several series.** One per spark. Put two side by side, or use lines.
+
+## Anatomy
+
+- **Marks:** bars, a line or an area, from zero (or a line's own range, with `zero: false`), with a little headroom at the top. A missing value is a gap: no bar, or a break in the line.
+- **Reference:** a dashed line across, quiet, under the marks. It is drawn only when it falls inside the scale, so a benchmark far above never squashes the run.
+- **Last value:** optional, a dot on the newest value of a line or an area.
+- **Size:** 72 by 44px by default, to sit in a card's corner. Bars thin out past eight, so they stay apart.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `kind: 'bar'` | Counts or totals per step, such as steps a day each month. The default. |
+| `kind: 'line'` | A rate or an average that runs on, such as hours of sleep. |
+| `kind: 'area'` | A line with weight under it, for an amount that builds up. |
+| `reference` | A benchmark, a target or last year's figure, dashed across. |
+| `last` | A dot on the newest value, when now is the point. |
+| `zero: false` | A line or area scaled to its own values, for a rate that only moves a little, such as hours of sleep. Bars always stand on zero. |
+| `width`, `height` | Another size. |
+
+## States
+
+It has no states. Draw it again when the values change.
+
+## Tokens
+
+`--tone`, set on the spark or any parent, `--c-chart-1` without one. Also `--c-text-muted` for the reference and `--c-surface` round the last dot. In forced colours, it is drawn in the system's text colour.
+
+## Keyboard and screen reader
+
+- **Hidden by default.** The figure beside it says the number, so the spark adds nothing a screen reader needs.
+- **With `label`,** it is an image with that name, for a spark that says something the figure doesn't, such as "rising since March".
+
+## Content
+
+- **Say what the run covers** near it, such as "last 12 months", when the card doesn't.
+- **Name the reference** in the card, such as "Benchmark 8,500".
+
+## Status
+
+New. Taken from the Overview page of a dashboard, where each benchmark card drew its own.
+
+## Code
+
+```js wrap
+import { sparkline } from '@n1kname/charts/spark';
+import '@n1kname/charts/spark.css';
+
+card.style.setProperty('--tone', 'var(--c-status-good)');
+card.querySelector('.head').insertAdjacentHTML('beforeend', sparkline(monthly, { kind: 'bar', reference: 8500 }));
+```
+
+In an Astro page, at build time:
+
+```astro wrap
+---
+import { sparkline } from '@n1kname/charts/spark';
+import '@n1kname/charts/spark.css';
+---
+
+<div style="--tone: var(--c-chart-4)">
+  <Fragment set:html={sparkline(values, { kind: 'area', reference: 3.5, last: true })} />
+</div>
+```
+
+## Keep in mind
+
+- **It returns a string,** so it draws at build time and in the page alike.
+- **Set `--tone` on the card,** so a badge in the card can share the spark's colour.
+- **From zero by default.** A run that never comes near zero looks flat. That is honest for a total. For a rate that only moves a little, pass `zero: false`, and say the range in the card if it matters.

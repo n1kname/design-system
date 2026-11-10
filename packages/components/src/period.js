@@ -5,6 +5,9 @@
 //     import { setPeriods } from '@n1kname/components/period.js';
 //     picker.addEventListener('period-change', (e) => show(e.detail.value));
 //     setPeriods(picker, ['2011', '2012', ..., '2026']); // oldest first
+//
+// A period is a string, shown and kept as it is, or { value, label }: the label on the button and
+// in the list ("Nov 2026"), the value in the address and in `period-change` ("2026-11").
 
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -16,14 +19,26 @@ const ms = (name, fallback) => {
 };
 
 // Oldest first.
-const periodsOf = (root) => [...root.querySelectorAll('.periods .option')].map((o) => o.dataset.value).reverse();
-const nameOf = (root, v) => (v === 'all' ? root.dataset.all : v);
+const optionsOf = (root) => [...root.querySelectorAll('.periods .option')].reverse();
+const periodsOf = (root) => optionsOf(root).map((o) => o.dataset.value);
+// What a value says: its option's label, the words for all, or nothing before the periods are known.
+const nameOf = (root, v) => {
+  if (v === undefined) return '';
+  if (v === 'all') return root.dataset.all ?? '';
+  return optionsOf(root).find((o) => o.dataset.value === v)?.textContent ?? v;
+};
+// A period as a string or { value, label }, made { value, label }.
+const asPeriod = (p) => (p !== null && typeof p === 'object' ? { value: String(p.value), label: String(p.label ?? p.value) } : { value: String(p), label: String(p) });
 
-// The choice: the address's, when the picker keeps it there and it names a period or all.
+// The choice: the address's, when the picker keeps it there and it names a period or all. Before
+// the periods are known, a picker with no initial period has no choice (undefined), and a kept
+// choice that is no longer one of the periods falls back to all or the newest.
 export const periodOf = (root) => {
   const periods = periodsOf(root);
   const all = root.dataset.all !== undefined;
-  const fallback = root.dataset.value ?? (all ? 'all' : periods.at(-1));
+  const kept = root.dataset.value;
+  const valid = kept !== undefined && (kept === 'all' ? all : !periods.length || periods.includes(kept));
+  const fallback = valid ? kept : all ? 'all' : periods.at(-1);
   if (!root.dataset.param) return fallback;
   const asked = new URL(location.href).searchParams.get(root.dataset.param);
   if (asked === null) return all ? 'all' : fallback;
@@ -51,7 +66,9 @@ const sync = (root, dir = 0) => {
   const v = periodOf(root);
   const periods = periodsOf(root);
   const all = root.dataset.all !== undefined;
-  root.dataset.value = v;
+  // Never the word "undefined": a picker built with no periods has no choice until they come.
+  if (v === undefined) delete root.dataset.value;
+  else root.dataset.value = v;
   roll(root, v, dir);
   const [prev, next] = root.querySelectorAll('.step');
   const at = periods.indexOf(v);
@@ -59,8 +76,8 @@ const sync = (root, dir = 0) => {
   next.disabled = !periods.length || v === 'all' || (!all && at === periods.length - 1);
   root.querySelectorAll('.option').forEach((o) => o.setAttribute('aria-pressed', String(o.dataset.value === v)));
   // The sizer holds the longest words the label may show, so the control keeps its width.
-  const longest = [root.dataset.all ?? '', ...periods].reduce((a, b) => (b.length > a.length ? b : a), '');
-  root.querySelector('.sizer').textContent = longest || v;
+  const longest = [root.dataset.all ?? '', ...optionsOf(root).map((o) => o.textContent)].reduce((a, b) => (b.length > a.length ? b : a), '');
+  root.querySelector('.sizer').textContent = longest || nameOf(root, v);
 };
 
 const go = (root, v, dir) => {
@@ -72,18 +89,25 @@ const go = (root, v, dir) => {
   }
   root.dataset.value = v;
   sync(root, dir);
-  root.dispatchEvent(new CustomEvent('period-change', { bubbles: true, detail: { value: v } }));
+  changed(root);
 };
 
-// Fills a picker with its periods, oldest first, and shows it.
+// `period-change`: the value, and the words the button shows for it.
+const changed = (root) => {
+  const value = root.dataset.value;
+  root.dispatchEvent(new CustomEvent('period-change', { bubbles: true, detail: { value, label: nameOf(root, value) } }));
+};
+
+// Fills a picker with its periods, oldest first, and shows it. Each a string, or { value, label }.
 export const setPeriods = (root, periods) => {
   root.querySelector('.periods').replaceChildren(
     ...[...periods].reverse().map((p) => {
+      const { value, label } = asPeriod(p);
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'option';
-      b.dataset.value = String(p);
-      b.textContent = String(p);
+      b.dataset.value = value;
+      b.textContent = label;
       return b;
     }),
   );
@@ -153,7 +177,7 @@ export const wirePeriodPicker = (root) => {
     addEventListener('popstate', () => {
       const was = root.dataset.value;
       sync(root);
-      if (root.dataset.value !== was) root.dispatchEvent(new CustomEvent('period-change', { bubbles: true, detail: { value: root.dataset.value } }));
+      if (root.dataset.value !== was) changed(root);
     });
   }
   sync(root);

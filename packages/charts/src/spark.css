@@ -1,0 +1,66 @@
+/* A sparkline (./spark.mjs), coloured by --tone on the spark or any parent: the chart colour of what
+   it shows, or a status colour when the card is about how a figure compares. Tokens only, so it
+   follows the theme. */
+
+.spark {
+  --spark-tone: var(--tone, var(--c-chart-1));
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.spark rect {
+  fill: var(--spark-tone);
+  fill-opacity: 0.85;
+}
+
+.spark .spark-stroke {
+  fill: none;
+  stroke: var(--spark-tone);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.spark .spark-fill {
+  fill: var(--spark-tone);
+  fill-opacity: 0.18;
+}
+
+.spark .spark-dot {
+  fill: var(--spark-tone);
+}
+
+/* The newest value: a ring of surface keeps it apart from the line it ends. */
+.spark .spark-last {
+  stroke: var(--c-surface);
+  stroke-width: 1.5;
+}
+
+/* The reference: quiet, dashed, under the marks. */
+.spark .spark-ref {
+  stroke: var(--c-text-muted);
+  stroke-opacity: 0.6;
+  stroke-dasharray: 3 2;
+  stroke-width: 1;
+}
+
+@media (forced-colors: active) {
+  .spark rect,
+  .spark .spark-dot {
+    fill: CanvasText;
+  }
+
+  .spark .spark-stroke {
+    stroke: CanvasText;
+  }
+
+  .spark .spark-fill {
+    fill: none;
+  }
+
+  .spark .spark-ref {
+    stroke: GrayText;
+    stroke-opacity: 1;
+  }
+}

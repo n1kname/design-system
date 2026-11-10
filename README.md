@@ -49,7 +49,8 @@ Charts render at build time, so a page ships no chart JavaScript and its data st
 SVG shrinks with it, so `renderResponsive` draws a chart for wide and narrow columns and CSS shows one. Plot's text uses a
 system font, because Safari misplaces centred and right-aligned SVG text set in a web font. Test SVG text in Safari.
 A chart drawn in the page can say what is under the pointer with `@n1kname/charts/pointer`: an HTML card in the
-page's type, the other bars dimmed, gliding between steps, and the keyboard's arrow keys.
+page's type, the other bars dimmed, gliding between steps, and the keyboard's arrow keys. `@n1kname/charts/spark` draws
+a sparkline beside a figure as an SVG string, coloured by `--tone` from `spark.css`.
 
 `scripts/check-public.mjs` fails on anything shaped like an email address, an IP address, coordinates or a home path.
 Set `PRIVATE_TERMS_FILE` to also check a list kept outside the repo.

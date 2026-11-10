@@ -8,6 +8,8 @@ import PeriodPickerDemo from '../../../components/PeriodPickerDemo.astro';
 
 <PeriodPickerDemo />
 
+The first picker knows its years at build time. The second is built with no periods and gets its months from script a moment later, each with a label for the button and a value for the event.
+
 ## What it's for
 
 To choose the period a page shows, such as a year. Time is mostly read a step at a time, so the arrows do the common thing, and the period itself opens every period at once.
@@ -28,13 +30,14 @@ To choose the period a page shows, such as a year. Time is mostly read a step at
 
 - **With `all`:** "All years" ends the line. Without it, forward stops at the newest.
 - **In the address** (`param`): the choice lives in the URL, so a link or a reload keeps it, and Back steps back through it.
+- **A label and a value:** a period can be `{ value, label }`, so the button says "Nov 2026" while the address and `period-change` carry "2026-11". A plain string is both, as before.
 
 ## States
 
 - **At either end:** the step that leads nowhere is disabled.
 - **Changing:** the period rolls on the spring; the page's figures change with it (see Motion, "Charts changing").
 - **List open:** it opens from the control on the spring and leaves quicker. The chosen period has focus and is pressed.
-- **Before the periods are known:** hidden, so it never shows a period it can't step from.
+- **Before the periods are known:** hidden, so it never shows a period it can't step from. It has no choice yet: `data-value` is absent, not "undefined". When they come, it takes the address's period, its `initial` one if that is among them, or the newest.
 - **Reduced motion:** the period changes in place.
 
 ## Tokens
@@ -49,12 +52,12 @@ To choose the period a page shows, such as a year. Time is mostly read a step at
 
 ## Content
 
-- **The period as people say it:** "2025", "Q3 2025", "All years".
+- **The period as people say it:** "2025", "Q3 2025", "All years". When that isn't a clean value for an address, give it as the label and keep the value plain: `{ value: '2026-11', label: 'Nov 2026' }`.
 - **Name the kind in `labels`,** so the steps say "Previous year", not "Previous".
 
 ## Status
 
-New. Taken from a dashboard, where it replaced a year select.
+New. Taken from a dashboard, where it replaced a year select. Periods with a label and a value came from its monthly page, where the months arrive from an API.
 
 ## Code
 
@@ -73,8 +76,16 @@ import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
 </script>
 ```
 
+With a label and a value:
+
+```js
+setPeriods(picker, [{ value: '2026-10', label: 'Oct 2026' }, { value: '2026-11', label: 'Nov 2026' }]);
+picker.addEventListener('period-change', (e) => show(e.detail.value)); // '2026-11'; e.detail.label is 'Nov 2026'
+```
+
 ## Keep in mind
 
-- **Listen for `period-change`** on the element; it fires on every change, by the control or by Back.
+- **Listen for `period-change`** on the element; it fires on every change, by the control or by Back. `detail.value` is the period's value, `detail.label` its words.
 - **Periods are oldest first,** in `periods` and in `setPeriods`.
+- **`initial` and the address name a value,** not a label.
 - **Keep the figures still while the next ones load,** then let them change in place, so the page doesn't jump between periods.

@@ -1,0 +1,117 @@
+---
+title: "Year calendar"
+description: "One year of days at a glance, a week to a column, each day coloured by its step."
+---
+
+import YearCalendarDemo from '../../../components/YearCalendarDemo.astro';
+
+<YearCalendarDemo />
+
+Point at a day, or Tab to a calendar and use the arrow keys, for its card. The days are synthetic.
+
+## What it's for
+
+To see a year of days at once: which days had something, how much, and the shape of it, such as weekends, a summer and a holiday.
+
+## When not to use it
+
+- **Exact values to compare.** Colour steps hide small differences. Use [bars](/components/bars/) by week or month, or a table.
+- **Many years.** Past two or three calendars, use [day strips](/components/day-strips/) or bars by month.
+- **A value at every hour,** or another grid that isn't days. Use the [heatmap](/components/heatmap/).
+- **A record kept or missing.** That's a state, not an amount: use day strips.
+
+## Anatomy
+
+- **Days:** a square each, a week to a column and a weekday to a row, Monday at the top. The weeks share the width the calendar has, so the year fits a phone and fills a card. Wide, a day stops growing at 16px. Under 480px the gaps between days shrink to a pixel, so a phone gives the width to the days.
+- **Steps:** a day with something takes the colour of its step. A hairline edge keeps a pale colour in shape on a light surface.
+- **Empty days:** grey, never the lowest colour. Days still to come are paler, so the year so far reads as one shape. Days of the next or last year hold their place unseen.
+- **Months:** each name sits over the week that holds its first day. Below 320px wide, a letter each.
+- **Weekdays:** M, W and F beside their rows. When the days are smaller than a letter, the rows stay as tall as the days.
+- **Card:** the charts' [pointer card](/charts/pointer/), above the day, with the date, the day's figure beside its colour, and any extra lines. A frame glides round the day pointed at.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `colors` | Any ramp, low to high. The [heat ramp](/components/ramp-legend/#the-heat-ramp) by default, or the [sequential tokens](/charts/palette/#sequential). At most nine. |
+| `tone` and `levels` | One colour in strengths mixed into the surface, the last the tone itself. One level, for a day with something or not. |
+| `steps` | Where each colour after the first starts, as for the heatmap. A step at a number people know makes the colours mean something. By default the days' values are split into even shares. |
+| `weekStart` | 1 for Monday, the default, or 0 for Sunday. |
+| `value` | Reads the number from an entry, when a day holds more, such as `{ count, km }`. |
+| `format`, `extra`, `empty` | What the card says for a day with something, and for one without. |
+| `total` | Adds a total by month to the table for screen readers. |
+
+Say what the steps mean with a [ramp legend](/components/ramp-legend/) and `steps`, under the calendar, with the same colours.
+
+## States
+
+- **Before the days arrive:** the empty year, drawn at build time, the same size it will be.
+- **Pointer or keyboard on a day:** the frame and the card. They glide from day to day on the spring and fade out a moment after the pointer leaves.
+- **Reduced motion:** the card and frame move without gliding.
+
+## Tokens
+
+`--c-heat-1` to `--c-heat-6` by default, `--c-text`, `--c-text-muted`, `--c-surface`, `--c-focus`, `--sp-2`, and the pointer card's tokens from `pointer.css`. The custom property `--year-calendar-cell` sets the most a day may grow to, 16px by default.
+
+## Keyboard and screen reader
+
+- **One tab stop.** Focus shows the card on today, or on the last day with something.
+- **Right and left go a week on or back. Down and up go a day.** Page Down and Page Up go a month, and Home and End go to 1 January and 31 December. Escape hides the card.
+- **Each step is said** in a polite live region: the date and the day's figure.
+- **The grid speaks as one image,** named by `label`, such as "Running in 2026: 84 days". Give the figures in it.
+- **A table by month follows it, for screen readers:** the days with something and, with `total`, how much.
+
+## Content
+
+- **Title it by what is counted,** with the year: "Rides in 2026".
+- **Put the year's figures in the title,** such as how many days and how far. The calendar gives the shape.
+- **Write the card's figure as people say it:** "2 runs, 9.4 km".
+
+## Status
+
+New. Taken from the Overview page of a dashboard, where the activity calendars were drawn in the page, a day with something or not.
+
+## Code
+
+```astro wrap
+---
+import RampLegend from '@n1kname/components/RampLegend.astro';
+import YearCalendar from '@n1kname/components/YearCalendar.astro';
+---
+
+<h3>Rides in 2026</h3>
+<YearCalendar id="rides" year={2026} />
+<RampLegend label="Kilometres a day" steps />
+
+<script>
+  import { setYearCalendar } from '@n1kname/components/yearcalendar.js';
+
+  const days = await fetch('/api/rides?year=2026').then((r) => r.json()); // { '2026-03-02': 14.2, … }
+  setYearCalendar(document.getElementById('rides'), {
+    year: 2026,
+    days,
+    label: 'Rides in 2026: 212 days, 4,810 km',
+    format: (km) => `${km.toFixed(1)} km`,
+    total: (km) => `${Math.round(km)} km`,
+  });
+</script>
+```
+
+One colour, a day with something or not:
+
+```js
+setYearCalendar(box, {
+  year,
+  days, // { '2026-03-02': { count: 2, km: 9.4 }, … }
+  value: (d) => d.count,
+  tone: 'var(--c-chart-6)',
+  levels: 1,
+  format: (d) => `${d.count} runs, ${d.km} km`,
+});
+```
+
+## Keep in mind
+
+- **Fill it with `setYearCalendar`** on a YearCalendar: its styles reach only that element. Call it again with new days, such as for another year.
+- **Pass `today`** for a calendar that should look the same whenever it is read. It defaults to the reader's today.
+- **`calendarHTML()`** returns the markup alone, for a page that builds it somewhere else.

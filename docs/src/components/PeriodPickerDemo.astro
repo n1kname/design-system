@@ -13,9 +13,32 @@ import PeriodPicker from '@n1kname/components/PeriodPicker.astro';
   <span class="demo-note" id="demo-period-out" aria-live="polite">Showing 2025</span>
 </div>
 
+<div class="not-content demo-row">
+  <PeriodPicker id="demo-month" labels={{ name: 'Month', previous: 'Previous month', next: 'Next month', list: 'Choose a month' }} />
+  <span class="demo-note" id="demo-month-out" aria-live="polite">Reading the months…</span>
+</div>
+
 <script>
+  import { setPeriods } from '@n1kname/components/period.js';
+
   document.getElementById('demo-period')?.addEventListener('period-change', (e) => {
     const { value } = (e as CustomEvent<{ value: string }>).detail;
     document.getElementById('demo-period-out')!.textContent = `Showing ${value === 'all' ? 'all years' : value}`;
   });
+
+  // Months that arrive later, as from an API: a label on the button, a clean value in the event.
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = document.getElementById('demo-month')!;
+  const out = document.getElementById('demo-month-out')!;
+  const say = (value: string, label: string) => (out.innerHTML = `Showing ${label}, <code>value: '${value}'</code>`);
+  month.addEventListener('period-change', (e) => {
+    const { value, label } = (e as CustomEvent<{ value: string; label: string }>).detail;
+    say(value, label);
+  });
+  setTimeout(() => {
+    const list = [];
+    for (let y = 2025; y <= 2026; y++) for (let m = 1; m <= (y === 2026 ? 11 : 12); m++) list.push({ value: `${y}-${String(m).padStart(2, '0')}`, label: `${MONTHS[m - 1]} ${y}` });
+    setPeriods(month, list);
+    say(month.dataset.value!, 'Nov 2026');
+  }, 800);
 </script>

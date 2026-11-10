@@ -9,7 +9,10 @@
  * Back steps back through it; "all" is no parameter at all. The periods are known at build time
  * (`periods`) or set later from script with setPeriods() from period.js, such as years read from
  * an API. Each change fires `period-change` on the element, with the period as `detail.value`
- * ("all" for all of them).
+ * ("all" for all of them) and the words shown for it as `detail.label`.
+ *
+ * A period is a string, or { value, label } when the button should say something other than what
+ * the address keeps: "Nov 2026" shown, "2026-11" in ?month= and in the event.
  *
  * Keyboard: Tab reaches each part; in the list, the arrow keys move through the periods and
  * Escape closes it.
@@ -17,11 +20,11 @@
 interface Props {
   /** The address parameter that holds the choice. Leave it out to keep the choice in the page. */
   param?: string;
-  /** Periods known at build time, oldest first. */
-  periods?: string[];
+  /** Periods known at build time, oldest first: strings, or { value, label }. */
+  periods?: (string | { value: string; label?: string })[];
   /** The words for a choice covering every period, such as "All years". Leave it out for none. */
   all?: string;
-  /** The period chosen when the address says nothing: "all", or one of the periods. Default: all if there is one, otherwise the newest. */
+  /** The period chosen when the address says nothing: "all", or one of the periods' values. Default: all if there is one, otherwise the newest. */
   initial?: string;
   /** The words a screen reader hears. */
   labels?: { name?: string; previous?: string; next?: string; list?: string };
@@ -29,12 +32,13 @@ interface Props {
   id?: string;
 }
 
-const { param, periods = [], all, initial, labels = {}, id = 'period' } = Astro.props;
+const { param, periods: given = [], all, initial, labels = {}, id = 'period' } = Astro.props;
+const periods = given.map((p) => (typeof p === 'object' ? { value: String(p.value), label: String(p.label ?? p.value) } : { value: String(p), label: String(p) }));
 const words = { name: 'Period', previous: 'Previous', next: 'Next', list: 'Choose a period', ...labels };
 const chevron = (d: string) =>
   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
-const start = initial ?? (all ? 'all' : periods.at(-1));
-const shown = start === 'all' ? all : start;
+const start = initial ?? (all ? 'all' : periods.at(-1)?.value);
+const shown = start === 'all' ? all : (periods.find((p) => p.value === start)?.label ?? start);
 ---
 
 <div
@@ -57,8 +61,8 @@ const shown = start === 'all' ? all : start;
     <div class="periods">
       {
         [...periods].reverse().map((p) => (
-          <button type="button" class="option" data-value={p}>
-            {p}
+          <button type="button" class="option" data-value={p.value}>
+            {p.label}
           </button>
         ))
       }

@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -14,6 +14,7 @@
     "./dotrows.js": "./src/dotrows.js",
     "./rangebars.js": "./src/rangebars.js",
     "./daystrips.js": "./src/daystrips.js",
+    "./yearcalendar.js": "./src/yearcalendar.js",
     "./period.js": "./src/period.js",
     "./search.js": "./src/search.js",
     "./chips.js": "./src/chips.js",
@@ -25,7 +26,9 @@
     "./mapstage.js": "./src/mapstage.js",
     "./match.css": "./src/match.css"
   },
-  "scripts": {},
+  "scripts": {
+    "check": "node src/yearcalendar.test.mjs"
+  },
   "dependencies": {
     "@n1kname/charts": "workspace:*"
   },

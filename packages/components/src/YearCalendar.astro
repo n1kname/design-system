@@ -1,0 +1,207 @@
+---
+/**
+ * One year of days at a glance, a week to a column: which days had something, and how much, in
+ * steps of colour. The days are squares that share the width there is, so the year fits a phone
+ * and fills a card.
+ *
+ * It draws the empty year at build time, so the page keeps its shape; fill it with
+ * setYearCalendar from `@n1kname/components/yearcalendar.js` when the days arrive, or pass `days`
+ * to draw them now (the card and keys still need setYearCalendar). The heat ramp by default; `tone`
+ * for one colour in `levels` strengths, or `colors` for any ramp.
+ */
+import '@n1kname/charts/pointer.css';
+import { calendarHTML } from './yearcalendar.js';
+
+interface Props {
+  /** Unique on the page; setYearCalendar finds the calendar by it. */
+  id: string;
+  year: number;
+  /** ISO date → number, drawn at build time. */
+  days?: Record<string, number>;
+  /** One colour, in `levels` strengths: var(--c-chart-6). */
+  tone?: string;
+  levels?: number;
+  /** Low to high. Any CSS colours, best tokens. */
+  colors?: string[];
+  /** Where each colour after the first starts. */
+  steps?: number[];
+  /** 1 for Monday, 0 for Sunday. */
+  weekStart?: 0 | 1;
+  /** What the grid says to a screen reader: "Running in 2026: 84 days". */
+  label?: string;
+  [key: string]: unknown;
+}
+
+const { id, year, days, tone, levels, colors, steps, weekStart = 1, label, class: className, ...rest } = Astro.props;
+const html = calendarHTML({ year, days, tone, levels, colors, steps, weekStart, label });
+---
+
+<div id={id} class:list={['year-calendar', className]} {...rest}><Fragment set:html={html} /></div>
+
+<style>
+  .year-calendar {
+    container-type: inline-size;
+    position: relative;
+    /* Wide, the days stop growing at --year-calendar-cell; the frame is as wide as they need. */
+    --yc-gap: 2px;
+  }
+
+  .year-calendar :global(.yc-frame) {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1rem minmax(0, 1fr);
+    grid-template-areas: '. months' 'wd grid';
+    gap: 2px 4px;
+    max-width: calc(1rem + 4px + var(--weeks) * (var(--year-calendar-cell, 16px) + var(--yc-gap)));
+  }
+
+  /* Each month's name over the week holding its first day. */
+  .year-calendar :global(.yc-months) {
+    grid-area: months;
+    position: relative;
+    height: 0.875rem;
+    font-size: 0.625rem;
+    line-height: 1;
+    color: var(--c-text-muted);
+  }
+
+  .year-calendar :global(.yc-months span) {
+    position: absolute;
+    left: var(--at);
+    white-space: nowrap;
+  }
+
+  /* On a phone the gaps would take a third of the width: a pixel each gives it to the days. */
+  @container (max-width: 480px) {
+    .year-calendar :global(.yc-frame) {
+      --yc-gap: 1px;
+    }
+
+    .year-calendar :global(.yc-grid i) {
+      border-radius: 1px;
+    }
+  }
+
+  /* Narrow, a letter each. */
+  @container (max-width: 320px) {
+    .year-calendar :global(.yc-months span) {
+      font-size: 0;
+    }
+
+    .year-calendar :global(.yc-months span)::before {
+      content: attr(data-short);
+      font-size: 0.625rem;
+    }
+  }
+
+  /* The letters take the grid's height and never set it (contain: size): when the days are
+     smaller than a letter, the rows stay as tall as the days. */
+  .year-calendar :global(.yc-wd) {
+    grid-area: wd;
+    contain: size;
+    display: grid;
+    grid-template-rows: repeat(7, minmax(0, 1fr));
+    gap: var(--yc-gap);
+    align-items: center;
+    font-size: 0.5625rem;
+    line-height: 1;
+    color: var(--c-text-muted);
+    text-align: right;
+  }
+
+  /* Each day a square: the weeks share the width and the rows follow from it. */
+  .year-calendar :global(.yc-grid) {
+    grid-area: grid;
+    min-width: 0;
+    display: grid;
+    grid-template-rows: repeat(7, auto);
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: var(--yc-gap);
+    align-content: start;
+    border-radius: 2px;
+  }
+
+  .year-calendar :global(.yc-grid:focus-visible) {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 3px;
+  }
+
+  .year-calendar :global(.yc-grid i) {
+    aspect-ratio: 1;
+    border-radius: 2px;
+  }
+
+  .year-calendar :global(.yc-grid .off) {
+    background: color-mix(in oklab, var(--c-text) 9%, var(--c-surface));
+  }
+
+  /* Days still to come: paler, so the year so far reads as one shape. */
+  .year-calendar :global(.yc-grid .later) {
+    background: color-mix(in oklab, var(--c-text) 4%, var(--c-surface));
+  }
+
+  .year-calendar :global(.yc-grid .out) {
+    visibility: hidden;
+  }
+
+  /* A hairline edge, so a pale step (the heat ramp's yellow) keeps its shape on a light surface. */
+  .year-calendar :global(.yc-grid .on) {
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c-text) 10%, transparent);
+  }
+
+  .year-calendar :global([data-step='1']) { background: var(--yc-1); }
+  .year-calendar :global([data-step='2']) { background: var(--yc-2); }
+  .year-calendar :global([data-step='3']) { background: var(--yc-3); }
+  .year-calendar :global([data-step='4']) { background: var(--yc-4); }
+  .year-calendar :global([data-step='5']) { background: var(--yc-5); }
+  .year-calendar :global([data-step='6']) { background: var(--yc-6); }
+  .year-calendar :global([data-step='7']) { background: var(--yc-7); }
+  .year-calendar :global([data-step='8']) { background: var(--yc-8); }
+  .year-calendar :global([data-step='9']) { background: var(--yc-9); }
+
+  /* The card's figure beside its colour, and the frame round the day a little rounder. */
+  .year-calendar :global(.chart-pointer-one) {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  .year-calendar :global(.chart-pointer-one i) {
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c-text) 14%, transparent);
+  }
+
+  .year-calendar :global(.chart-pointer-cell) {
+    border-width: 1.5px;
+    border-radius: 3px;
+    margin: -1.5px 0 0 -1.5px;
+    padding: 1.5px;
+    box-sizing: content-box;
+  }
+
+  .year-calendar :global(.chart-pointer-card) {
+    z-index: 5;
+  }
+
+  .year-calendar :global(.yc-sr) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (forced-colors: active) {
+    .year-calendar :global(.yc-grid i) {
+      forced-color-adjust: none;
+    }
+
+    .year-calendar :global(.yc-grid .off),
+    .year-calendar :global(.yc-grid .later) {
+      background: Canvas;
+      outline: 1px solid GrayText;
+      outline-offset: -1px;
+    }
+  }
+</style>
