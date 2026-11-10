@@ -1,0 +1,138 @@
+---
+// Made-up figures, in the three shapes a page leads with: plain, with a unit, and with a line
+// under the figure led by a change. The last strip is filled from script and steps between years.
+import Facts from '@n1kname/components/Facts.astro';
+
+const plain = [
+  { label: 'Avg sleep', value: '7h 20m', icon: 'moon', accent: 'var(--c-chart-8)' },
+  { label: 'Workouts', value: '182', icon: 'dumbbell', accent: 'var(--c-chart-5)' },
+  { label: 'Total distance', value: '3.140', unit: 'km', icon: 'route', accent: 'var(--c-chart-3)' },
+  { label: 'Places', value: '214', icon: 'map-pin', accent: 'var(--c-chart-1)' },
+];
+
+const units = [
+  { label: 'Resting heart rate', value: '54', unit: 'bpm', icon: 'heart-pulse', accent: 'var(--c-chart-8)' },
+  { label: 'Heart rate variability', value: '41', unit: 'ms', icon: 'activity', accent: 'var(--c-chart-8)' },
+  { label: 'VO₂ max', value: '44,8', unit: 'mL/kg/min', icon: 'trending-up', accent: 'var(--c-chart-5)' },
+  { label: 'Walking heart rate', value: '96', unit: 'bpm', icon: 'heart', accent: 'var(--c-chart-8)' },
+  { label: 'Breathing', value: '14,6', unit: 'per min', icon: 'zap', accent: 'var(--c-chart-3)' },
+  { label: 'Blood oxygen', value: '97', unit: '%', icon: 'shield-check', accent: 'var(--c-chart-2)' },
+];
+
+const lines = [
+  { label: 'Gas', value: '742', unit: 'm³', delta: { text: '−5,2%', tone: 'good' as const }, context: 'against 783 last year' },
+  { label: 'Degree days', value: '2.410', delta: { text: '−3,1%', tone: 'neutral' as const }, context: 'against 2.487; fewer is milder' },
+  { label: 'Gas per degree day, Oct–Mar', value: '0,308', unit: 'm³', delta: { text: '+2,4%', tone: 'bad' as const }, context: 'against 0,301' },
+  { label: 'Costs', value: '€\u00a03.410', context: '€\u00a0284 a month on average, of which €\u00a096 fixed' },
+];
+---
+
+<div class="not-content facts-demo">
+  <section aria-labelledby="fd-plain">
+    <h3 id="fd-plain">Plain</h3>
+    <Facts items={plain} />
+  </section>
+
+  <section aria-labelledby="fd-units">
+    <h3 id="fd-units">With a unit</h3>
+    <Facts items={units} />
+  </section>
+
+  <section aria-labelledby="fd-lines">
+    <h3 id="fd-lines">With a line, led by a change</h3>
+    <Facts items={lines} />
+  </section>
+
+  <section aria-labelledby="fd-later" data-chart-motion="update">
+    <div class="fd-head">
+      <h3 id="fd-later">Filled later, changed in place</h3>
+      <button type="button" class="fd-year" id="fd-year" disabled>Show 2025</button>
+    </div>
+    <Facts
+      id="fd-strip"
+      highlight
+      lines={2}
+      items={[
+        { key: 'boiler', label: 'Hot water', unit: 'm³ a day', contextId: 'fd-boiler-sub', icon: 'flame', accent: 'var(--c-chart-2)' },
+        { key: 'faults', label: 'Data check', contextId: 'fd-faults-sub', icon: 'shield-check', accent: 'var(--c-chart-5)' },
+        { key: 'rpm', label: 'Fan speed', unit: 'rpm', context: 'about 850 at 30%', icon: 'refresh-cw', accent: 'var(--c-chart-3)' },
+      ]}
+    />
+  </section>
+</div>
+
+<script>
+  import { setFact } from '@n1kname/components/facts.js';
+
+  // Two made-up years. The first fill replaces the dashes; after that, figures that change settle.
+  const YEARS = {
+    2026: {
+      boiler: { value: '0,58', context: '22 minutes of flame · €\u00a0260 a year' },
+      faults: { value: '1 fault', delta: { text: '+1', tone: 'bad' }, context: '12 warnings · checked 07:40' },
+      rpm: { value: '1.120', context: 'about 850 at 30%, 1.300 at 60%' },
+    },
+    2025: {
+      boiler: { value: '0,64', context: '25 minutes of flame · €\u00a0291 a year' },
+      faults: { value: 'No faults', delta: null, context: '3 warnings · checked 07:40' },
+      rpm: { value: '1.040', context: 'about 850 at 30%, 1.300 at 60%' },
+    },
+  } as const;
+
+  const strip = document.getElementById('fd-strip')!;
+  const button = document.getElementById('fd-year') as HTMLButtonElement;
+  let year: 2025 | 2026 = 2026;
+  const show = () => {
+    for (const [key, f] of Object.entries(YEARS[year])) setFact(strip, key, f);
+    button.textContent = `Show ${year === 2026 ? 2025 : 2026}`;
+  };
+  setTimeout(() => {
+    show();
+    button.disabled = false;
+  }, 900);
+  button.addEventListener('click', () => {
+    year = year === 2026 ? 2025 : 2026;
+    show();
+  });
+</script>
+
+<style>
+  .facts-demo {
+    display: grid;
+    gap: var(--sp-6);
+  }
+
+  .facts-demo h3 {
+    margin: 0 0 var(--sp-2);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  .fd-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+
+  .fd-year {
+    padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    cursor: pointer;
+  }
+
+  .fd-year:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .fd-year:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+</style>

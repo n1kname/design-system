@@ -1,72 +1,98 @@
 ---
 title: "Facts"
-description: "Label and figure pairs, as tiles, pills or a list, each figure with an icon and an accent of its own."
+description: "Label and figure pairs, as tiles, pills or a list. Tiles lead a page: a figure, its unit, and a line with what changed."
 ---
 
 import Facts from '@n1kname/components/Facts.astro';
+import FactsDemo from '../../../components/FactsDemo.astro';
 
 export const items = [
-  { label: 'Distance', value: '12.4 km', icon: 'route', accent: 'var(--c-chart-3)' },
+  { label: 'Distance', value: '12,4', unit: 'km', icon: 'route', accent: 'var(--c-chart-3)' },
   { label: 'Duration', value: '48m', icon: 'timer', accent: 'var(--c-chart-7)' },
-  { label: 'Avg HR', value: '132 bpm', icon: 'heart-pulse', accent: 'var(--c-chart-8)' },
-  { label: 'kcal', value: '410', icon: 'flame', accent: 'var(--c-chart-1)' },
+  { label: 'Avg HR', value: '132', unit: 'bpm', icon: 'heart-pulse', accent: 'var(--c-chart-8)' },
+  { label: 'Energy', value: '410', unit: 'kcal', icon: 'flame', accent: 'var(--c-chart-1)' },
 ];
 
-<div class="not-content facts-demo">
-  <Facts items={items} />
-  <Facts items={items} highlight />
+<FactsDemo />
+
+<div class="not-content facts-forms">
   <Facts items={items.slice(0, 3)} variant="pills" />
   <Facts items={[{ label: 'Date', value: '3 Nov 2026', icon: 'calendar' }, { label: 'Start', value: '07:45', icon: 'clock' }, { label: 'Source', value: 'A watch', icon: 'smartphone' }, { label: 'Kind', value: 'Ride', icon: 'bike' }]} variant="list" />
 </div>
 
-<style>{`.facts-demo { display: grid; gap: var(--sp-6); }`}</style>
+<style>{`.facts-forms { display: grid; gap: var(--sp-6); margin-top: var(--sp-6); }`}</style>
 
-The data is made up. The second row shows the highlighter option.
+The figures are made up. The fourth strip fills in a moment after the page loads and has the highlighter on; its button steps between two years, so you can see a figure settle in place. Below the tiles are the other two forms, pills and a list.
 
 ## What it's for
 
-To show a thing's figures as pairs of a label and a value: the figures that lead a page (tiles), a thing's figures in a line (pills), its facts (a list).
+To show figures as a label and a value, in one of three forms:
+
+- **Tiles: the figures that lead a page,** read at a glance before the charts. Three to six of them, each with a unit, and a line saying what the figure is against or what changed.
+- **Pills: a thing's figures in a line,** such as a workout's distance, time and heart rate under its title.
+- **A list: a thing's facts,** label left and value right, such as when it started and where the data came from.
 
 ## When not to use it
 
-- **Figures that lead a whole page,** read at a glance in a row. Use the [Stat strip](/components/stat-strip/).
-- **Many rows of the same figures.** Use a [Data table](/components/data-table/).
+- **More than six lead figures.** The tiles still fill rows, but a reader stops reading at about six. Pick the six, or use a [data table](/components/data-table/).
+- **Many rows of the same figures.** Use a data table.
+- **A figure you can't explain.** Give it a line, or leave it out.
+- **Comparing values against each other.** Use a chart.
 
 ## Anatomy
 
 - **Label,** with an optional icon from the icon set for what the figure measures.
-- **Value,** in figures of one width.
+- **Figure,** in digits of one width, so figures that change don't jitter.
+- **Unit** (optional): small and a step quieter after the figure, so the number leads. If it doesn't fit, it moves under the figure whole.
+- **Line** (tiles, optional): what the figure is against, a period, or how it breaks down. It can wrap to two lines.
+- **Change** (tiles, optional): bold at the start of the line, such as "−5,2%". Its tone is a quiet green for good, red for bad, or the text colour for neutral.
 - **Accent** (optional): a chart token per figure, the same in every form, so distance is always one colour and heart rate another.
+
+In a row of tiles, the labels, figures and lines line up across tiles. When one label wraps or one line runs to two, every tile in that row makes room, so the figures share one baseline.
 
 ## Variants
 
-- **tiles:** the icon in a soft disc of its accent, the value large.
-- **pills:** a tint of the accent, label and value in a line.
-- **list:** hairline rows, the value to the right.
-- **highlight** (tiles, off by default): the landing page's highlighter under the value, in its accent, sweeping in once as the tiles come into view.
+- **tiles,** the default: a card each, the icon in a soft disc of its accent, the figure large. Two across on a phone. Wider, they go in one row when they fit, or in rows that balance: four tiles as 2 + 2, six as 3 + 3, never 3 + 1. An odd last tile on two columns takes the full row. The tiles measure the space they are in, not the screen, so they reflow the same in a card or a side panel. Past six, they fill rows of at least 9rem.
+- **pills:** a tint of the accent, with the label and the figure (and unit) in a line. No line under it.
+- **list:** hairline rows, the figure to the right. No line under it.
+- **highlight** (tiles only, off by default): the landing page's highlighter under the figure, in its accent, sweeping in once as the tiles come into view.
 - **iconMotion** (off by default): the icons draw themselves in once, one after the other.
+- **lines={2}** (tiles): keeps room for two lines of context while the figures load, for lines that will wrap. One by default.
+
+**Tiles or pills?** Use tiles for the figures that answer a page's question: they lead the page and can carry a line. Use pills when the figures belong to one thing shown above them, such as a title or a map, and should take one line, not a row of cards.
 
 ## States
 
-- **Filled later:** `setFacts()` from `facts.js` writes them and plays the options again.
-- **Reduced motion:** no sweep, no drawing; everything is there.
+| State | What shows |
+|---|---|
+| Waiting | A dash at the figure's full height, with no unit. If any tile has a line, every tile keeps room for one (or two, with `lines={2}`), so nothing jumps when the figures arrive. |
+| Unknown | A dash, never 0. A unit never shows on its own. |
+| Known | The figure, its unit, and the line. |
+| Changed in place | On a page with `data-chart-motion="update"` (see Motion, "Charts changing"), a figure that changes settles in from a little below. It never counts up. A figure replacing the dash simply appears. |
+| Reduced motion | Nothing moves: no sweep, no drawing, no settling. |
 
 ## Tokens
 
-`--c-border`, `--c-surface`, `--c-text-muted`, `--c-text-secondary`, `--c-accent`, chart tokens for `accent`, `--ease-out`, `--radius-lg`, `--sp-1` to `--sp-6`, `--text-body-sm`, `--text-caption`, `--text-h3`, and the highlighter's.
+`--c-border`, `--c-surface`, `--c-bg`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--c-accent`, `--c-status-good` and `--c-status-critical` (75% of each, mixed with `--c-text`), chart tokens for `accent`, `--ease-out`, `--motion-base`, `--radius-lg`, `--sp-1` to `--sp-6`, `--leading-caption`, `--text-body-sm`, `--text-caption`, `--text-h3`, and the highlighter's.
 
 ## Keyboard and screen reader
 
-A description list: each label is read with its value. Icons are hidden.
+- **It's a description list.** Each label is read with its figure and unit, then its line, as two values of one term.
+- **Icons are hidden** from screen readers.
+- **A change is written with its sign,** so its colour is never the only cue.
+- **Figures that fill in later don't announce themselves.** The page says what it found in its title.
 
 ## Content
 
-- **Labels as on the rest of the page,** values with their unit: "12.4 km".
-- **An icon only where it marks what a figure measures,** the same icon for the same measure everywhere.
+- **Labels as on the rest of the page,** with the unit in `unit`, not in the label: "Gas", 742, "m³".
+- **A line that says what the figure is against,** in words: "against 783 last year", "€ 284 a month on average". Lead it with the change when there is one.
+- **Figures in Dutch format,** as on the rest of the site: "3.140", "44,8".
+- **Keep a currency sign with its figure:** join them with a no-break space (`'€\u00a0284'` in script), so a line that wraps never leaves the € behind.
+- **An icon only where it marks what a figure measures,** with the same icon for the same measure everywhere. Leave icons out on a page where they would only decorate.
 
 ## Status
 
-New. A dashboard's activity cards and a workout's figures became this.
+Tiles replace the [Stat strip](/components/stat-strip/) from components 0.20.0. They gained a unit, a line and a change, balanced rows, and figures that line up and settle. A dashboard's activity cards and a workout's figures first became this.
 
 ## Code
 
@@ -75,10 +101,48 @@ New. A dashboard's activity cards and a workout's figures became this.
 import Facts from '@n1kname/components/Facts.astro';
 ---
 
-<Facts id="figures" variant="pills" items={[{ label: 'Distance', value: '12.4 km', icon: 'route', accent: 'var(--c-chart-3)' }]} />
+<Facts
+  id="year"
+  items={[
+    { key: 'gas', label: 'Gas', unit: 'm³', contextId: 'gas-line', icon: 'flame', accent: 'var(--c-chart-2)' },
+    { key: 'costs', label: 'Costs', context: 'this year so far' },
+  ]}
+/>
 
 <script>
-  import { setFacts } from '@n1kname/components/facts.js';
-  setFacts(document.getElementById('figures'), [{ label: 'Distance', value: '13.1 km', icon: 'route', accent: 'var(--c-chart-3)' }]);
+  import { setFact, setFacts } from '@n1kname/components/facts.js';
+  const tiles = document.getElementById('year');
+
+  // One fact: only the fields given change.
+  setFact(tiles, 'gas', { value: '742', delta: { text: '−5,2%', tone: 'good' }, context: 'against 783 last year' });
+
+  // All of them: changed in place when the count is the same, drawn anew when it isn't.
+  setFacts(tiles, [
+    { key: 'gas', label: 'Gas', value: '742', unit: 'm³', delta: { text: '−5,2%', tone: 'good' }, context: 'against 783 last year' },
+    { key: 'costs', label: 'Costs', value: '€ 3.410', context: '€ 284 a month on average' },
+  ]);
 </script>
 ```
+
+## From a Stat strip
+
+Each Stat becomes one fact, in the same order, and the StatStrip becomes `<Facts>`. A page that writes its figures through ids can keep doing so.
+
+| Stat | Fact |
+|---|---|
+| `<StatStrip>` | `<Facts>` (tiles are the default) |
+| `label="Gas"` | `label: 'Gas'` |
+| `value="742 m³"` | `value: '742', unit: 'm³'`, or keep `value: '742 m³'` |
+| `context="this week"` | `context: 'this week'` |
+| `valueId="tile-gas"` | `valueId: 'tile-gas'`: the id is on the figure, so `textContent =` still works |
+| `contextId="sub-gas"` | `contextId: 'sub-gas'`: the line keeps its height while it waits |
+| `innerHTML = '742 <span class="unit">m³</span>'` | `setFact(tiles, 'gas', { value: '742', unit: 'm³' })` |
+| `innerHTML = '<strong>−5,2%</strong> against 783'` | `setFact(tiles, 'gas', { delta: { text: '−5,2%', tone: 'good' }, context: 'against 783' })` |
+| A unit written into the context line | `unit`, beside the figure |
+| `querySelectorAll('.stat dt')[2].textContent = …` | `setFact(tiles, 2, { label: … })` |
+
+## Keep in mind
+
+- **With `valueId`, write the unit into the text** (`'84,4 kg'`), or move to `setFact` with `unit`. A unit given in `items` only shows once `setFacts` or `setFact` fills in the figure.
+- **`setFacts` keeps the tiles** when it gets as many facts as there are, so figures settle instead of the strip redrawing. It plays the highlighter and the icons again only when it draws the tiles anew.
+- **Give each fact a `key`** when the page changes one at a time.

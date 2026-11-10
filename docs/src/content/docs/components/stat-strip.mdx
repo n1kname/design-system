@@ -1,6 +1,6 @@
 ---
 title: "Stat strip"
-description: "A compact row of numbers read at a glance, between two rules."
+description: "Deprecated: use Facts tiles. A compact row of numbers between two rules."
 ---
 
 import StatStrip from '@n1kname/components/StatStrip.astro';
@@ -15,12 +15,19 @@ import Stat from '@n1kname/components/Stat.astro';
   </StatStrip>
 </div>
 
+<div class="not-content deprecated" role="note">
+  <strong>Deprecated in components 0.20.0.</strong> Use <a href="/components/facts/">Facts</a> tiles: they take everything a Stat did, plus a unit, a change and rows that balance. <a href="/components/facts/#from-a-stat-strip">How a Stat maps to a fact.</a> The Stat strip keeps working until components 1.0.
+</div>
+
+<style>{`.deprecated { margin-top: var(--sp-4); padding: var(--sp-3) var(--sp-4); border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface-sunken); font-size: var(--text-body-sm); } .deprecated a { color: var(--c-text-accent); }`}</style>
+
 ## What it's for
 
 For the few numbers that answer the page's question before you look at a chart. Dashboards often use a row of big tiles; this one takes a fifth of the height and leaves the room to the charts.
 
 ## When not to use it
 
+- **Anything new.** Use [Facts](/components/facts/) tiles.
 - **More than four numbers.** You probably want a [data table](/components/data-table/).
 - **A number you can't explain.** Give it `context`, or leave it out.
 - **Comparing many values.** Use a chart.
@@ -60,7 +67,7 @@ None.
 
 ## Status
 
-New. Used by a dashboard.
+Deprecated in components 0.20.0, in favour of [Facts](/components/facts/) tiles. It still works and won't change. It will be removed in components 1.0. Two dashboards used it.
 
 ## Code
 

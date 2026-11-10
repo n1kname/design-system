@@ -1,22 +1,40 @@
 ---
 /**
- * Label and figure pairs, three ways: tiles (a few figures that lead), pills (a thing's figures in
- * a line) and a list (its facts). Each figure can carry an icon and an accent of its own, the same
- * in every form, so distance is always one colour and heart rate another. Two options, off by
- * default: the highlighter under a tile's figure, sweeping in once; and icons that draw themselves
- * in once. Fill it at build time with `items`, or later with setFacts() from facts.js.
+ * Label and figure pairs, three ways: tiles (the figures that lead a page), pills (a thing's
+ * figures in a line) and a list (its facts). Each figure can carry an icon and an accent of its
+ * own, the same in every form, so distance is always one colour and heart rate another.
+ *
+ * A tile can also carry a unit, small after the figure, and a line under it: `context`, led by a
+ * bold `delta` when there's a change to show. The tiles balance their rows (four go 4 or 2 + 2,
+ * never 3 + 1), and the labels, figures and lines line up across a row however they wrap.
+ *
+ * Two options, off by default: the highlighter under a tile's figure, sweeping in once; and icons
+ * that draw themselves in once. Fill it at build time with `items`, or later with setFacts() and
+ * setFact() from facts.js.
  */
 import type { IconName } from './icons';
-import Icon from './Icon.astro';
+import { factsHTML } from './facts.js';
 import './highlight.css';
 
 interface Fact {
   label: string;
   value?: string;
+  /** Small, after the figure: m³, bpm, km. */
+  unit?: string;
+  /** Tiles: the line under the figure, such as a period or a comparison. */
+  context?: string;
+  /** Tiles: a change, bold at the start of the line. The text carries its sign; the tone a quiet colour. */
+  delta?: string | { text: string; tone?: 'good' | 'bad' | 'neutral' };
   /** What the figure measures, from the icon set: route, timer, heart-pulse, flame, … */
   icon?: IconName;
   /** A chart token, such as var(--c-chart-3), for the icon and the highlighter. */
   accent?: string;
+  /** Names the fact for setFact(). */
+  key?: string;
+  /** Id on the figure, for a page that writes it itself, as with Stat. */
+  valueId?: string;
+  /** Id on the line under it. The line keeps its height meanwhile. */
+  contextId?: string;
 }
 interface Props {
   items?: Fact[];
@@ -25,29 +43,28 @@ interface Props {
   highlight?: boolean;
   /** Icons that draw themselves in once, as the facts come into view. */
   iconMotion?: boolean;
+  /** Tiles: how many lines of context to keep room for while the figures load. 1 by default. */
+  lines?: 1 | 2;
   id?: string;
 }
-const { items = [], variant = 'tiles', highlight = false, iconMotion = false, id } = Astro.props;
-const size = variant === 'tiles' ? 16 : 14;
+const { items = [], variant = 'tiles', highlight = false, iconMotion = false, lines = 1, id } = Astro.props;
+const { html, count, context } = factsHTML(items, { variant, highlight });
+const hl = highlight && variant === 'tiles';
 ---
 
-<dl class:list={['facts', variant]} id={id} data-facts data-variant={variant} data-highlight={highlight && variant === 'tiles' ? '' : undefined} data-icon-motion={iconMotion ? '' : undefined}>
-  {
-    items.map((f, n) => (
-      <div style={`--n:${n}${f.accent ? `;--accent:${f.accent}` : ''}`}>
-        <dt>
-          {f.icon && (
-            <span class="fact-icon">
-              <Icon name={f.icon} size={size} />
-            </span>
-          )}
-          {f.label}
-        </dt>
-        <dd>{highlight && variant === 'tiles' ? <mark class="highlight">{f.value ?? '–'}</mark> : (f.value ?? '–')}</dd>
-      </div>
-    ))
-  }
-</dl>
+{
+  variant === 'tiles' ? (
+    <div class="facts-box">
+      <dl class="facts tiles" id={id} data-facts data-variant="tiles" data-count={count} data-context={context ? '' : undefined} data-lines={lines === 2 ? '2' : undefined} data-highlight={hl ? '' : undefined} data-icon-motion={iconMotion ? '' : undefined}>
+        <Fragment set:html={html} />
+      </dl>
+    </div>
+  ) : (
+    <dl class:list={['facts', variant]} id={id} data-facts data-variant={variant} data-count={count} data-icon-motion={iconMotion ? '' : undefined}>
+      <Fragment set:html={html} />
+    </dl>
+  )
+}
 
 <script>
   import { arrive } from './facts.js';
@@ -56,6 +73,10 @@ const size = variant === 'tiles' ? 16 : 14;
 
 <style>
   .facts {
+    margin: 0;
+  }
+
+  .facts :global(dd) {
     margin: 0;
   }
 
@@ -70,27 +91,111 @@ const size = variant === 'tiles' ? 16 : 14;
     display: block;
   }
 
-  /* Tiles: the icon in a soft disc of its accent. */
-  .tiles {
-    display: grid;
-    gap: var(--sp-3);
-    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  .facts :global(.fact-value) {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
 
+  /* The unit beside the figure, a step quieter. */
+  .facts :global(.fact-unit) {
+    margin-inline-start: 0.25em;
+    font-weight: 500;
+    color: var(--c-text-secondary);
+  }
+
+  .facts :global(.fact-unit:empty) {
+    display: none;
+  }
+
+  /* ── Tiles ──────────────────────────────────────────────────────────────────
+     The strip measures itself, so it reflows in a card or a side panel as on a page. Two across
+     on a phone; wider, every tile in one row when they fit, else rows that balance: 4 as 2 + 2,
+     6 as 3 + 3, never 3 + 1. */
+  .facts-box {
+    container-type: inline-size;
+  }
+
+  .tiles {
+    --cols: 2;
+    --rows: 2;
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    gap: var(--sp-3);
+  }
+
+  .tiles[data-count='0'],
+  .tiles[data-count='1'] {
+    --cols: 1;
+  }
+
+  .tiles[data-context] {
+    --rows: 3;
+  }
+
+  /* An odd last tile on two columns takes the row, so no hole is left beside it. */
+  .tiles:is([data-count='3'], [data-count='5']) > :global(div:last-child) {
+    grid-column: span 2;
+  }
+
+  @container (min-width: 28.5rem) {
+    .tiles:is([data-count='3'], [data-count='5'], [data-count='6']) {
+      --cols: 3;
+    }
+
+    .tiles[data-count='3'] > :global(div:last-child) {
+      grid-column: auto;
+    }
+  }
+
+  @container (min-width: 38.25rem) {
+    .tiles[data-count='4'] {
+      --cols: 4;
+    }
+  }
+
+  @container (min-width: 48rem) {
+    .tiles[data-count='5'] {
+      --cols: 5;
+    }
+
+    .tiles[data-count='5'] > :global(div:last-child) {
+      grid-column: auto;
+    }
+  }
+
+  @container (min-width: 57.75rem) {
+    .tiles[data-count='6'] {
+      --cols: 6;
+    }
+  }
+
+  .tiles[data-count='many'] {
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  }
+
+  /* Each tile takes its rows from the strip (subgrid): a label that wraps, or a line that runs
+     to two, moves that row in every tile beside it, so the figures share one baseline. */
   .tiles > :global(div) {
     display: grid;
-    gap: var(--sp-2);
+    grid-row: span var(--rows);
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    align-content: start;
+    min-width: 0;
     padding: var(--sp-4);
     border: 1px solid var(--c-border);
     border-radius: var(--radius-lg);
     background: var(--c-surface);
   }
 
+  /* A short label beside one that wraps keeps to the top of its tile. */
   .tiles :global(dt) {
     display: flex;
     align-items: center;
+    align-self: start;
     gap: var(--sp-2);
     font-size: var(--text-caption);
+    line-height: var(--leading-caption);
     color: var(--c-text-secondary);
   }
 
@@ -101,25 +206,71 @@ const size = variant === 'tiles' ? 16 : 14;
     background: color-mix(in oklab, var(--accent, var(--c-text-muted)) 16%, var(--c-surface));
   }
 
-  .tiles :global(dd) {
-    margin: 0;
+  /* The figure keeps a line's height while it waits, so nothing jumps when it arrives. A unit
+     that doesn't fit goes under it whole, never split from a number mid-word. */
+  .tiles :global(.fact-value) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    align-self: end;
+    margin-top: var(--sp-2);
+    min-height: 1lh;
     font-size: var(--text-h3, 1.35rem);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
     line-height: 1.2;
+    color: var(--c-text);
   }
 
-  .tiles :global(dd mark) {
+  .tiles :global(.fact-unit) {
+    font-size: var(--text-body-sm);
+    white-space: nowrap;
+  }
+
+  .tiles :global(.fact-context) {
+    margin-top: 2px;
+    min-height: 1lh;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+    text-wrap: pretty;
+  }
+
+  /* Lines that will wrap: room for two while they wait. */
+  .tiles[data-lines='2'] :global(.fact-context) {
+    min-height: 2lh;
+  }
+
+  .tiles:not([data-context]) :global(.fact-context) {
+    display: none;
+  }
+
+  /* The change, bold, in a quiet tone that still reads as text: 75% of the status colour, the
+     rest the text colour (5:1 or more on a tile in both themes). The text carries the sign, so
+     the colour is never the only cue. */
+  .tiles :global(.fact-delta) {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-text-secondary);
+  }
+
+  .tiles :global(.fact-delta[data-tone='good']) {
+    color: color-mix(in oklab, var(--c-status-good) 75%, var(--c-text));
+  }
+
+  .tiles :global(.fact-delta[data-tone='bad']) {
+    color: color-mix(in oklab, var(--c-status-critical) 75%, var(--c-text));
+  }
+
+  .tiles :global(.fact-figure mark) {
     --highlight: color-mix(in oklab, var(--accent, var(--c-accent)) 34%, var(--c-bg));
   }
 
   /* The highlighter waits until the tiles are in view. */
-  .tiles:not(:global(.in)) :global(dd mark) {
+  .tiles:not(:global(.in)) :global(.fact-figure mark) {
     animation: none;
     background-size: 0% var(--highlight-band);
   }
 
-  /* Pills: a tint of the accent. */
+  /* ── Pills: a tint of the accent. ───────────────────────────────────────────── */
   .pills {
     display: flex;
     flex-wrap: wrap;
@@ -144,14 +295,11 @@ const size = variant === 'tiles' ? 16 : 14;
     color: var(--c-text-secondary);
   }
 
-  .pills :global(dd) {
-    margin: 0;
+  .pills :global(.fact-value) {
     font-size: var(--text-body-sm);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
   }
 
-  /* A list: hairlines, no fills. */
+  /* ── A list: hairlines, no fills. ───────────────────────────────────────────── */
   .list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -174,9 +322,8 @@ const size = variant === 'tiles' ? 16 : 14;
     color: var(--c-text-muted);
   }
 
-  .list :global(dd) {
-    margin: 0 0 0 auto;
-    font-weight: 600;
+  .list :global(.fact-value) {
+    margin-inline-start: auto;
     text-align: right;
   }
 

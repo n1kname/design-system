@@ -49,13 +49,12 @@ export default defineConfig({
         {
           label: 'Data',
           items: [
-            { label: 'Stat strip', link: '/components/stat-strip/' },
+            { label: 'Facts', link: '/components/facts/' },
             { label: 'Period picker', link: '/components/period-picker/' },
             { label: 'Search field', link: '/components/search-field/' },
             { label: 'Filter chips', link: '/components/filter-chips/' },
             { label: 'Segmented', link: '/components/segmented/' },
             { label: 'Data table', link: '/components/data-table/' },
-            { label: 'Facts', link: '/components/facts/' },
             { label: 'Disclosure list', link: '/components/disclosure-list/' },
             { label: 'Side panel', link: '/components/side-panel/' },
             { label: 'Empty state', link: '/components/empty-state/' },
@@ -72,6 +71,7 @@ export default defineConfig({
             { label: 'Dot rows', link: '/components/dot-rows/' },
             { label: 'Ranked bars', link: '/components/ranked-bars/' },
             { label: 'Donut', link: '/components/donut/' },
+            { label: 'Stat strip', link: '/components/stat-strip/', badge: { text: 'Deprecated', variant: 'caution' } },
           ],
         },
         {
