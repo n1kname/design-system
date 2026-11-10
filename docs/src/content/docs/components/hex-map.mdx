@@ -35,7 +35,7 @@ Thousands of points, such as GPS fixes over a year, where the question is where 
 
 ## States
 
-- **Changing view:** the hexagons rise over 700ms and settle over 500ms, ease-out, while the camera tilts over the same time. Leaving 3D settles first, then swaps to the flat layer, so nothing drops through the floor. Instant under reduced motion.
+- **Changing view:** the hexagons rise over `--motion-grow` (700ms) and settle in 70% of that, ease-out, while the camera tilts over the same time. Leaving 3D settles first, then swaps to the flat layer, so nothing drops through the floor. Instant under reduced motion.
 - **New data,** such as another year: the hexagons swap at once. `onDrawn` runs once the map has drawn them.
 - **Theme or basemap change:** the layers come back with the new colours after `setStyle`.
 - **Loading, empty and no WebGL:** the [Map stage](/components/map-stage/)'s messages.

@@ -420,6 +420,20 @@
         "unit": "ms"
       }
     },
+    "grow": {
+      "$type": "duration",
+      "$value": {
+        "value": 700,
+        "unit": "ms"
+      }
+    },
+    "draw": {
+      "$type": "duration",
+      "$value": {
+        "value": 1000,
+        "unit": "ms"
+      }
+    },
     "spring": {
       "$type": "duration",
       "$value": {

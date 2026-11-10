@@ -3,6 +3,8 @@
 //
 //     import { setKeys } from '@n1kname/components/legend.js';
 //     setKeys(legend, [{ label: 'Walking', color: 'var(--c-chart-5)' }, …]);
+// The system's curves, so a key leaves and arrives as everything else does.
+const token = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -17,7 +19,7 @@ export const setKeys = (ul, keys) => {
     if (want.has(key)) continue;
     li.setAttribute('data-leaving', '');
     if (reduced()) li.remove();
-    else li.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.9)' }], { duration: 140, easing: 'ease-in' }).finished.then(() => li.remove());
+    else li.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.9)' }], { duration: 140, easing: token('--ease-exit', 'ease-in') }).finished.then(() => li.remove());
   }
   // In the order given: each key moved to the end in turn, so they end up in order after any
   // that are still fading out.
@@ -31,7 +33,7 @@ export const setKeys = (ul, keys) => {
         li.setAttribute(scope, '');
         li.firstElementChild.setAttribute(scope, '');
       }
-      if (!reduced()) li.animate([{ opacity: 0, transform: 'translateY(3px)' }, { opacity: 1, transform: 'none' }], { duration: 220, delay: 120, easing: 'ease-out', fill: 'backwards' });
+      if (!reduced()) li.animate([{ opacity: 0, transform: 'translateY(3px)' }, { opacity: 1, transform: 'none' }], { duration: 220, delay: 120, easing: token('--ease-out', 'ease-out'), fill: 'backwards' });
     }
     ul.append(li);
   }

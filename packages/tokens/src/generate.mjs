@@ -227,11 +227,13 @@ const LAYOUT = {
 // Enter on ease-out, which starts fast and settles. Leave on ease-exit, and quicker.
 // Two modes, as Carbon has productive and expressive. Dashboards use the three above.
 // A portfolio adds these: gentle for hover and reveal for the one opening of a page.
+// Charts and maps arrive once, and take longer, because they travel further: grow for a bar rising
+// from zero or a hexagon into 3D, draw for a line drawn from its first point.
 // ease-soft does most of its travel early, so a long duration still answers at once.
 // spring settles instead of stopping: a mass on a spring, sampled into CSS linear(). It takes its own
 // duration, motion-spring, which is how long that spring takes to come to rest. For arriving only.
 const SPRING = { stiffness: 380, damping: 24, mass: 0.6 };
-const MOTION = { fast: 120, base: 180, slow: 260, gentle: 240, reveal: 900 };
+const MOTION = { fast: 120, base: 180, slow: 260, gentle: 240, reveal: 900, grow: 700, draw: 1000 };
 const EASE = { out: [0.23, 1, 0.32, 1], exit: [0.4, 0, 1, 1], standard: [0.2, 0, 0.38, 0.9], soft: [0.16, 1, 0.3, 1] };
 
 // Position from 0 to 1 at t seconds, starting at rest. Underdamped, or critically damped and over.

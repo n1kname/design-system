@@ -228,10 +228,15 @@ export const setYearCalendar = (box, opts) => {
     const cy = top - ch - 8 >= 0 ? top - ch - 8 : top + c.height + 8;
     card.style.transform = `translate(${cx}px, ${cy}px)`;
 
-    const first = !layer.classList.contains('is-on');
-    layer.classList.toggle('is-jump', first);
+    // In place the first time and on every key press, as the charts' pointer does; gliding only
+    // after the pointer.
+    const jump = !layer.classList.contains('is-on') || fromKeys;
+    layer.classList.toggle('is-jump', jump);
     layer.classList.add('is-on');
-    if (first) requestAnimationFrame(() => layer.classList.remove('is-jump'));
+    if (jump) {
+      void layer.offsetWidth;
+      requestAnimationFrame(() => layer.classList.remove('is-jump'));
+    }
     if (fromKeys) {
       const said = [line, ...more.map((e) => (Array.isArray(e) ? e.join(' ') : e))].filter(Boolean);
       live.textContent = `${date(d)}${said.length ? `: ${said.join(', ')}` : ''}`;

@@ -17,10 +17,15 @@ import { HEAT, onTheme, ramp } from './mapstage.js';
 
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Rising takes longer than settling: leaving is quicker than arriving. The camera tilts over the
-// same time as the rise, so the two land together.
-const RISE = 700;
-const SETTLE = 500;
+// Rising takes the tokens' grow; settling 70% of it, as leaving is quicker than arriving. The
+// camera tilts over the same time as the rise, so the two land together. Read when the view
+// changes, so a site that tunes the token is followed.
+const RISE = () => {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--motion-grow').trim();
+  const n = parseFloat(v);
+  return Number.isNaN(n) ? 700 : v.endsWith('ms') ? n : v.endsWith('s') ? n * 1000 : n;
+};
+const SETTLE = () => Math.round(RISE() * 0.7);
 // Ease-out (cubic): most of the travel early, a soft landing.
 const out = (t) => 1 - (1 - t) ** 3;
 
@@ -106,13 +111,13 @@ export const hexLayers = (
 
   const setTall = (on) => {
     tall = on;
-    map.easeTo({ pitch: on ? pitch : 0, bearing: on ? bearing : 0, duration: reduced() ? 0 : on ? RISE : SETTLE });
+    map.easeTo({ pitch: on ? pitch : 0, bearing: on ? bearing : 0, duration: reduced() ? 0 : on ? RISE() : SETTLE() });
     if (on) {
       restyle();
-      animate(1, RISE);
+      animate(1, RISE());
     } else {
       // Settle first, then swap to the flat layer, so they don't drop through the floor.
-      animate(0, SETTLE, restyle);
+      animate(0, SETTLE(), restyle);
     }
   };
 

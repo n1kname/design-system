@@ -225,7 +225,7 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
   /* ── Arriving, once ─────────────────────────────────────────────────────────
      Only on a page whose script has run and that allows motion, so the timeline is never hidden
      without it. The marker settles on the spring, the text rises a little, then the line draws on
-     to the next entry. Now's halo ripples out twice. */
+     to the next entry. Now's halo ripples out once. */
   .arrive li:not(.in) .marker {
     opacity: 0;
     transform: scale(0.4);
@@ -254,7 +254,7 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
   }
 
   .arrive li.in::before {
-    transition: transform 520ms var(--ease-soft) calc(var(--d, 0ms) + 200ms);
+    transition: transform calc(var(--motion-grow, 700ms) * 0.75) var(--ease-soft) calc(var(--d, 0ms) + 200ms);
   }
 
   .arrive [data-state='current'].in .marker::after {
@@ -264,7 +264,7 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
     border-radius: inherit;
     box-shadow: 0 0 0 2px var(--c-accent);
     opacity: 0;
-    animation: ripple 1100ms var(--ease-out) calc(var(--d, 0ms) + 260ms) 2;
+    animation: ripple var(--motion-reveal) var(--ease-out) calc(var(--d, 0ms) + 260ms);
   }
 
   @keyframes ripple {
@@ -275,7 +275,7 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
 
     to {
       opacity: 0;
-      transform: scale(2.2);
+      transform: scale(2);
     }
   }
 

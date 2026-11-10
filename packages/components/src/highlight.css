@@ -24,7 +24,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   :where(mark.highlight, .page-header .text mark) {
-    animation: highlight 700ms var(--ease-out)
+    animation: highlight calc(var(--motion-draw, 1000ms) * 0.7) var(--ease-out)
       calc(var(--highlight-delay, 300ms) + var(--n, 0) * var(--highlight-step, 450ms)) both;
   }
 }

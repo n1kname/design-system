@@ -9,8 +9,12 @@
 // there. Runs on the Web Animations API, so a mark keeps its own transform and the page needs no
 // stylesheet for it.
 
-const BAR = 700;
-const LINE = 1000;
+import { ms } from './update.mjs';
+
+// Bars grow and lines draw over the tokens' grow and draw, read as a chart arrives, so a site
+// that tunes them is followed.
+const BAR = () => ms('--motion-grow', 700);
+const LINE = () => ms('--motion-draw', 1000);
 const CELL = 420;
 const SWEEP = 420; // the longest a left-to-right stagger may take
 
@@ -64,26 +68,26 @@ const svgParts = (svg) => {
     rects.forEach((rect, i) => {
       rect.style.transformBox = 'view-box';
       rect.style.transformOrigin = `0 ${zero}px`;
-      parts.push([rect, [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: BAR, delay: at(i), easing: spring() }]);
+      parts.push([rect, [{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: BAR(), delay: at(i), easing: spring() }]);
     });
   }
   svg.querySelectorAll('.enter-line path').forEach((path) => {
     path.setAttribute('pathLength', '1');
-    parts.push([path, [{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: LINE, easing: DRAW }]);
+    parts.push([path, [{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: LINE(), easing: DRAW }]);
   });
-  // A dot appears as its line reaches it; the line covers the width in LINE.
+  // A dot fades in, from nearly its size, as its line reaches it; the line covers the width in LINE.
   const dots = [...svg.querySelectorAll('.enter-dot circle')];
-  const dotAt = sweep(dots, LINE * 0.8);
+  const dotAt = sweep(dots, LINE() * 0.8);
   dots.forEach((dot, i) => {
     dot.style.transformBox = 'fill-box';
     dot.style.transformOrigin = 'center';
-    parts.push([dot, [{ opacity: 0, transform: 'scale(0.4)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 280, delay: dotAt(i), easing: OUT }]);
+    parts.push([dot, [{ opacity: 0, transform: 'scale(0.8)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 280, delay: dotAt(i), easing: OUT }]);
   });
   const cells = [...svg.querySelectorAll('.enter-cell rect')];
   const cellAt = sweep(cells, 500);
   cells.forEach((cell, i) => parts.push([cell, [{ opacity: 0 }, { opacity: 1 }], { duration: CELL, delay: cellAt(i), easing: OUT }]));
   // Words and shading land once the marks they belong to have.
-  const last = rects.length ? BAR + SWEEP * 0.6 : parts.length ? LINE * 0.7 : 0;
+  const last = rects.length ? BAR() + SWEEP * 0.6 : parts.length ? LINE() * 0.7 : 0;
   svg.querySelectorAll('.enter-fade').forEach((g) => parts.push([g, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: last, easing: OUT }]));
   return parts;
 };
@@ -91,8 +95,8 @@ const svgParts = (svg) => {
 // Ranked bars are HTML: each bar grows from the left, top to bottom.
 const htmlParts = (root) =>
   [...root.querySelectorAll('.ranked-bars i')].flatMap((bar, i, all) => [
-    [bar, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: BAR, delay: (i / Math.max(all.length - 1, 1)) * SWEEP * 0.6, easing: spring() }],
-    [bar.nextElementSibling, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: BAR * 0.6 + (i / Math.max(all.length - 1, 1)) * SWEEP * 0.6, easing: OUT }],
+    [bar, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: BAR(), delay: (i / Math.max(all.length - 1, 1)) * SWEEP * 0.6, easing: spring() }],
+    [bar.nextElementSibling, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: BAR() * 0.6 + (i / Math.max(all.length - 1, 1)) * SWEEP * 0.6, easing: OUT }],
   ]).filter(([el]) => el);
 
 /**

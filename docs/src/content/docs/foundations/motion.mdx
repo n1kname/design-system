@@ -15,6 +15,8 @@ The best motion goes unnoticed. It's there to give feedback or to show where som
 | `--motion-slow` | 260ms | A panel, the largest thing that moves |
 | `--motion-gentle` | 240ms | Hover on a portfolio |
 | `--motion-reveal` | 900ms | The one opening of a portfolio page |
+| `--motion-grow` | 700ms | Something growing once into place: bars from zero, hexagons into 3D, a timeline's line |
+| `--motion-draw` | 1000ms | A line drawn once from its start: a chart's lines, a trace, a highlighter, sketched icons |
 | `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Things arriving: fast start, soft landing |
 | `--ease-exit` | `cubic-bezier(0.4, 0, 1, 1)` | Things leaving for good |
 | `--ease-standard` | `cubic-bezier(0.2, 0, 0.38, 0.9)` | Things leaving that stay within reach, such as a side panel |
@@ -34,8 +36,8 @@ The numbers live in `generate.mjs`. Change the stiffness, damping or mass there,
 
 A chart arrives once, the first time it comes into view, so the eye follows how it is built:
 
-- **Bars** grow from the zero line on the spring, left to right, all of them within 420ms. Bars below zero grow down from it, and a stack grows as one bar.
-- **Lines** draw from their first point over a second. Their dots appear as the line reaches them. A dashed line fades in instead, because its dash is its own.
+- **Bars** grow from the zero line over `--motion-grow` on the spring, left to right, all of them starting within 420ms. Bars below zero grow down from it, and a stack grows as one bar.
+- **Lines** draw from their first point over `--motion-draw`, a second. Their dots fade in, from nearly their size, as the line reaches them. A dashed line fades in instead, because its dash is its own.
 - **Heatmap cells** fill in column by column.
 - **Words and shading**, such as value labels and line names, land last.
 - **Ranked bars** grow from the left, top to bottom.
@@ -76,7 +78,7 @@ Never on a resize, and nothing under reduced motion. The tokens are read with th
 
 ## Under the pointer
 
-The card, rule and dot of a chart's [pointer](/charts/pointer/) glide from step to step on the spring (`--motion-spring`, `--ease-spring`), so the eye follows where it went. The figures in the card change at once. It appears over `--motion-fast` and leaves the same way, a moment after the pointer does, so crossing a gap doesn't make it blink. The bars or slices not pointed at dim over `--motion-base`. Nothing moves under reduced motion.
+The card, rule and dot of a chart's [pointer](/charts/pointer/) glide from step to step on the spring (`--motion-spring`, `--ease-spring`), so the eye follows where it went. A step from the arrow keys lands at once: a key press is a move already decided, and a glide would make it wait. The figures in the card change at once. It appears over `--motion-fast` and leaves the same way, a moment after the pointer does, so crossing a gap doesn't make it blink. The bars or slices not pointed at dim over `--motion-base`. Nothing moves under reduced motion.
 
 ## Changing page and theme
 
@@ -112,7 +114,7 @@ A portfolio sets these once, and every component follows:
 
 ## Rules
 
-- **Ask how often it happens.** Something you trigger all day should never make you wait. The chart [pointer](/charts/pointer/) glides from step to step, but its figures change at once: only where it is moves, never what it says.
+- **Ask how often it happens.** Something you trigger all day should never make you wait. The chart [pointer](/charts/pointer/) glides from step to step, but its figures change at once: only where it is moves, never what it says. From the keyboard it doesn't glide at all.
 - **Smaller things move faster.** A button is `fast`, a panel is `slow`.
 - **Leaving is quicker than arriving,** and travels less. Your attention has already moved on.
 - **One moment, then stop.** Charts arrive once, as they come into view, and not on every resize or redraw.

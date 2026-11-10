@@ -82,16 +82,22 @@ const said = (title, items, extra = []) =>
     ...extra.map((e) => (Array.isArray(e) ? e.join(' ') : e)),
   ].join(', ')}`;
 
-// Appearing, moving, leaving. The first showing is in place; after that, everything glides.
+// Appearing, moving, leaving. The first showing is in place, and so is every step from the keys:
+// a key press is one deliberate move, and a glide would make it wait. Pointer moves glide.
+// The class is read once before it comes off, so a glide already started lands at once.
 const presence = (l, onLeave) => {
   let hide;
   return {
-    show() {
+    show(fromKeys = false) {
       clearTimeout(hide);
       const first = !l.classList.contains('is-on');
-      l.classList.toggle('is-jump', first);
+      const jump = first || fromKeys;
+      l.classList.toggle('is-jump', jump);
       l.classList.add('is-on');
-      if (first) requestAnimationFrame(() => l.classList.remove('is-jump'));
+      if (jump) {
+        void l.offsetWidth;
+        requestAnimationFrame(() => l.classList.remove('is-jump'));
+      }
       return first;
     },
     leave() {
@@ -214,7 +220,7 @@ export const pointer = (box, { rows, x, series, format, label = (r) => String(r[
       cy = Math.min(Math.max(q.y - ch / 2, 0), q.y1 - ch);
     }
     card.style.transform = `translate(${cx}px, ${cy}px)`;
-    p.show();
+    p.show(fromKeys);
     if (fromKeys) live.textContent = said(label(r), items, more);
   };
 
@@ -279,7 +285,7 @@ export const pointerCells = (box, { cells, x, y, value, format = String, label =
     const ch = card.offsetHeight;
     const cx = q.left + q.w + 8 + cw > q.width ? q.left - 8 - cw : q.left + q.w + 8;
     card.style.transform = `translate(${cx}px, ${Math.max(q.top + q.h / 2 - ch / 2, 0)}px)`;
-    p.show();
+    p.show(fromKeys);
     if (fromKeys) live.textContent = said(label(c), items, more);
   };
   const nearest = (e) => {
@@ -349,7 +355,7 @@ export const pointerDonut = (root, { parts, format = String, share = true }) => 
     root.classList.add('is-dimming');
     const c = ring.getBoundingClientRect().width / 2;
     card.style.transform = `translate(${c - card.offsetWidth / 2}px, ${c - card.offsetHeight / 2}px)`;
-    p.show();
+    p.show(fromKeys);
     if (fromKeys) live.textContent = `${d.label}: ${value}${share ? `, ${pct}` : ''}`;
   };
   [...paths, ...items].forEach((n, k) => {

@@ -81,7 +81,7 @@ const titleId = `${id}-title`;
 
   @media (prefers-reduced-motion: no-preference) {
     .side-panel :global(.panel-loading span) {
-      animation: panel-wait 1.2s ease-in-out infinite;
+      animation: panel-wait 1.2s var(--ease-standard) infinite;
     }
 
     .side-panel :global(.panel-arrived) {
