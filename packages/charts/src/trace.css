@@ -1,0 +1,42 @@
+/* A trace (./trace.mjs) on recorder paper: the paper tinted with the first chart colour, as ECG
+   paper is pink, and the line in the text colour, the darkest mark on the page in both themes. The
+   words are the page's muted text in a system font: Safari misplaces SVG text set in a web font. */
+
+.trace {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.trace .trace-minor,
+.trace .trace-major {
+  fill: none;
+  stroke: var(--c-chart-1);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: crispEdges;
+}
+
+.trace .trace-minor {
+  stroke-opacity: 0.12;
+}
+
+.trace .trace-major {
+  stroke-opacity: 0.3;
+}
+
+.trace .trace-line {
+  fill: none;
+  stroke: var(--c-text);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.trace .trace-time {
+  fill: var(--c-text-muted);
+  font: 11px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+}

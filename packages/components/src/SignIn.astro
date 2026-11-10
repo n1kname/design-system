@@ -1,0 +1,372 @@
+---
+/**
+ * The page in front of something private: one field, one button, and what to do without them.
+ * It is the whole <main>, centred in the window, so a sign-in page is its head and this.
+ *
+ *   card  an app's sign-in: its mark and name above a card holding the form
+ *   page  a door with a reason: a heading in the display face, a sentence on why, the field and
+ *         the button on one line
+ *
+ * The form posts wherever `action` says; nothing here reads or checks what was typed. The error
+ * is in the page from the start, hidden. It shows when the server says so (`error` true), when
+ * the address carries `errorParam` (a redirect back with ?error=1), or when a server removes its
+ * `hidden` attribute ([data-sign-in-error]) on the way out. Once shown, the field is marked
+ * invalid and takes focus, so typing again needs no click.
+ */
+interface Props {
+  variant?: 'card' | 'page';
+  /** The h1: an app's name, or what the door is in front of. */
+  title: string;
+  /** One sentence under the title: why it's closed, or whose it is. */
+  lead?: string;
+  /** card: an image above the title, such as the app's icon. Decorative. */
+  mark?: string;
+  /** card: a heading inside the card, such as "Sign in". */
+  heading?: string;
+  action: string;
+  method?: 'post' | 'get';
+  /** The one field. A password by default; `code` for an access code, which isn't secret. */
+  field?: {
+    name?: string;
+    label?: string;
+    kind?: 'password' | 'code';
+    placeholder?: string;
+  };
+  submit?: string;
+  /** What the error says. Shown as described above. */
+  errorText?: string;
+  error?: boolean;
+  /** A query parameter that means the last try failed, such as `error`. */
+  errorParam?: string;
+  /** The main's id, for a skip link. */
+  id?: string;
+  class?: string;
+}
+
+const {
+  variant = 'card',
+  title,
+  lead,
+  mark,
+  heading,
+  action,
+  method = 'post',
+  field = {},
+  submit = 'Sign in',
+  errorText = 'That did not work. Try again.',
+  error = false,
+  errorParam,
+  id: mainId,
+  class: className,
+} = Astro.props;
+
+const { name = 'password', label = 'Password', kind = 'password', placeholder } = field;
+const id = `sign-in-${name}`;
+const errorId = `${id}-error`;
+// A password lets the password manager fill it; a code is read off a CV, so nothing should
+// correct it, capitalise it or offer to save it.
+const input =
+  kind === 'password'
+    ? { type: 'password', autocomplete: 'current-password' }
+    : { type: 'text', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', inputmode: 'text' };
+---
+
+<main id={mainId} class:list={['sign-in', variant, className]} data-sign-in data-error-param={errorParam}>
+  <div class="inner">
+    <header class="head">
+      {variant === 'card' && mark && <img class="mark" src={mark} alt="" width="48" height="48" />}
+      <h1 class="title">{title}</h1>
+      {variant === 'page' && <span class="rule" aria-hidden="true"></span>}
+      {lead && <p class="lead">{lead}</p>}
+    </header>
+
+    <form class="form" method={method} action={action}>
+      {heading && <h2 class="heading">{heading}</h2>}
+      <p class="error" id={errorId} role="alert" hidden={!error} data-sign-in-error>{errorText}</p>
+      <label class:list={['label', { sr: variant === 'page' }]} for={id}>{label}</label>
+      <div class="row">
+        <input
+          class="field"
+          id={id}
+          name={name}
+          required
+          autofocus
+          placeholder={placeholder}
+          aria-describedby={errorId}
+          aria-invalid={error ? 'true' : undefined}
+          {...input}
+        />
+        <button class="submit" type="submit"><span class="submit-label">{submit}</span></button>
+      </div>
+    </form>
+
+    {Astro.slots.has('footer') && <footer class="foot"><slot name="footer" /></footer>}
+  </div>
+</main>
+
+<script>
+  // Shows the error the address asks for, marks the field and puts the cursor back in it. Marks
+  // the button busy once the form goes, so a second press doesn't send it twice.
+  document.querySelectorAll<HTMLElement>('[data-sign-in]').forEach((root) => {
+    const error = root.querySelector<HTMLElement>('[data-sign-in-error]')!;
+    const field = root.querySelector<HTMLInputElement>('.field')!;
+    const form = root.querySelector<HTMLFormElement>('form')!;
+    const param = root.dataset.errorParam;
+    if (param && new URLSearchParams(location.search).has(param)) error.hidden = false;
+    if (!error.hidden) {
+      field.setAttribute('aria-invalid', 'true');
+      field.focus();
+    }
+    field.addEventListener('input', () => field.removeAttribute('aria-invalid'), { once: true });
+    form.addEventListener('submit', () => {
+      const button = form.querySelector<HTMLButtonElement>('.submit')!;
+      if (button.dataset.busy) return;
+      button.dataset.busy = 'true';
+      button.setAttribute('aria-disabled', 'true');
+    });
+    // Back from the next page (the browser's cache): ready again.
+    addEventListener('pageshow', () => {
+      const button = form.querySelector<HTMLButtonElement>('.submit')!;
+      delete button.dataset.busy;
+      button.removeAttribute('aria-disabled');
+    });
+  });
+</script>
+
+<style>
+  .sign-in {
+    min-height: var(--sign-in-height, 100dvh);
+    display: grid;
+    place-items: center;
+    padding: var(--sp-6) var(--sp-4);
+  }
+
+  .inner {
+    width: 100%;
+    display: grid;
+    gap: var(--sp-6);
+  }
+
+  .card .inner {
+    max-width: 24rem;
+  }
+
+  .page .inner {
+    max-width: 30rem;
+  }
+
+  .head {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .card .head {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .mark {
+    margin-bottom: var(--sp-2);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display, var(--font-body));
+    font-size: var(--text-h2);
+    line-height: var(--leading-h2, 1.2);
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  .rule {
+    width: 44px;
+    height: 5px;
+    margin: var(--sp-2) 0 var(--sp-3);
+    border-radius: 2px;
+    background: var(--c-accent);
+  }
+
+  .lead {
+    margin: 0;
+    color: var(--c-text-secondary);
+    text-wrap: pretty;
+  }
+
+  .card .lead {
+    font-size: var(--text-body-sm);
+  }
+
+  .form {
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .card .form {
+    box-sizing: border-box;
+    padding: var(--sp-6);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+  }
+
+  .heading {
+    margin: 0 0 var(--sp-2);
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+
+  .label {
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .row {
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .page .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--sp-2);
+  }
+
+  .field {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font: inherit;
+    font-size: max(16px, var(--text-body-sm));
+    transition: border-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .page .field {
+    background: var(--c-surface);
+  }
+
+  .field::placeholder {
+    color: var(--c-text-muted);
+  }
+
+  .field:hover {
+    border-color: var(--c-text-muted);
+  }
+
+  .field:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+
+  .field[aria-invalid='true'] {
+    border-color: var(--c-status-critical);
+  }
+
+  .submit {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--sp-5);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--c-accent);
+    color: var(--c-on-accent);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color var(--motion-hover) var(--ease-hover),
+      scale var(--motion-fast) var(--ease-out);
+  }
+
+  .card .submit {
+    width: 100%;
+    margin-top: var(--sp-2);
+  }
+
+  .submit:hover {
+    background: color-mix(in oklab, var(--c-accent) 88%, var(--c-text));
+  }
+
+  .submit:active {
+    scale: 0.98;
+  }
+
+  .submit:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  /* Sent: the words fade back while the next page loads. No spinner: it's usually under a
+     second, and a spinner that flashes reads as a fault. */
+  .submit[data-busy] {
+    cursor: progress;
+  }
+
+  .submit[data-busy] .submit-label {
+    opacity: 0.6;
+    transition: opacity var(--motion-base) var(--ease-out) 300ms;
+  }
+
+  .error {
+    margin: 0;
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--radius-md);
+    background: color-mix(in oklab, var(--c-status-critical) 12%, var(--c-surface));
+    color: color-mix(in oklab, var(--c-status-critical) 70%, var(--c-text));
+    font-size: var(--text-body-sm);
+  }
+
+  .page .error {
+    order: 3;
+  }
+
+  .error[hidden] {
+    display: none;
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    color: var(--c-text-muted);
+    font-size: var(--text-caption);
+  }
+
+  .foot :global(p) {
+    margin: 0;
+  }
+
+  .foot :global(a) {
+    color: var(--c-text-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .field,
+    .submit,
+    .submit[data-busy] .submit-label {
+      transition: none;
+    }
+  }
+</style>

@@ -94,42 +94,18 @@ export const bounds = (data) => {
 
 export const kindColour = () => ['match', ['get', 'kind'], ...KINDS.flatMap((k) => [k.key, resolve(k.color)]), resolve('var(--c-chart-neutral)')];
 
-// ── Cells: hexagons of counts, from a few warm spots ──────────────────────────
+// ── Points: counts around a few warm spots, for @n1kname/charts/hexbin ────────
 
-const SIZE = 0.0018;
-const DRAWN = SIZE * 0.92;
-const CORNERS = Array.from({ length: 6 }, (_, i) => ((30 + 60 * i) * Math.PI) / 180);
-
-/**
- * Pointy-top hexagons with a count each, summed from a few spots, and two values from 0 to 1 for
- * the map: `rank`, the count's place among the distinct counts (the colour), and `height`,
- * log(count) / log(max), so one busy cell doesn't flatten the rest.
- */
-export const cells = (seed = 5) => {
+/** Synthetic points with a count each, scattered around a few spots near 0° 0°. */
+export const points = (seed = 5, n = 2400) => {
   const r = random(seed);
-  const spots = Array.from({ length: 5 }, () => ({ x: (r() - 0.5) * 0.05, y: (r() - 0.5) * 0.035, s: 0.004 + r() * 0.006, a: 40 + r() * 400 }));
-  const out = [];
-  for (let q = -16; q <= 16; q++)
-    for (let rr = -12; rr <= 12; rr++) {
-      const x = SIZE * Math.sqrt(3) * (q + rr / 2);
-      const y = SIZE * 1.5 * rr;
-      let count = 0;
-      for (const p of spots) count += p.a * Math.exp(-((x - p.x) ** 2 + (y - p.y) ** 2) / (2 * p.s ** 2));
-      count = Math.round(count * (0.6 + r() * 0.8));
-      if (count >= 1) out.push({ x, y, count });
-    }
-  const max = Math.log1p(Math.max(...out.map((c) => c.count)));
-  const unique = [...new Set(out.map((c) => c.count))].sort((a, b) => a - b);
-  const rank = new Map(unique.map((n, i) => [n, unique.length === 1 ? 1 : i / (unique.length - 1)]));
-  return {
-    type: 'FeatureCollection',
-    features: out.map((c) => {
-      const ring = CORNERS.map((a) => [+(c.x + DRAWN * Math.cos(a)).toFixed(6), +(c.y + DRAWN * Math.sin(a)).toFixed(6)]);
-      return {
-        type: 'Feature',
-        properties: { count: c.count, rank: rank.get(c.count), height: Math.log1p(c.count) / max },
-        geometry: { type: 'Polygon', coordinates: [[...ring, ring[0]]] },
-      };
-    }),
-  };
+  const spots = Array.from({ length: 5 }, () => ({ x: (r() - 0.5) * 0.05, y: (r() - 0.5) * 0.035, s: 0.003 + r() * 0.005, w: 0.3 + r() }));
+  const total = spots.reduce((t, p) => t + p.w, 0);
+  // A normal draw (Box–Muller), for points that thin out from each spot.
+  const normal = () => Math.sqrt(-2 * Math.log(r() || 1e-9)) * Math.cos(2 * Math.PI * r());
+  return Array.from({ length: n }, () => {
+    let pick = r() * total;
+    const spot = spots.find((p) => (pick -= p.w) <= 0) ?? spots[0];
+    return { lon: +(spot.x + normal() * spot.s).toFixed(5), lat: +(spot.y + normal() * spot.s).toFixed(5), count: 1 + Math.floor(r() * 4) };
+  });
 };

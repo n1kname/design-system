@@ -1,0 +1,29 @@
+---
+/** A LoadFailed swapped in for some content and back, with a button standing in for a failed read. */
+import Button from '@n1kname/components/Button.astro';
+import LoadFailed from '@n1kname/components/LoadFailed.astro';
+---
+
+<div class="not-content load-failed-demo">
+  <div id="demo-content"><p>The figures would be here.</p></div>
+  <LoadFailed id="demo-failed" />
+  <p><Button id="demo-fail">Pretend the figures failed</Button></p>
+</div>
+
+<script>
+  import { showFailed, hideFailed } from '@n1kname/components/loadfailed.js';
+  const opts = { id: 'demo-failed', hide: '#demo-content' };
+  const button = document.getElementById('demo-fail')!;
+  let down = false;
+  button.addEventListener('click', () => {
+    down = !down;
+    (down ? showFailed : hideFailed)(opts);
+    button.textContent = down ? 'Bring them back' : 'Pretend the figures failed';
+  });
+</script>
+
+<style>
+  .load-failed-demo { display: grid; gap: 1rem; }
+  .load-failed-demo #demo-content { padding: 1.5rem; border: 1px solid var(--c-border); border-radius: var(--radius-md); }
+  .load-failed-demo p { margin: 0; }
+</style>

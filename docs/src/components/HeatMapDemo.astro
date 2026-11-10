@@ -22,59 +22,30 @@ import Segmented from '@n1kname/components/Segmented.astro';
 </div>
 
 <script>
-  import { ramp, room, setStage } from '@n1kname/components/mapstage.js';
-  import { bounds, cells, groundMap, maplibregl, reduced } from '../lib/map-demo.js';
+  import { hexbin, hexFeatures } from '@n1kname/charts/hexbin';
+  import { hexLayers } from '@n1kname/components/hexmap.js';
+  import { room, setStage } from '@n1kname/components/mapstage.js';
+  import { bounds, groundMap, maplibregl, points } from '../lib/map-demo.js';
 
   const box = document.getElementById('heat-demo-map')!;
-  const data = cells();
-  const TALL_M = 1600;
-  let tall = false;
-  // Half when flat, more when raised, as the dashboard has it.
-  const opacity = () => (tall ? 0.8 : 0.6);
+  // 150 m hexagons from a grid fixed at 0° 0°, so they don't move if the points change.
+  const data = hexFeatures(hexbin(points(), { size: 150, origin: [0, 0] }));
 
-  const map = groundMap(box, {
-    canvasContextAttributes: { antialias: true },
-    layers: (m) => {
-      m.addSource('cells', { type: 'geojson', data });
-      m.addLayer({ id: 'flat', type: 'fill', source: 'cells', paint: { 'fill-color': ramp('rank'), 'fill-opacity': opacity() } });
-      m.addLayer({
-        id: 'tall',
-        type: 'fill-extrusion',
-        source: 'cells',
-        layout: { visibility: 'none' },
-        paint: { 'fill-extrusion-color': ramp('rank'), 'fill-extrusion-opacity': opacity(), 'fill-extrusion-height': ['*', ['get', 'height'], TALL_M] },
-      });
-      m.fitBounds(bounds(data), { padding: room(box), duration: 0 });
-      box.closest('.not-content')!.querySelector<HTMLElement>('[data-ramp-note]')!.textContent = ` · ${data.features.length} cells`;
-      setStage(box, 'ready');
-    },
-    repaint: (m) => {
-      m.setPaintProperty('flat', 'fill-color', ramp('rank'));
-      m.setPaintProperty('tall', 'fill-extrusion-color', ramp('rank'));
-    },
-  });
-
+  const map = groundMap(box, { canvasContextAttributes: { antialias: true } });
   if (map) {
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, className: 'place-card' });
-    for (const id of ['flat', 'tall']) {
-      map.on('mousemove', id, (e) => {
-        map.getCanvas().style.cursor = 'pointer';
-        const n = e.features![0].properties.count;
-        popup.setLngLat(e.lngLat).setHTML(`<div class="chart-pointer-card"><p class="chart-pointer-one"><strong>${n}</strong> visits</p></div>`).addTo(map);
-      });
-      map.on('mouseleave', id, () => {
-        map.getCanvas().style.cursor = '';
-        popup.remove();
-      });
-    }
-    document.getElementById('heat-demo-view')!.addEventListener('segment-change', (e) => {
-      tall = (e as CustomEvent).detail.value === '3d';
-      map.setLayoutProperty('tall', 'visibility', tall ? 'visible' : 'none');
-      map.setLayoutProperty('flat', 'visibility', tall ? 'none' : 'visible');
-      map.setPaintProperty('flat', 'fill-opacity', opacity());
-      map.setPaintProperty('tall', 'fill-extrusion-opacity', opacity());
-      map.easeTo({ pitch: tall ? 55 : 0, bearing: tall ? -15 : 0, duration: reduced() ? 0 : 600 });
+    const hexes = hexLayers(map, {
+      tall: 1600,
+      opacity: ({ tall }) => (tall ? 0.8 : 0.6),
+      Popup: maplibregl.Popup,
+      card: (p) => `<strong>${p.count}</strong> visits`,
     });
+    map.on('load', () => {
+      hexes.setData(data);
+      map.fitBounds(bounds(data), { padding: room(box), duration: 0 });
+      box.closest('.not-content')!.querySelector<HTMLElement>('[data-ramp-note]')!.textContent = ` · ${data.features.length} hexagons`;
+      setStage(box, 'ready');
+    });
+    document.getElementById('heat-demo-view')!.addEventListener('segment-change', (e) => hexes.setTall((e as CustomEvent).detail.value === '3d'));
   } else setStage(box, 'failed');
 </script>

@@ -1,0 +1,71 @@
+---
+title: "Hex map"
+description: "Points on a map counted into hexagons, coloured by rank and raised in 3D, for where things happen most."
+---
+
+import HeatMapDemo from '../../../components/HeatMapDemo.astro';
+
+<HeatMapDemo />
+
+Synthetic points on a plain grid around 0° 0°. A real page brings its own basemap. The legend is a [Ramp legend](/components/ramp-legend/), and the map sits in a [Map stage](/components/map-stage/).
+
+## What it's for
+
+Thousands of points, such as GPS fixes over a year, where the question is where they bunch up. Counting them into hexagons the same size on the ground keeps the map readable at any zoom, and a 3D view shows how lopsided the counts are.
+
+## When not to use it
+
+- **Routes or journeys,** where the order matters. Draw the lines.
+- **A few dozen places.** Mark them, and say each one's count.
+- **Counts per region with a name,** such as a country or a postcode. Colour the regions.
+
+## Anatomy
+
+- **Hexagons:** from `hexbin()` in `@n1kname/charts/hexbin`, pointy-topped, `size` metres from centre to corner, with a small gap between them. A fixed `origin` keeps the grid in place when the points change.
+- **Colour:** each hexagon's rank among the distinct counts, along the heat ramp. Rank, not count, so the busiest few always read as hot.
+- **Height:** in 3D, log(count) over log(most), so one busy hexagon doesn't flatten the rest.
+- **Card:** what a hexagon holds, under the pointer, in the charts' [pointer card](/charts/pointer/).
+
+## Variants
+
+| View | For |
+|---|---|
+| 2D | The default: flat, half see-through, so the streets show. |
+| 3D | The camera tilts 55° and the hexagons rise. More opaque, because the sides hide the ground anyway. |
+
+## States
+
+- **Changing view:** the hexagons rise over 700ms and settle over 500ms, ease-out, while the camera tilts over the same time. Leaving 3D settles first, then swaps to the flat layer, so nothing drops through the floor. Instant under reduced motion.
+- **New data,** such as another year: the hexagons swap at once. `onDrawn` runs once the map has drawn them.
+- **Theme or basemap change:** the layers come back with the new colours after `setStyle`.
+- **Loading, empty and no WebGL:** the [Map stage](/components/map-stage/)'s messages.
+
+## Tokens
+
+`--c-heat-1` to `--c-heat-6`, resolved for the canvas by `ramp()` from `mapstage.js`. The card uses the pointer's tokens.
+
+## Keyboard and screen reader
+
+- **A canvas can't be read.** Give the Map stage a `label`, put the year's figures in the page as text, and keep a table of the busiest places for anyone who can't see the map.
+- **The map's own controls** (zoom, tilt) come from MapLibre and take the keyboard.
+
+## Content
+
+- **Say what was counted,** in the legend's label: "GPS points", not "Density".
+- **Say how many hexagons,** in the legend's note, so an empty-looking map reads as few points, not as broken.
+
+## Status
+
+New. Used by a dashboard's map page, which it was taken from.
+
+## Code
+
+```js
+import maplibregl from 'maplibre-gl';
+import { hexbin, hexFeatures } from '@n1kname/charts/hexbin';
+import { hexLayers } from '@n1kname/components/hexmap.js';
+
+const hexes = hexLayers(map, { tall: 10_000, Popup: maplibregl.Popup, card: (p) => `<strong>${p.count}</strong> GPS points` });
+hexes.setData(hexFeatures(hexbin(cells, { size: 200, origin: [lon, lat] })));
+view.addEventListener('segment-change', (e) => hexes.setTall(e.detail.value === '3d'));
+```

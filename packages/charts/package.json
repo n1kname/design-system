@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/charts",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -18,10 +18,13 @@
     "./pointer": "./src/pointer.mjs",
     "./pointer.css": "./src/pointer.css",
     "./months": "./src/months.mjs",
-    "./drawn": "./src/drawn.mjs"
+    "./drawn": "./src/drawn.mjs",
+    "./trace": "./src/trace.mjs",
+    "./trace.css": "./src/trace.css",
+    "./hexbin": "./src/hexbin.mjs"
   },
   "scripts": {
-    "check": "node src/donut.test.mjs && node src/lines.test.mjs && node src/bars.test.mjs && node src/heatmap.test.mjs && node src/months.test.mjs && node src/spark.test.mjs"
+    "check": "node src/donut.test.mjs && node src/lines.test.mjs && node src/bars.test.mjs && node src/heatmap.test.mjs && node src/months.test.mjs && node src/spark.test.mjs && node src/trace.test.mjs && node src/hexbin.test.mjs"
   },
   "dependencies": {
     "@observablehq/plot": "0.6.17",

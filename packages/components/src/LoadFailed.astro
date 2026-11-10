@@ -1,0 +1,32 @@
+---
+/**
+ * What a page says when it could not read its figures: an error empty state with a way to try
+ * again, hidden until a script shows it with showFailed() from ./loadfailed.js, which also hides
+ * the page's content so no half-drawn chart stays behind it.
+ *
+ * "Try again" is a link to the page itself (its path, so Button draws a link: an empty href would
+ * make it a button that does nothing), so it works without script and reads the figures from the
+ * start.
+ */
+import Button from './Button.astro';
+import EmptyState from './EmptyState.astro';
+
+interface Props {
+  id?: string;
+  title?: string;
+  text?: string;
+  retry?: string;
+}
+const {
+  id = 'failed',
+  title = "There's nothing to show right now",
+  text = 'The page reads its figures when it opens, so trying again usually works.',
+  retry = 'Try again',
+} = Astro.props;
+---
+
+<div id={id} class="load-failed" hidden data-load-failed>
+  <EmptyState kind="error" title={title} text={text}>
+    <Button href={Astro.url.pathname}>{retry}</Button>
+  </EmptyState>
+</div>

@@ -1,0 +1,124 @@
+---
+title: "Sign in"
+description: "The page in front of something private: one field, one button, and what to do without them."
+---
+
+import SignIn from '@n1kname/components/SignIn.astro';
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+
+<div class="not-content sign-in-demo" style="--sign-in-height: 30rem">
+  <SignIn
+    title="Fieldnotes"
+    lead="A private dashboard. Sign in to see the figures."
+    mark="/favicon.svg"
+    heading="Sign in"
+    action="#"
+    errorText="That password is not right."
+  >
+    <Fragment slot="footer">
+      <p>For one household only.</p>
+      <ThemeToggle />
+    </Fragment>
+  </SignIn>
+</div>
+
+<div class="not-content sign-in-demo" style="--sign-in-height: 26rem">
+  <SignIn
+    variant="page"
+    title="Jordan Example"
+    lead="This portfolio holds client work that isn't public. Enter the access code from my CV, or use the link I sent you."
+    action="#"
+    method="get"
+    field={{ name: 'k', label: 'Access code', kind: 'code', placeholder: 'Access code' }}
+    submit="Open"
+    errorText="That code is not valid, or it has expired."
+    error
+  >
+    <p slot="footer">No code? Ask the person who sent you here.</p>
+  </SignIn>
+</div>
+
+The demos above post nowhere. Full-page versions: [card](/demos/sign-in-card/) and [page](/demos/sign-in-page/?k=wrong), where the address carries a failed try.
+
+<style>{`
+  .sign-in-demo { margin-block: 1.5rem; border: 1px solid var(--c-border); border-radius: var(--radius-lg); background: var(--c-bg); overflow: hidden; }
+`}</style>
+
+## What it's for
+
+The one page a stranger sees before anything private: a dashboard's password, or a portfolio's access code. It says what's behind it, takes one thing, and says what to do without it.
+
+## When not to use it
+
+- **Accounts with usernames, sign-up or reset.** This holds one field. A real account system needs its own flow.
+- **A form inside a page.** It is the whole `<main>`, centred in the window.
+- **Hiding something on a public page.** The server decides what is private; this only asks.
+
+## Anatomy
+
+- **Head:** `card` has the mark, the title and the lead, centred. `page` has the title in the display face, the accent rule and the lead.
+- **Form:** an optional heading, the error, the label and the field, and the button. `card` puts them in a card, the button under the field. `page` puts the field and the button on one line, and hides the label, which the field's placeholder repeats.
+- **Footer:** the `footer` slot: who it's for, a way to ask, the theme toggle.
+
+## Variants
+
+| Variant | For |
+|---|---|
+| `card` | An app's sign-in. It looks like the app it opens. |
+| `page` | A door with a reason, such as a portfolio's gate. It reads like the site's own pages. |
+
+| Field `kind` | Does |
+|---|---|
+| `password` | `type="password"` and `autocomplete="current-password"`, so a password manager fills it. |
+| `code` | Plain text, with autocomplete, capitals and spelling correction off. A code from a CV isn't secret, and correcting it breaks it. |
+
+## States
+
+- **Error:** shown when `error` is true, when the address carries `errorParam`, or when a server removes the `hidden` attribute from `[data-sign-in-error]`. The field gets `aria-invalid` and focus, and its border turns the critical colour until you type.
+- **Sent:** once the form goes, the button is marked busy and the word on it fades back after 300ms, so a quick answer shows nothing. A second press does nothing. Coming back with the browser's back button makes it ready again.
+- **Hover and press:** the field's border darkens on hover; the button darkens and presses in by 2%. Both are off under reduced motion.
+
+## Tokens
+
+`--c-accent`, `--c-bg`, `--c-border`, `--c-border-strong`, `--c-focus`, `--c-on-accent`, `--c-status-critical`, `--c-surface`, `--c-text`, `--c-text-accent`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--font-body`, `--font-display`, `--leading-h2`, `--motion-base`, `--motion-fast`, `--motion-hover`, `--radius-lg`, `--radius-md`, `--sp-2` to `--sp-6`, `--text-body`, `--text-body-sm`, `--text-caption`, `--text-h2`. `--sign-in-height` sets the height, the window's by default.
+
+## Keyboard and screen reader
+
+- **The field has focus when the page opens,** and again after an error, so the page needs no pointer.
+- **Enter sends the form.** It is a real `<form>` with a submit button.
+- **The error has `role="alert"`** and the field points to it with `aria-describedby`, so it's read with the field.
+- **The label is always there.** In `page` it is visually hidden, not removed.
+- **The field's text is at least 16px,** so phones don't zoom in on focus.
+
+## Content
+
+- **Title:** the app's name, or whose site it is. Not "Sign in" or "Restricted".
+- **Lead:** why it's closed, in one sentence, and where the code comes from.
+- **Error:** what was wrong and what to do: "That code is not valid, or it has expired." Never which part was wrong when there's more than one.
+- **Footer:** a way in for someone without a code.
+
+## Status
+
+New. Used by a dashboard and a portfolio.
+
+## Code
+
+```astro wrap
+---
+import SignIn from '@n1kname/components/SignIn.astro';
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+---
+
+<SignIn title="Fieldnotes" lead="A private dashboard." mark="/favicon.svg" heading="Sign in" action="/login" errorParam="error">
+  <Fragment slot="footer">
+    <p>For one household only.</p>
+    <ThemeToggle />
+  </Fragment>
+</SignIn>
+```
+
+A server that answers a wrong code with the same page can show the error on the way out. In a Cloudflare Worker:
+
+```js
+new HTMLRewriter().on('[data-sign-in-error]', { element: (e) => e.removeAttribute('hidden') }).transform(page);
+```

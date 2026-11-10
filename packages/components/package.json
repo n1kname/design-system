@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -24,7 +24,9 @@
     "./legend.js": "./src/legend.js",
     "./sidepanel.js": "./src/sidepanel.js",
     "./mapstage.js": "./src/mapstage.js",
-    "./match.css": "./src/match.css"
+    "./match.css": "./src/match.css",
+    "./loadfailed.js": "./src/loadfailed.js",
+    "./hexmap.js": "./src/hexmap.js"
   },
   "scripts": {
     "check": "node src/yearcalendar.test.mjs && node src/facts.test.mjs"

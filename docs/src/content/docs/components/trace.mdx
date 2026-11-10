@@ -1,0 +1,68 @@
+---
+title: "Trace"
+description: "One long signal sampled many times a second, such as an ECG, drawn on recorder paper in strips."
+---
+
+import TraceDemo from '../../../components/TraceDemo.astro';
+
+<TraceDemo />
+
+## What it's for
+
+A recording where the shape of each moment matters: an ECG, a pressure wave, a vibration. It cuts the recording into strips of a few seconds, one under the other, on paper with the recorder's proportions, so every beat keeps its real shape at any width.
+
+## When not to use it
+
+- **A figure over days or months.** That's [Lines](/components/lines/).
+- **The trend of a recording, not its shape.** Summarise it (average heart rate, say) and show that.
+- **A diagnosis.** It draws what was recorded. Classification belongs next to it, in words, from whoever classified it.
+
+## Anatomy
+
+- **Strips:** 10 seconds each, or 5 or 2.5 when the width can't give a second at least 60px.
+- **Time:** where each strip starts, above it on the left.
+- **Paper:** squares 0.2 seconds wide and 0.5 millivolts tall, bold every fifth (1 second). The finest squares, 0.04 seconds, appear only when they'd be 6px apart.
+- **Line:** each column's lowest and highest sample, so a spike one sample wide still shows.
+
+## Variants
+
+| Option | Does |
+|---|---|
+| `seconds` | Fixes the strip length instead of choosing by width. |
+| `gain: 2` | Draws the signal twice as tall on the same paper, for a weak one. Say so in the caption. |
+| `perMv` | How many of the values' unit make a millivolt: 1000 for microvolts (the default), 1 for millivolts. |
+
+## States
+
+- **Arriving:** the line draws in from the start of each strip over a second, the first time it shows (`enter()` from `@n1kname/charts/enter`). Not under reduced motion.
+- **No samples, or no rate:** it returns an empty string. Say so in words where it would be.
+- **An artefact far off the scale:** the line is held at the paper's edge. Every strip spans at least 2 mV and at most 6.
+
+## Tokens
+
+`--c-chart-1` (the paper, at 12% and 30%), `--c-text` (the line), `--c-text-muted` (the times). The text is a system font, as in every chart: Safari misplaces SVG text set in a web font.
+
+## Keyboard and screen reader
+
+- **It's one image** with the `label` you give it. Say what it is and how long, as `traceSummary()` does: "15,360 samples at 512 Hz, 30.0 s".
+- **Nothing in it is focusable.** The figures that matter (rate, classification) belong in the page's text.
+
+## Content
+
+- **Caption:** what was recorded, when, and for how long. Mention `gain` if it isn't 1.
+- **Never a verdict in the chart.** "Sinus rhythm" is the device's classification; write it as that.
+
+## Status
+
+New. Used by a dashboard's heart page.
+
+## Code
+
+```js
+import { trace, traceSummary } from '@n1kname/charts/trace';
+import '@n1kname/charts/trace.css';
+import { enter } from '@n1kname/charts/enter';
+
+box.innerHTML = trace(recording.voltages, { rate: recording.hz, width: box.clientWidth, label: 'ECG, 30 s' });
+enter(box.querySelector('svg'));
+```

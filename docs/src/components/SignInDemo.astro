@@ -1,0 +1,67 @@
+---
+/**
+ * A whole sign-in page, outside Starlight, as a site would serve it: its head, its theme script and
+ * the component. Posts nowhere. The page variant reads the address, so ?k=wrong shows the error.
+ */
+import '@n1kname/tokens/tokens.css';
+import '@n1kname/components/type.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '@fontsource-variable/bitter/index.css';
+import SignIn from '@n1kname/components/SignIn.astro';
+import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
+
+interface Props {
+  variant: 'card' | 'page';
+}
+const { variant } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{variant === 'card' ? 'Fieldnotes' : 'Jordan Example'} · Sign-in demo</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved) document.documentElement.dataset.theme = saved;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    {
+      variant === 'card' ? (
+        <SignIn title="Fieldnotes" lead="A private dashboard. Sign in to see the figures." mark="/favicon.svg" heading="Sign in" action="/demos/sign-in-card/" method="get" errorParam="password" errorText="That password is not right.">
+          <Fragment slot="footer">
+            <p>For one household only.</p>
+            <ThemeToggle />
+          </Fragment>
+        </SignIn>
+      ) : (
+        <SignIn
+          variant="page"
+          title="Jordan Example"
+          lead="This portfolio holds client work that isn't public. Enter the access code from my CV, or use the link I sent you."
+          action="/demos/sign-in-page/"
+          method="get"
+          field={{ name: 'k', label: 'Access code', kind: 'code', placeholder: 'Access code' }}
+          submit="Open"
+          errorParam="k"
+          errorText="That code is not valid, or it has expired."
+        >
+          <p slot="footer">No code? Ask the person who sent you here.</p>
+        </SignIn>
+      )
+    }
+  </body>
+</html>
+
+<style is:global>
+  html { background: var(--c-bg); }
+  body { margin: 0; background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); font-size: var(--text-body); line-height: var(--leading-body); -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+</style>

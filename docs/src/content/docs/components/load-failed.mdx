@@ -1,0 +1,68 @@
+---
+title: "Load failed"
+description: "What a page says when it could not read its figures, with a way to try again."
+---
+
+import LoadFailed from '@n1kname/components/LoadFailed.astro';
+import LoadFailedDemo from '../../../components/LoadFailedDemo.astro';
+
+<LoadFailedDemo />
+
+## What it's for
+
+A page that reads its figures when it opens, from an API or a file written at night, and couldn't. It replaces the content, so nothing half-drawn stays on screen, and offers the one thing that usually works: trying again.
+
+## When not to use it
+
+- **One chart of several failed.** Put an [Empty state](/components/empty-state/) with `kind="error"` in that chart's place, and keep the rest.
+- **Nothing exists yet.** That's an empty state with `kind="empty"`, and it says when there will be.
+- **Figures drawn at build time.** They can't fail in the browser.
+
+## Anatomy
+
+- **Wrapper:** `hidden` until `showFailed()`, with the `id` the helper looks for.
+- **[Empty state](/components/empty-state/):** `kind="error"`, so it has `role="alert"`.
+- **Try again:** a [Button](/components/buttons/) linking to the page itself.
+
+## Variants
+
+None. The words can change through `title`, `text` and `retry`.
+
+## States
+
+- **Hidden:** until a script calls `showFailed()`.
+- **Shown:** the content named by `hide` is hidden. `hideFailed()` swaps them back, for a page that reads again without reloading, such as a year picker.
+
+## Tokens
+
+None of its own: see [Empty state](/components/empty-state/) and [Buttons](/components/buttons/).
+
+## Keyboard and screen reader
+
+- **Announced when it appears,** through the empty state's `role="alert"`.
+- **Try again is a link,** so Enter follows it and it works without script.
+
+## Content
+
+- **Say that nothing could be shown, and that trying again usually works.** Not "Error" and not a status code.
+- **No apology.**
+
+## Status
+
+New. Used by two dashboards, which each had the same copy.
+
+## Code
+
+```astro wrap
+---
+import LoadFailed from '@n1kname/components/LoadFailed.astro';
+---
+
+<LoadFailed />
+<div id="content">…</div>
+
+<script>
+  import { showFailed } from '@n1kname/components/loadfailed.js';
+  fetch('/figures.json').then(draw).catch(() => showFailed());
+</script>
+```

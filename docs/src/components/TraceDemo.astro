@@ -1,0 +1,56 @@
+---
+/**
+ * A made-up ECG drawn with trace(): a beat built from five bumps (P, Q, R, S, T), at a heart rate
+ * that drifts a little, with a little noise and a slow wander of the baseline. Synthetic: no
+ * recording. Drawn at build time at two widths, as a page with a known width would; the narrow
+ * one shows below 640px.
+ */
+import { trace, traceSummary } from '@n1kname/charts/trace';
+import '@n1kname/charts/trace.css';
+
+const RATE = 512;
+const SECONDS = 30;
+let seed = 11;
+const random = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296), seed / 4294967296);
+// [offset from the R peak in s, height in µV, width in s]
+const WAVES = [
+  [-0.2, 120, 0.025],
+  [-0.03, -140, 0.008],
+  [0, 1150, 0.01],
+  [0.03, -260, 0.009],
+  [0.28, 280, 0.045],
+];
+const beats = [];
+for (let t = 0.4; t < SECONDS + 1; t += 60 / (66 + Math.sin(t / 4) * 5)) beats.push(t);
+const samples = Array.from({ length: RATE * SECONDS }, (_, i) => {
+  const t = i / RATE;
+  let v = Math.sin(t * 0.7) * 40 + (random() - 0.5) * 18;
+  for (const b of beats) {
+    if (Math.abs(t - b) > 0.6) continue;
+    for (const [at, h, w] of WAVES) v += h * Math.exp(-((t - b - at) ** 2) / (2 * w * w));
+  }
+  return +v.toFixed(1);
+});
+const label = `A made-up ECG, ${traceSummary(samples.length, RATE, { locale: 'en' })}`;
+---
+
+<figure class="not-content trace-demo">
+  <div class="wide" set:html={trace(samples, { rate: RATE, width: 720, label })} />
+  <div class="narrow" set:html={trace(samples, { rate: RATE, width: 340, label })} />
+  <figcaption>{traceSummary(samples.length, RATE, { locale: 'en' })}. Synthetic: five bumps a beat, a little noise and a wandering baseline.</figcaption>
+</figure>
+
+<script>
+  import { enter } from '@n1kname/charts/enter';
+  document.querySelectorAll<SVGSVGElement>('.trace-demo svg').forEach((svg) => enter(svg));
+</script>
+
+<style>
+  .trace-demo { margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--c-border); border-radius: var(--radius-md); background: var(--c-surface); }
+  .trace-demo .narrow { display: none; }
+  .trace-demo figcaption { margin-top: 0.75rem; font-size: var(--text-caption); color: var(--c-text-muted); }
+  @media (max-width: 640px) {
+    .trace-demo .wide { display: none; }
+    .trace-demo .narrow { display: block; }
+  }
+</style>
