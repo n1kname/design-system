@@ -99,6 +99,7 @@ export default defineConfig({
             { label: 'Diamonds', link: '/components/diamonds/' },
             { label: 'Phases', link: '/components/phases/' },
             { label: 'Section nav', link: '/components/section-nav/' },
+            { label: 'Career map', link: '/components/career-map/' },
           ],
         },
         { label: 'Checks', link: '/checks/' },

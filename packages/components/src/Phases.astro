@@ -4,14 +4,14 @@
  * under it, and a short text on what happens in it. Below them, spans for what runs across
  * phases, such as discovery that never quite stops.
  *
- * Drawn in HTML, so the words are text that wraps and is read out in order. Below 640px wide the
- * phases stack and each span says which phases it runs across in words. The bands use three
- * fixed tones with the dark text on them, so they read the same in either theme.
+ * Drawn in the diagrams' own style, on a sunken plate with tinted bands and hairline rings, as in
+ * Flow diagram and Diamonds. HTML, so the words are text that wraps and is read out in order.
+ * Below 640px wide the phases stack and each span says which phases it runs across in words.
  *
  * Once, as it comes into view, the phases arrive left to right. Nothing moves under reduced
  * motion, and without script it is simply there.
  */
-type Tone = 'cool' | 'accent' | 'sun';
+type Tone = 'cool' | 'accent' | 'quiet';
 
 interface Phase {
   /** On the band, such as "Define & validate". */
@@ -42,11 +42,12 @@ interface Props {
 }
 
 const { title, phases, spans = [], caption, class: className } = Astro.props;
-const tones: Tone[] = ['cool', 'accent', 'sun'];
+const tones: Tone[] = ['cool', 'accent', 'quiet'];
 const last = phases.length - 1;
 ---
 
 <figure class:list={['phases', className]} data-phases>
+  <div class="plate">
   <ol class="row" aria-label={title} style={`--n: ${phases.length}`}>
     {
       phases.map((p, i) => (
@@ -87,6 +88,7 @@ const last = phases.length - 1;
       </ul>
     )
   }
+  </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
@@ -101,22 +103,33 @@ const last = phases.length - 1;
 
 <style>
   .phases {
-    --notch: 22px;
+    --notch: 20px;
     min-width: 0;
     margin: 0;
-    container-type: inline-size;
   }
 
+  .plate {
+    container-type: inline-size;
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6) var(--sp-5) var(--sp-5);
+  }
+
+  /* The diagrams' tones: a tint for the band, the edge colour for the rings. */
   [data-tone='cool'] {
-    --tone: var(--c-seq2-4);
+    --fill: var(--c-tag-cool-bg);
+    --mark: color-mix(in oklab, var(--c-tag-cool-text) 70%, transparent);
   }
 
   [data-tone='accent'] {
-    --tone: var(--c-accent);
+    --fill: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
+    --mark: var(--c-accent-edge);
   }
 
-  [data-tone='sun'] {
-    --tone: var(--c-heat-4);
+  [data-tone='quiet'] {
+    --fill: var(--c-surface);
+    --mark: var(--c-diagram-edge);
   }
 
   .row {
@@ -145,8 +158,8 @@ const last = phases.length - 1;
     min-height: 64px;
     margin: 0 calc(var(--notch) * -1 + 3px) 0 0;
     padding: var(--sp-3) calc(var(--notch) + var(--sp-3));
-    background: var(--tone);
-    color: var(--c-on-accent);
+    background: var(--fill);
+    color: var(--c-text-secondary);
     text-align: center;
     clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%, var(--notch) 50%);
     font-size: var(--text-body-sm);
@@ -164,7 +177,7 @@ const last = phases.length - 1;
   }
 
   .band strong {
-    color: inherit;
+    color: var(--c-text);
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-body);
@@ -189,7 +202,7 @@ const last = phases.length - 1;
     place-items: center;
     aspect-ratio: 1;
     padding: var(--sp-3);
-    border: 5px solid var(--tone);
+    border: 2px solid var(--mark);
     border-radius: 50%;
     background: var(--c-surface);
     color: var(--c-text);
@@ -234,17 +247,17 @@ const last = phases.length - 1;
   .spans li::after {
     content: '';
     flex: 1;
-    border-top: 1.5px dashed var(--c-border-strong);
+    border-top: 1.5px dashed var(--c-diagram-line);
   }
 
   .spans li::before {
-    border-left: 1.5px solid var(--c-border-strong);
+    border-left: 1.5px solid var(--c-diagram-line);
     height: 8px;
     margin-top: 8px;
   }
 
   .spans li::after {
-    border-right: 1.5px solid var(--c-border-strong);
+    border-right: 1.5px solid var(--c-diagram-line);
     height: 8px;
     margin-top: 8px;
   }
@@ -263,7 +276,7 @@ const last = phases.length - 1;
   }
 
   figcaption {
-    margin-top: var(--sp-5);
+    margin-top: var(--sp-3);
     font-size: var(--text-caption);
     line-height: var(--leading-caption);
     color: var(--c-text-muted);

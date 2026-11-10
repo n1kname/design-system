@@ -44,9 +44,9 @@ A way of working drawn as diamonds: each phase opens out to look wide and narrow
 
 ## Anatomy
 
-- **Moments:** a dot level with the diamonds' points, its name in small capitals under it.
-- **Phases:** a diamond in two halves, the closing half paler. Each half's label sits inside it, and its note (a short title and the question it asks) above it. The phase's name and motto sit under the diamond.
-- **A repeating phase:** three smaller diamonds that fade out, one note above them, and the name under them.
+- **Line and moments:** one line through every point, with a stop for each moment and its name under it.
+- **Phases:** a diamond in two halves on the diagrams' sunken plate: a tint with a hairline edge, the opening half a little stronger. Each half's label sits inside it. The phase's name and motto sit under the diamond, and under those, each half's note: a short title and the question it asks.
+- **A repeating phase:** three smaller diamonds with a dashed edge that fade out, then its name and one note.
 - **Caption:** optional, under it all.
 
 ## Variants
@@ -56,17 +56,17 @@ A way of working drawn as diamonds: each phase opens out to look wide and narrow
 | `halves` | A phase that opens out and narrows: two labels, and a note on each |
 | `repeat` | Work that goes on after launch, with no end to draw |
 
-Tones run `cool`, `accent`, `sun` by default, one per phase. Set `tone` on a phase to change it.
+Tones run `cool`, `accent`, `quiet` by default, one per phase; a repeating phase is `quiet`. Set `tone` on a phase to change it.
 
 ## States
 
 - **Arriving:** once, as it comes into view, the parts rise into place left to right, 80ms apart. Nothing moves under reduced motion, and without script it is simply there.
-- **Narrow:** below 560px wide the phases stack, each moment between them as a dot and its name.
-- **Forced colours:** the halves are drawn in the system's text colour, the closing half paler.
+- **Narrow:** below 560px wide the phases stack, each moment between them as a stop and its name.
+- **Forced colours:** the edges are drawn in the system's text colour on the background.
 
 ## Tokens
 
-`--c-seq2-4` (cool), `--c-accent` (accent), `--c-heat-4` (sun): middle tones that stay the same in both themes, with `--c-on-accent` text on them, so the labels pass AA on either half. Also `--c-bg`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--font-display`, `--font-body`, `--text-h3`, `--text-label`, `--text-body-sm`, `--text-caption`, `--motion-base`, `--motion-spring`, `--ease-out`, `--ease-spring`.
+The diagrams' tones, as in [Flow diagram](/components/flow-diagram/): `--c-tag-cool-bg` and `--c-tag-cool-text` (cool), `--c-surface-tint`, `--c-accent` and `--c-accent-edge` (accent), `--c-surface` and `--c-diagram-edge` (quiet), with `--c-text` on them. Also `--c-surface-sunken`, `--c-border`, `--c-diagram-line`, `--c-text-secondary`, `--c-text-muted`, `--font-display`, `--font-body`, `--text-sub`, `--text-body-sm`, `--text-caption`, `--motion-base`, `--motion-spring`, `--ease-out`, `--ease-spring`.
 
 ## Keyboard and screen reader
 

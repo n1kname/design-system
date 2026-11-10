@@ -1,23 +1,23 @@
 ---
 /**
  * A design process as diamonds: each phase opens out (diverge) and narrows again (converge), with
- * the moments between them on the line, such as kick-off and launch. A last phase can repeat
- * instead, as smaller diamonds that fade out, for the work that goes on after launch.
+ * the moments between them as stops on one line, such as kick-off and launch. A last phase can
+ * repeat instead, as smaller diamonds that fade out, for the work that goes on after launch.
  *
- * Drawn in HTML and SVG, so the words are text: they wrap, scale with the page, and are read out
- * in order (moment, phase, its two halves and their notes, its name). Below 560px wide the phases
- * stack. The halves use three fixed tones, the closing half paler, with the dark text on them, so
- * they read the same in either theme.
+ * Drawn in the diagrams' own style, on a sunken plate: tinted fills with a hairline edge, as in
+ * Flow diagram, so it sits beside them. HTML and SVG, so the words are text: they wrap, scale with
+ * the page, and are read out in order (moment, phase, its two halves, its name, its notes). Below
+ * 560px wide the phases stack.
  *
  * Once, as it comes into view, the parts arrive left to right. Nothing moves under reduced
  * motion, and without script it is simply there.
  */
-type Tone = 'cool' | 'accent' | 'sun';
+type Tone = 'cool' | 'accent' | 'quiet';
 
 interface Half {
   /** Inside the half, such as "Discover". */
   label: string;
-  /** Above the half: a short title ("Diverge") and the question it asks. */
+  /** Under the phase's name: a short title ("Diverge") and the question this half asks. */
   note?: { title: string; text: string };
 }
 
@@ -31,7 +31,7 @@ interface Phase {
   halves?: [Half, Half];
   /** Smaller diamonds that fade out, for work that keeps going. */
   repeat?: boolean;
-  /** Above a repeating phase, as a half's note is above a half. */
+  /** Under a repeating phase's name, as a half's note is under a diamond. */
   note?: { title: string; text: string };
 }
 
@@ -46,74 +46,81 @@ interface Props {
 }
 
 const { title, phases, milestones = [], caption, class: className } = Astro.props;
-const tones: Tone[] = ['cool', 'accent', 'sun'];
+const tones: Tone[] = ['cool', 'accent', 'quiet'];
 const items = phases.flatMap((p, i) => {
-  const tone = p.tone ?? tones[i % tones.length];
+  const tone = p.tone ?? (p.repeat ? 'quiet' : tones[i % tones.length]);
   return [...(milestones[i] ? [{ kind: 'moment' as const, label: milestones[i]!, tone }] : []), { kind: 'phase' as const, phase: p, tone }];
 });
-const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repeat ? 'minmax(0, 0.8fr)' : 'minmax(0, 1fr)')).join(' ');
+const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repeat ? 'minmax(0, 0.75fr)' : 'minmax(0, 1fr)')).join(' ');
 ---
 
 <figure class:list={['diamonds', className]} data-diamonds>
-  <ol class="row" aria-label={title} style={`--cols: ${columns}`}>
-    {
-      items.map((it, i) =>
-        it.kind === 'moment' ? (
-          <li class="moment" data-tone={it.tone} style={`--i: ${i}`}>
-            <span class="dot" aria-hidden="true" />
-            <span class="moment-label">{it.label}</span>
-          </li>
-        ) : (
-          <li class:list={['phase', { repeat: it.phase.repeat }]} data-tone={it.tone} style={`--i: ${i}`}>
-            <div class="notes">
-              {it.phase.repeat
-                ? it.phase.note && (
-                    <p class="note wide">
-                      <strong>{it.phase.note.title}</strong> {it.phase.note.text}
-                    </p>
-                  )
-                : it.phase.halves?.map(
-                    (h) =>
-                      h.note && (
-                        <p class="note">
-                          <strong>{h.note.title}</strong> {h.note.text}
-                        </p>
-                      ),
-                  )}
-            </div>
-            <div class="shape">
-              {it.phase.repeat ? (
-                <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                  {[0, 1, 2].map((k) => (
-                    <g opacity={[1, 0.55, 0.25][k]}>
-                      <polygon class="open" points={`${k * 100},60 ${k * 100 + 50},24 ${k * 100 + 50},96`} />
-                      <polygon class="close" points={`${k * 100 + 50},24 ${k * 100 + 100},60 ${k * 100 + 50},96`} />
-                    </g>
-                  ))}
-                </svg>
-              ) : (
-                <>
-                  <svg viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true">
-                    <polygon class="open" points="0,60 100,0 100,120" />
-                    <polygon class="close" points="100,0 200,60 100,120" />
-                  </svg>
-                  <p class="halves">
-                    {it.phase.halves?.map((h) => (
-                      <span>{h.label}</span>
+  <div class="plate">
+    <ol class="row" aria-label={title} style={`--cols: ${columns}`}>
+      {
+        items.map((it, i) =>
+          it.kind === 'moment' ? (
+            <li class="moment" data-tone={it.tone} style={`--i: ${i}`}>
+              <span class="stop-cell">
+                <span class="stop" aria-hidden="true" />
+                <span class="moment-label">{it.label}</span>
+              </span>
+            </li>
+          ) : (
+            <li class:list={['phase', { repeat: it.phase.repeat }]} data-tone={it.tone} style={`--i: ${i}`}>
+              <div class="shape">
+                {it.phase.repeat ? (
+                  <svg viewBox="0 0 300 100" aria-hidden="true">
+                    {[0, 1, 2].map((k) => (
+                      <g opacity={[1, 0.6, 0.3][k]}>
+                        <polygon class="open" points={`${k * 100 + 2},50 ${k * 100 + 50},16 ${k * 100 + 50},84`} />
+                        <polygon class="close" points={`${k * 100 + 50},16 ${k * 100 + 98},50 ${k * 100 + 50},84`} />
+                        <polygon class="edge" points={`${k * 100 + 2},50 ${k * 100 + 50},16 ${k * 100 + 98},50 ${k * 100 + 50},84`} />
+                      </g>
                     ))}
-                  </p>
-                </>
-              )}
-            </div>
-            <p class="name">
-              {it.phase.name}
-              {it.phase.motto && <span class="motto">{it.phase.motto}</span>}
-            </p>
-          </li>
-        ),
-      )
-    }
-  </ol>
+                  </svg>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true">
+                      <polygon class="open" points="1,60 100,1 100,119" />
+                      <polygon class="close" points="100,1 199,60 100,119" />
+                      <polygon class="edge" points="1,60 100,1 199,60 100,119" vector-effect="non-scaling-stroke" />
+                      <line class="split" x1="100" y1="1" x2="100" y2="119" vector-effect="non-scaling-stroke" />
+                    </svg>
+                    <p class="halves">
+                      {it.phase.halves?.map((h) => (
+                        <span>{h.label}</span>
+                      ))}
+                    </p>
+                  </>
+                )}
+              </div>
+              <p class="name">
+                {it.phase.name}
+                {it.phase.motto && <span class="motto">{it.phase.motto}</span>}
+              </p>
+              <div class:list={['notes', { one: it.phase.repeat }]}>
+                {it.phase.repeat
+                  ? it.phase.note && (
+                      <p class="note">
+                        <strong>{it.phase.note.title}</strong> {it.phase.note.text}
+                      </p>
+                    )
+                  : it.phase.halves?.map(
+                      (h) =>
+                        h.note && (
+                          <p class="note">
+                            <strong>{h.note.title}</strong> {h.note.text}
+                          </p>
+                        ),
+                    )}
+              </div>
+            </li>
+          ),
+        )
+      }
+    </ol>
+  </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
@@ -130,27 +137,41 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
   .diamonds {
     min-width: 0;
     margin: 0;
-    container-type: inline-size;
   }
 
+  .plate {
+    container-type: inline-size;
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6) var(--sp-5) var(--sp-5);
+  }
+
+  /* The diagrams' tones: a tint and an edge, never a saturated slab. The opening half carries a
+   * little more of the tone than the narrowing one. */
   [data-tone='cool'] {
-    --tone: var(--c-seq2-4);
+    --edge: color-mix(in oklab, var(--c-tag-cool-text) 55%, transparent);
+    --soft: var(--c-tag-cool-bg);
+    --mark: var(--c-tag-cool-text);
   }
 
   [data-tone='accent'] {
-    --tone: var(--c-accent);
+    --edge: var(--c-accent-edge);
+    --soft: var(--c-surface-tint);
+    --mark: var(--c-accent);
   }
 
-  [data-tone='sun'] {
-    --tone: var(--c-heat-4);
+  [data-tone='quiet'] {
+    --edge: var(--c-diagram-edge);
+    --soft: var(--c-surface);
+    --mark: var(--c-diagram-edge);
   }
 
   .row {
     display: grid;
     grid-template-columns: var(--cols);
     grid-template-rows: auto auto auto;
-    column-gap: var(--sp-1);
-    row-gap: var(--sp-3);
+    column-gap: var(--sp-2);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -163,83 +184,92 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     min-width: 0;
   }
 
-  /* A moment on the line: a dot level with the diamonds' points, its name under it. */
-  .moment {
-    justify-items: center;
+  /* One line through every stop and behind every diamond, level with their points: each cell in
+   * the diamonds' row draws its own piece, across the gap to the next. */
+  .stop-cell,
+  .shape {
+    position: relative;
   }
 
-  .dot {
-    grid-row: 2;
-    align-self: center;
-    width: 20px;
-    height: 20px;
+  .stop-cell::before,
+  .shape::before {
+    content: '';
+    position: absolute;
+    top: calc(50% - 0.875px);
+    left: calc(var(--sp-2) / -2);
+    right: calc(var(--sp-2) / -2);
+    height: 1.75px;
+    background: var(--c-diagram-line);
+  }
+
+  .row > li:first-child .stop-cell::before {
+    left: 50%;
+  }
+
+  .stop-cell {
+    grid-row: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .stop {
+    position: relative;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background: var(--tone);
-    box-shadow: 0 0 0 4px var(--c-bg);
+    background: var(--c-surface);
+    border: 2px solid var(--mark);
+    box-shadow: 0 0 0 4px var(--c-surface-sunken);
   }
 
   .moment-label {
-    grid-row: 3;
-    font-size: var(--text-caption);
+    position: absolute;
+    top: calc(50% + 16px);
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--c-text-secondary);
+    color: var(--c-text-muted);
     white-space: nowrap;
   }
 
-  .notes {
-    grid-row: 1;
-    align-self: end;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-3);
-  }
-
-  .note {
-    margin: 0;
-    font-size: var(--text-caption);
-    line-height: var(--leading-caption);
-    color: var(--c-text-secondary);
-    text-wrap: pretty;
-  }
-
-  .note strong {
-    display: block;
-    font-weight: 600;
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--c-text);
-  }
-
-  .note.wide {
-    grid-column: 1 / -1;
-    text-align: center;
-  }
-
-  /* Its width is the column's and its height follows, so a narrower phase is a smaller diamond,
-   * centred on the line. */
   .shape {
-    grid-row: 2;
+    grid-row: 1;
     align-self: center;
     position: relative;
     width: 100%;
     aspect-ratio: 5 / 3;
   }
 
+  .repeat .shape {
+    aspect-ratio: 3 / 1;
+  }
+
   .shape svg {
+    position: relative;
     display: block;
     width: 100%;
     height: 100%;
+    overflow: visible;
   }
 
-  /* Opening out in the tone itself; narrowing in a paler one. */
+  /* The opening half: its tint with a little of its edge colour in it, in either theme. */
   .open {
-    fill: var(--tone);
+    fill: color-mix(in oklab, var(--soft), var(--mark) 20%);
   }
 
   .close {
-    fill: color-mix(in oklab, var(--tone) 55%, #fff);
+    fill: var(--soft);
+  }
+
+  .edge,
+  .split {
+    fill: none;
+    stroke: var(--edge);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  .repeat .edge {
+    stroke-dasharray: 3 4;
   }
 
   .halves {
@@ -249,53 +279,80 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     grid-template-columns: 1fr 1fr;
     align-items: center;
     margin: 0;
-    color: var(--c-on-accent);
+    color: var(--c-text);
     font-weight: 600;
-    font-size: clamp(0.6875rem, 2.4cqi, var(--text-label));
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    line-height: 1.2;
+    font-size: clamp(0.75rem, 1.9cqi, 0.9375rem);
+    line-height: 1.25;
   }
 
-  /* Each label leans toward the middle, where its half is widest. */
+  /* Each label sits toward the middle, where its half is widest. */
   .halves span:first-child {
     justify-self: end;
-    padding-right: 10%;
+    padding-right: 12%;
     text-align: right;
   }
 
   .halves span:last-child {
-    padding-left: 10%;
+    padding-left: 12%;
   }
 
   .name {
-    grid-row: 3;
-    margin: 0;
+    grid-row: 2;
+    margin: var(--sp-4) 0 0;
     text-align: center;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: var(--text-h3);
-    line-height: var(--leading-h3);
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
     color: var(--c-text);
   }
 
   .motto {
     display: block;
-    margin-top: var(--sp-1);
     font-family: var(--font-body);
     font-weight: 400;
-    font-size: var(--text-body-sm);
+    font-size: var(--text-caption);
     color: var(--c-text-muted);
   }
 
+  .notes {
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    gap: var(--sp-3);
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .notes.one {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .note {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+    text-wrap: pretty;
+  }
+
+  .note strong {
+    display: block;
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
   figcaption {
-    margin-top: var(--sp-5);
+    margin-top: var(--sp-3);
     font-size: var(--text-caption);
     line-height: var(--leading-caption);
     color: var(--c-text-muted);
   }
 
-  /* Too narrow for a row: the phases stack, each moment a dot and its name between them. */
+  /* Too narrow for a row: the phases stack, each moment a stop and its name between them. */
   @container (max-width: 560px) {
     .row {
       grid-template-columns: 1fr;
@@ -303,28 +360,35 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
       row-gap: var(--sp-5);
     }
 
+    .stop-cell::before,
+    .shape::before {
+      display: none;
+    }
+
     .row > li {
       grid-row: auto;
       grid-template-rows: none;
-      row-gap: var(--sp-3);
     }
 
-    .moment {
+    .stop-cell {
       display: flex;
-      align-items: center;
       justify-content: center;
       gap: var(--sp-3);
     }
 
-    .shape {
-      grid-row: auto;
-      width: min(100%, 420px);
-      justify-self: center;
+    .moment-label {
+      position: static;
     }
 
-    .notes,
-    .name {
+    .shape,
+    .name,
+    .notes {
       grid-row: auto;
+    }
+
+    .shape {
+      width: min(100%, 360px);
+      justify-self: center;
     }
 
     .notes {
@@ -333,17 +397,17 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     }
 
     .halves {
-      font-size: var(--text-label);
+      font-size: var(--text-body-sm);
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .arrive li {
+    .arrive .row > li {
       opacity: 0;
       translate: 0 8px;
     }
 
-    .arrive.seen li {
+    .arrive.seen .row > li {
       opacity: 1;
       translate: 0 0;
       transition:
@@ -353,17 +417,14 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
   }
 
   @media (forced-colors: active) {
+    .edge,
+    .split {
+      stroke: CanvasText;
+    }
+
     .open,
     .close {
-      fill: CanvasText;
-    }
-
-    .close {
-      fill-opacity: 0.6;
-    }
-
-    .halves {
-      color: Canvas;
+      fill: Canvas;
     }
   }
 </style>

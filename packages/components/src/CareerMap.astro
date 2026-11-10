@@ -1,0 +1,537 @@
+---
+/**
+ * A career framework: the levels as a ladder you can pick from, forking where one level has two
+ * routes (a lead and a specialist at the same level, say), and for the level picked, what it is in
+ * one line, its scope and what it's expected to do in each skill area. Under it, every level side
+ * by side in one table, to compare.
+ *
+ * The ladder is a tab list: the arrow keys move along it and pick as they go, Home and End go to
+ * the ends. Picking changes the panel at once; it's an answer to a question, not a moment. Without
+ * script only the level given as `selected` shows, and the table still holds everything.
+ *
+ * Drawn in the diagrams' own style, on a sunken plate, as Flow diagram is. Below 640px wide the
+ * ladder becomes a list.
+ */
+interface Level {
+  id: string;
+  /** Its place on the ladder, 1 first. Two levels with the same rank sit one above the other. */
+  rank: number;
+  title: string;
+  /** Above the title, small: "Level 3". */
+  label?: string;
+  /** The route it's on, where there's more than one: "Individual contributor". */
+  track?: string;
+  experience?: string;
+  scope?: string;
+  /** The level in one sentence. */
+  summary?: string;
+  /** What it's expected to do, by area id. */
+  skills?: Record<string, string>;
+}
+
+interface Area {
+  id: string;
+  label: string;
+  /** The group it belongs to: "Craft", "Collaboration". */
+  theme?: string;
+}
+
+interface Props {
+  /** Names the ladder and the table for a screen reader. */
+  title: string;
+  levels: Level[];
+  areas?: Area[];
+  /** The level shown first. The first one by default. */
+  selected?: string;
+  /** The label on the table's disclosure. */
+  compare?: string;
+  caption?: string;
+  id?: string;
+  class?: string;
+}
+
+const { title, levels, areas = [], selected, compare = 'Compare every level', caption, class: className } = Astro.props;
+let hash = 0;
+for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+const uid = Astro.props.id ?? `career-${(hash >>> 0).toString(36)}`;
+const current = selected ?? levels[0]?.id;
+
+const ranks = [...new Set(levels.map((l) => l.rank))].sort((a, b) => a - b);
+const at = (r: number) => levels.filter((l) => l.rank === r);
+// The ladder's columns: a level (or two) per rank, a joint between ranks.
+const columns = ranks.map(() => 'minmax(0, 1fr)').join(' var(--joint) ');
+// A joint's shape: straight on, forking into two, joining from two, or two straight on.
+const joint = (a: number, b: number) => {
+  const [from, to] = [at(a).length > 1, at(b).length > 1];
+  if (!from && !to) return 'M0 50 H28';
+  if (!from && to) return 'M0 50 H12 V25 H28 M12 50 V75 H28';
+  if (from && !to) return 'M0 25 H16 V50 H28 M0 75 H16 V50';
+  return 'M0 25 H28 M0 75 H28';
+};
+
+const themes = [...new Set(areas.map((a) => a.theme ?? ''))];
+const byTheme = (t: string) => areas.filter((a) => (a.theme ?? '') === t);
+const ordered = ranks.flatMap((r) => at(r));
+---
+
+<figure class:list={['career-map', className]} data-career-map>
+  <div class="plate">
+    <div class="ladder" role="tablist" aria-label={title} style={`grid-template-columns: ${columns}`}>
+      {
+        ranks.map((r, k) => (
+          <>
+            {k > 0 && (
+              <svg class="joint" style={`grid-column: ${k * 2}`} viewBox="0 0 28 100" preserveAspectRatio="none" aria-hidden="true">
+                <path d={joint(ranks[k - 1], r)} vector-effect="non-scaling-stroke" />
+              </svg>
+            )}
+            {at(r).map((l, j, all) => (
+              <button
+                type="button"
+                role="tab"
+                class:list={['level', { fork: all.length > 1 }]}
+                id={`${uid}-tab-${l.id}`}
+                aria-selected={l.id === current ? 'true' : 'false'}
+                aria-controls={`${uid}-panel-${l.id}`}
+                tabindex={l.id === current ? 0 : -1}
+                data-level={l.id}
+                style={`grid-column: ${k * 2 + 1}; grid-row: ${all.length > 1 ? j + 1 : '1 / span 2'}`}
+              >
+                {l.label && <span class="level-label">{l.label}</span>}
+                <span class="level-title">{l.title}</span>
+              </button>
+            ))}
+          </>
+        ))
+      }
+    </div>
+
+    {
+      ordered.map((l) => (
+        <section class="panel" role="tabpanel" id={`${uid}-panel-${l.id}`} aria-labelledby={`${uid}-tab-${l.id}`} hidden={l.id !== current} tabindex="0">
+          <header class="panel-head">
+            <h3 class="panel-title">{l.title}</h3>
+            <p class="meta">{[l.label, l.track, l.experience].filter(Boolean).join(' · ')}</p>
+            {l.summary && <p class="summary">{l.summary}</p>}
+            {l.scope && (
+              <p class="scope">
+                <strong>Scope.</strong> {l.scope}
+              </p>
+            )}
+          </header>
+          {l.skills &&
+            themes.map((t) => (
+              <div class="theme">
+                {t && <h4 class="theme-title">{t}</h4>}
+                <dl>
+                  {byTheme(t)
+                    .filter((a) => l.skills?.[a.id])
+                    .map((a) => (
+                      <div>
+                        <dt>{a.label}</dt>
+                        <dd>{l.skills![a.id]}</dd>
+                      </div>
+                    ))}
+                </dl>
+              </div>
+            ))}
+        </section>
+      ))
+    }
+  </div>
+
+  {
+    areas.length > 0 && (
+      <details class="compare">
+        <summary>{compare}</summary>
+        <div class="scroll" role="region" aria-label={`${title}: every level side by side`} tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <td />
+                {ordered.map((l) => (
+                  <th scope="col">
+                    {l.label && <span class="level-label">{l.label}</span>}
+                    {l.title}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            {themes.map((t) => (
+              <tbody>
+                {t && (
+                  <tr class="theme-row">
+                    <th scope="colgroup" colspan={ordered.length + 1}>
+                      {t}
+                    </th>
+                  </tr>
+                )}
+                {byTheme(t).map((a) => (
+                  <tr>
+                    <th scope="row">{a.label}</th>
+                    {ordered.map((l) => (
+                      <td>{l.skills?.[a.id] ?? ''}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            ))}
+          </table>
+        </div>
+      </details>
+    )
+  }
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .career-map {
+    --joint: 28px;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .plate {
+    container-type: inline-size;
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-5);
+  }
+
+  /* The ladder: a level per rank, a joint between ranks, two levels stacked where it forks. */
+  .ladder {
+    display: grid;
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+
+  .joint {
+    grid-row: 1 / span 2;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .joint path {
+    fill: none;
+    stroke: var(--c-diagram-line);
+    stroke-width: 1.75;
+    stroke-linejoin: round;
+  }
+
+  .level {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 56px;
+    margin-block: var(--sp-1);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1.5px solid var(--c-diagram-edge);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .level.fork {
+    background: var(--c-surface-tint);
+    border-color: var(--c-accent-edge);
+  }
+
+  .level:hover {
+    border-color: var(--c-border-strong);
+  }
+
+  .level.fork:hover {
+    border-color: var(--c-accent);
+  }
+
+  /* The level picked: the one solid node, as in Flow diagram. */
+  .level[aria-selected='true'] {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: var(--c-on-accent);
+  }
+
+  .level:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .level-label {
+    display: block;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  .level[aria-selected='true'] .level-label {
+    color: inherit;
+  }
+
+  .level-title {
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+
+  /* The level picked. */
+  .panel {
+    margin-top: var(--sp-5);
+    padding: var(--sp-5);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+  }
+
+  .panel:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .panel-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+  }
+
+  .meta {
+    margin: var(--sp-1) 0 0;
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  .summary {
+    margin: var(--sp-4) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  .scope {
+    margin: var(--sp-3) 0 0;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-secondary);
+  }
+
+  .scope strong {
+    color: var(--c-text);
+  }
+
+  .theme {
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .theme-title {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--text-overline);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text-accent);
+  }
+
+  dl {
+    display: grid;
+    gap: var(--sp-3);
+    margin: 0;
+  }
+
+  dl > div {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) 1fr;
+    gap: var(--sp-4);
+  }
+
+  dt {
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-secondary);
+  }
+
+  /* Every level side by side. */
+  .compare {
+    margin-top: var(--sp-4);
+  }
+
+  .compare summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .compare summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .compare summary::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 1.75px solid currentColor;
+    border-bottom: 1.75px solid currentColor;
+    rotate: 45deg;
+    translate: 0 -2px;
+  }
+
+  .compare[open] summary::after {
+    rotate: 225deg;
+    translate: 0 2px;
+  }
+
+  .compare summary:focus-visible,
+  .scroll:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .scroll {
+    margin-top: var(--sp-3);
+    overflow-x: auto;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+  }
+
+  table {
+    min-width: 1080px;
+    border-collapse: collapse;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+  }
+
+  th,
+  td {
+    padding: var(--sp-3);
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  td {
+    color: var(--c-text-secondary);
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--c-surface);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  tbody th[scope='row'] {
+    width: 9rem;
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  .theme-row th {
+    padding-top: var(--sp-4);
+    background: var(--c-surface-sunken);
+    font-size: var(--text-overline);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text-accent);
+  }
+
+  figcaption {
+    margin-top: var(--sp-3);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  /* Too narrow for a ladder: a list, the routes marked in each level's label. */
+  @container (max-width: 640px) {
+    .ladder {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: none;
+      gap: var(--sp-2);
+    }
+
+    .joint {
+      display: none;
+    }
+
+    .level {
+      grid-column: 1 !important;
+      grid-row: auto !important;
+      margin: 0;
+      min-height: 0;
+    }
+
+    .panel {
+      padding: var(--sp-4);
+    }
+
+    dl > div {
+      grid-template-columns: 1fr;
+      gap: var(--sp-1);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .level[aria-selected='true'] {
+      forced-color-adjust: none;
+      background: Highlight;
+      color: HighlightText;
+    }
+  }
+</style>
+
+<script>
+  // Picking a level shows its panel. The arrow keys move along the ladder in reading order and pick
+  // as they go; Home and End go to the ends.
+  document.querySelectorAll<HTMLElement>('[data-career-map]').forEach((map) => {
+    const tabs = [...map.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    // Reading order follows the ranks: the DOM already lists them so.
+    const pick = (tab: HTMLButtonElement, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        const panel = map.querySelector<HTMLElement>(`#${t.getAttribute('aria-controls')}`);
+        if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => pick(t));
+      t.addEventListener('keydown', (e) => {
+        const to = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (to === undefined) return;
+        e.preventDefault();
+        pick(tabs[(to + tabs.length) % tabs.length], true);
+      });
+    });
+  });
+</script>
