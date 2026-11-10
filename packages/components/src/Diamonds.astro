@@ -1,11 +1,11 @@
 ---
 /**
  * A design process as diamonds: each phase opens out (diverge) and narrows again (converge), with
- * the moments between them as stops on one line, such as kick-off and launch. A last phase can
+ * the moments between them as stops at the diamonds' points, such as kick-off and launch. A last phase can
  * repeat instead, as smaller diamonds that fade out, for the work that goes on after launch.
  *
- * Drawn in the diagrams' own style, on a sunken plate: tinted fills with a hairline edge, as in
- * Flow diagram, so it sits beside them. HTML and SVG, so the words are text: they wrap, scale with
+ * Drawn in the diagrams' own style, on a sunken plate: tinted fills with a hairline edge and soft
+ * corners, as in Flow diagram, so it sits beside them. HTML and SVG, so the words are text: they wrap, scale with
  * the page, and are read out in order (moment, phase, its two halves, its name, its notes). Below
  * 560px wide the phases stack.
  *
@@ -51,6 +51,27 @@ const items = phases.flatMap((p, i) => {
   const tone = p.tone ?? (p.repeat ? 'quiet' : tones[i % tones.length]);
   return [...(milestones[i] ? [{ kind: 'moment' as const, label: milestones[i]!, tone }] : []), { kind: 'phase' as const, phase: p, tone }];
 });
+// A diamond with soft corners: rounder at top and bottom, a little at the points. Drawn on a fixed
+// viewBox the shape keeps, so the corners never stretch.
+const rounded = (pts: [number, number][], radii: number[]) =>
+  pts
+    .map((p, i) => {
+      const prev = pts[(i + pts.length - 1) % pts.length];
+      const next = pts[(i + 1) % pts.length];
+      const cut = (to: [number, number]) => {
+        const [dx, dy] = [to[0] - p[0], to[1] - p[1]];
+        const len = Math.hypot(dx, dy);
+        return [p[0] + (dx / len) * radii[i], p[1] + (dy / len) * radii[i]].map((v) => +v.toFixed(2));
+      };
+      const [a, b] = [cut(prev), cut(next)];
+      return `${i ? 'L' : 'M'}${a[0]} ${a[1]} Q${p[0]} ${p[1]} ${b[0]} ${b[1]}`;
+    })
+    .join(' ') + ' Z';
+const big = rounded([[1, 60], [100, 1], [199, 60], [100, 119]], [5, 16, 5, 16]);
+const small = (x: number) => rounded([[x + 4, 50], [x + 50, 18], [x + 96, 50], [x + 50, 82]], [3, 9, 3, 9]);
+let hash = 0;
+for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+const uid = `dia-${(hash >>> 0).toString(36)}`;
 const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repeat ? 'minmax(0, 0.75fr)' : 'minmax(0, 1fr)')).join(' ');
 ---
 
@@ -72,20 +93,30 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
                 {it.phase.repeat ? (
                   <svg viewBox="0 0 300 100" aria-hidden="true">
                     {[0, 1, 2].map((k) => (
-                      <g opacity={[1, 0.6, 0.3][k]}>
-                        <polygon class="open" points={`${k * 100 + 2},50 ${k * 100 + 50},16 ${k * 100 + 50},84`} />
-                        <polygon class="close" points={`${k * 100 + 50},16 ${k * 100 + 98},50 ${k * 100 + 50},84`} />
-                        <polygon class="edge" points={`${k * 100 + 2},50 ${k * 100 + 50},16 ${k * 100 + 98},50 ${k * 100 + 50},84`} />
+                      <g opacity={[1, 0.6, 0.32][k]}>
+                        <clipPath id={`${uid}-${i}-${k}`}>
+                          <path d={small(k * 100)} />
+                        </clipPath>
+                        <g clip-path={`url(#${uid}-${i}-${k})`}>
+                          <rect class="open" x={k * 100} y="0" width="50" height="100" />
+                          <rect class="close" x={k * 100 + 50} y="0" width="50" height="100" />
+                        </g>
+                        <path class="edge" d={small(k * 100)} vector-effect="non-scaling-stroke" />
                       </g>
                     ))}
                   </svg>
                 ) : (
                   <>
-                    <svg viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true">
-                      <polygon class="open" points="1,60 100,1 100,119" />
-                      <polygon class="close" points="100,1 199,60 100,119" />
-                      <polygon class="edge" points="1,60 100,1 199,60 100,119" vector-effect="non-scaling-stroke" />
-                      <line class="split" x1="100" y1="1" x2="100" y2="119" vector-effect="non-scaling-stroke" />
+                    <svg viewBox="0 0 200 120" aria-hidden="true">
+                      <clipPath id={`${uid}-${i}`}>
+                        <path d={big} />
+                      </clipPath>
+                      <g clip-path={`url(#${uid}-${i})`}>
+                        <rect class="open" x="0" y="0" width="100" height="120" />
+                        <rect class="close" x="100" y="0" width="100" height="120" />
+                        <line class="split" x1="100" y1="0" x2="100" y2="120" vector-effect="non-scaling-stroke" />
+                      </g>
+                      <path class="edge" d={big} vector-effect="non-scaling-stroke" />
                     </svg>
                     <p class="halves">
                       {it.phase.halves?.map((h) => (
@@ -184,42 +215,20 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     min-width: 0;
   }
 
-  /* One line through every stop and behind every diamond, level with their points: each cell in
-   * the diamonds' row draws its own piece, across the gap to the next. */
-  .stop-cell,
-  .shape {
-    position: relative;
-  }
-
-  .stop-cell::before,
-  .shape::before {
-    content: '';
-    position: absolute;
-    top: calc(50% - 0.875px);
-    left: calc(var(--sp-2) / -2);
-    right: calc(var(--sp-2) / -2);
-    height: 1.75px;
-    background: var(--c-diagram-line);
-  }
-
-  .row > li:first-child .stop-cell::before {
-    left: 50%;
-  }
-
+  /* A moment: a stop level with the diamonds' points, its name just under it. */
   .stop-cell {
+    position: relative;
     grid-row: 1;
     display: grid;
     place-items: center;
   }
 
   .stop {
-    position: relative;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--c-surface);
     border: 2px solid var(--mark);
-    box-shadow: 0 0 0 4px var(--c-surface-sunken);
   }
 
   .moment-label {
@@ -244,7 +253,6 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
   }
 
   .shape svg {
-    position: relative;
     display: block;
     width: 100%;
     height: 100%;
@@ -268,32 +276,42 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     stroke-linejoin: round;
   }
 
+  .split {
+    stroke-width: 1;
+    opacity: 0.6;
+  }
+
   .repeat .edge {
     stroke-dasharray: 3 4;
   }
 
+  /* Each label centred on its half's own middle, a third of the way in from its point, at one
+   * size wherever the diamond is drawn. */
   .halves {
     position: absolute;
     inset: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
     margin: 0;
     color: var(--c-text);
     font-weight: 600;
-    font-size: clamp(0.75rem, 1.9cqi, 0.9375rem);
+    font-size: var(--text-body-sm);
     line-height: 1.25;
+    text-align: center;
   }
 
-  /* Each label sits toward the middle, where its half is widest. */
+  .halves span {
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    translate: -50% -50%;
+    text-wrap: balance;
+  }
+
   .halves span:first-child {
-    justify-self: end;
-    padding-right: 12%;
-    text-align: right;
+    left: 34%;
   }
 
   .halves span:last-child {
-    padding-left: 12%;
+    left: 66%;
   }
 
   .name {
@@ -360,11 +378,6 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
       row-gap: var(--sp-5);
     }
 
-    .stop-cell::before,
-    .shape::before {
-      display: none;
-    }
-
     .row > li {
       grid-row: auto;
       grid-template-rows: none;
@@ -396,9 +409,6 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
       justify-self: center;
     }
 
-    .halves {
-      font-size: var(--text-body-sm);
-    }
   }
 
   @media (prefers-reduced-motion: no-preference) {

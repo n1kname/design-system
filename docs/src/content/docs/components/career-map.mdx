@@ -1,6 +1,6 @@
 ---
 title: "Career map"
-description: "A career framework as a ladder you pick levels from, with what each level does in every skill area, and every level side by side."
+description: "A career framework as a ladder you pick levels from: what each level is responsible for, what changes from the one before, and its skills."
 ---
 
 import CareerMap from '@n1kname/components/CareerMap.astro';
@@ -14,18 +14,18 @@ export const areas = [
 
 export const levels = [
   { id: 'one', rank: 1, label: 'Level 1', title: 'Junior', experience: '0 to 2 years', summary: 'Delivers well-defined work, with guidance.', scope: 'One product.', skills: { craft: 'Applies the basics correctly, with review.', research: 'Tests their own designs with support.', team: 'Takes part in the team rituals.', coaching: 'Asks for feedback.' } },
-  { id: 'two', rank: 2, label: 'Level 2', title: 'Designer', experience: '2 to 5 years', summary: 'Owns an area end to end.', scope: 'One product, independently.', skills: { craft: 'Polished, consistent work on their own.', research: 'Picks a method and validates their own decisions.', team: 'Challenges goals with users in mind.', coaching: 'Helps onboard new designers.' } },
+  { id: 'two', rank: 2, label: 'Level 2', title: 'Designer', experience: '2 to 5 years', summary: 'Owns an area end to end.', scope: 'One product, independently.', changes: ['Works without guidance.', 'Validates their own decisions.'], skills: { craft: 'Polished, consistent work on their own.', research: 'Picks a method and validates their own decisions.', team: 'Challenges goals with users in mind.', coaching: 'Helps onboard new designers.' } },
   { id: 'lead', rank: 3, label: 'Level 3', title: 'Lead', track: 'Leads people', experience: '6 years or more', summary: 'Grows a small team and still designs.', scope: 'A team of designers.', skills: { craft: 'Keeps the bar high through reviews.', research: 'Makes time for research in planning.', team: 'Allocates design capacity across teams.', coaching: 'Coaches and gives regular feedback.' } },
   { id: 'expert', rank: 3, label: 'Level 3', title: 'Expert', track: 'Goes deep', experience: '6 years or more', summary: 'Solves the hardest problems across products.', scope: 'Several products, no line management.', skills: { craft: 'Sets the craft bar others learn from.', research: 'Sets research practice for the team.', team: 'Brings design to large initiatives.', coaching: 'Teaches across teams.' } },
 ];
 
 <div class="not-content">
-  <CareerMap title="A made-up framework" levels={levels} areas={areas} selected="two" caption="Made-up levels, to show the shape." />
+  <CareerMap title="A made-up framework" levels={levels} areas={areas} selected="two" compare="Compare every level" caption="Made-up levels, to show the shape." />
 </div>
 
 ## What it's for
 
-A career framework a reader should be able to explore: the levels as a ladder, forking where one level has two routes, and for the level picked, what it is in one line, its scope, and what it does in each skill area. A table under it puts every level side by side, so a reader can compare two levels on one skill.
+A career framework a reader should be able to explore: the levels as a ladder, forking where one level has two routes, and for the level picked, what it is in one line, what it's responsible for, what changes from the level before (what a promotion to it rests on), and a line on each skill area. On request, a table puts every level side by side.
 
 ## When not to use it
 
@@ -36,20 +36,20 @@ A career framework a reader should be able to explore: the levels as a ladder, f
 ## Anatomy
 
 - **Ladder:** one node per level, joined by lines; levels with the same `rank` sit one above the other, and the lines fork to them and join after. The fork's nodes are tinted. The level picked is the one solid node.
-- **Panel:** the level's title, its label, route and experience in one line, the level in one sentence, its scope, and its skills grouped by theme.
-- **Compare:** a disclosure with every level as a column and every skill area as a row, grouped by theme. It scrolls sideways on a narrow screen.
+- **Panel:** the level's title, its label, route and experience in one line, and the level in one sentence. Under that, side by side where there's room: what it's responsible for and what changes from the level before (its `changes`), then its skills.
+- **Compare:** only with `compare`, a disclosure with every level as a column and every skill area as a row. It scrolls sideways on a narrow screen.
 - **Caption:** optional.
 
 ## Variants
 
-None. Leave out `areas` for a ladder with summaries and no skills table.
+None. Leave out `areas` for no skills, `changes` on a level where nothing comes before it, and `compare` for no table. `scopeLabel`, `changesLabel` and `skillsLabel` rename the panel's headings.
 
 ## States
 
 - **Picked:** solid, `aria-selected="true"`, its panel shown. Picking changes the panel at once.
 - **Hover and focus:** hover darkens a node's edge; focus gets the focus ring.
-- **Narrow:** below 640px wide the ladder is a list, and each skill's description goes under its name.
-- **Without script:** the level given as `selected` shows, and the table holds every level.
+- **Narrow:** below 640px wide the ladder is a list, and the panel's parts stack.
+- **Without script:** the level given as `selected` shows, and the table, when there is one, holds every level.
 
 ## Tokens
 
@@ -59,13 +59,14 @@ None. Leave out `areas` for a ladder with summaries and no skills table.
 
 - **The ladder is a tab list named by `title`.** Tab reaches the level picked; the arrow keys move along the ladder in reading order and pick as they go, Home and End go to the ends.
 - **Each panel is a tab panel** labelled by its level, and takes focus, so Tab from the ladder goes into it.
-- **The table has row and column headers**, and its scroll area is focusable and named, so it can be scrolled from the keyboard.
+- **The table, when there is one, has row and column headers**, and its scroll area is focusable and named, so it can be scrolled from the keyboard.
 
 ## Content
 
 - **Titles:** the job titles as written in the framework.
 - **One line:** what sets the level apart, in one sentence.
-- **Skills:** what the level does, starting with a verb, one or two sentences each.
+- **What changes:** two to four steps, each what the level adds, starting with a verb.
+- **Skills:** one line per area, starting with a verb.
 
 ## Status
 

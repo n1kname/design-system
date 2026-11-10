@@ -2,8 +2,8 @@
 /**
  * A career framework: the levels as a ladder you can pick from, forking where one level has two
  * routes (a lead and a specialist at the same level, say), and for the level picked, what it is in
- * one line, its scope and what it's expected to do in each skill area. Under it, every level side
- * by side in one table, to compare.
+ * one line, what it's responsible for, what changes from the level before (the promotion step),
+ * and what it does in each skill area. On request, every level side by side in one table.
  *
  * The ladder is a tab list: the arrow keys move along it and pick as they go, Home and End go to
  * the ends. Picking changes the panel at once; it's an answer to a question, not a moment. Without
@@ -27,6 +27,8 @@ interface Level {
   summary?: string;
   /** What it's expected to do, by area id. */
   skills?: Record<string, string>;
+  /** What changes from the level before: the few things a promotion to it rests on. */
+  changes?: string[];
 }
 
 interface Area {
@@ -43,14 +45,29 @@ interface Props {
   areas?: Area[];
   /** The level shown first. The first one by default. */
   selected?: string;
-  /** The label on the table's disclosure. */
+  /** Shows every level side by side in a table, under this label. None by default. */
   compare?: string;
+  /** The panel's headings. */
+  scopeLabel?: string;
+  changesLabel?: string;
+  skillsLabel?: string;
   caption?: string;
   id?: string;
   class?: string;
 }
 
-const { title, levels, areas = [], selected, compare = 'Compare every level', caption, class: className } = Astro.props;
+const {
+  title,
+  levels,
+  areas = [],
+  selected,
+  compare,
+  scopeLabel = 'Responsible for',
+  changesLabel = 'What changes from the level before',
+  skillsLabel = 'Skills',
+  caption,
+  class: className,
+} = Astro.props;
 let hash = 0;
 for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
 const uid = Astro.props.id ?? `career-${(hash >>> 0).toString(36)}`;
@@ -113,35 +130,54 @@ const ordered = ranks.flatMap((r) => at(r));
             <h3 class="panel-title">{l.title}</h3>
             <p class="meta">{[l.label, l.track, l.experience].filter(Boolean).join(' · ')}</p>
             {l.summary && <p class="summary">{l.summary}</p>}
-            {l.scope && (
-              <p class="scope">
-                <strong>Scope.</strong> {l.scope}
-              </p>
-            )}
           </header>
-          {l.skills &&
-            themes.map((t) => (
-              <div class="theme">
-                {t && <h4 class="theme-title">{t}</h4>}
-                <dl>
-                  {byTheme(t)
-                    .filter((a) => l.skills?.[a.id])
-                    .map((a) => (
-                      <div>
-                        <dt>{a.label}</dt>
-                        <dd>{l.skills![a.id]}</dd>
-                      </div>
+          <div class="cols">
+            <div class="main">
+              {l.scope && (
+                <>
+                  <h4 class="part">{scopeLabel}</h4>
+                  <p class="scope">{l.scope}</p>
+                </>
+              )}
+              {l.changes && l.changes.length > 0 && (
+                <>
+                  <h4 class="part">{changesLabel}</h4>
+                  <ul class="changes">
+                    {l.changes.map((c) => (
+                      <li>{c}</li>
                     ))}
-                </dl>
+                  </ul>
+                </>
+              )}
+            </div>
+            {l.skills && (
+              <div class="skills">
+                <h4 class="part">{skillsLabel}</h4>
+                {themes.map((t) => (
+                  <div class="theme">
+                    {t && <h5 class="theme-title">{t}</h5>}
+                    <dl>
+                      {byTheme(t)
+                        .filter((a) => l.skills?.[a.id])
+                        .map((a) => (
+                          <div>
+                            <dt>{a.label}</dt>
+                            <dd>{l.skills![a.id]}</dd>
+                          </div>
+                        ))}
+                    </dl>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+          </div>
         </section>
       ))
     }
   </div>
 
   {
-    areas.length > 0 && (
+    compare && areas.length > 0 && (
       <details class="compare">
         <summary>{compare}</summary>
         <div class="scroll" role="region" aria-label={`${title}: every level side by side`} tabindex="0">
@@ -319,29 +355,80 @@ const ordered = ranks.flatMap((r) => at(r));
     text-wrap: pretty;
   }
 
+  /* What it's responsible for and what changes, beside its skills where there's room. */
+  .cols {
+    display: grid;
+    gap: var(--sp-5);
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--c-border);
+  }
+
+  @container (min-width: 760px) {
+    .cols {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+      gap: var(--sp-7);
+    }
+  }
+
+  .part {
+    margin: 0 0 var(--sp-2);
+    font-size: var(--text-overline);
+    line-height: var(--leading-overline);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text-accent);
+  }
+
+  .main > .part:not(:first-child) {
+    margin-top: var(--sp-5);
+  }
+
   .scope {
-    margin: var(--sp-3) 0 0;
+    margin: 0;
     font-size: var(--text-body-sm);
     line-height: var(--leading-body-sm);
     color: var(--c-text-secondary);
   }
 
-  .scope strong {
-    color: var(--c-text);
+  .changes {
+    display: grid;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text-secondary);
   }
 
-  .theme {
-    margin-top: var(--sp-5);
-    padding-top: var(--sp-4);
-    border-top: 1px solid var(--c-border);
+  /* A small step up for each change: what the promotion adds. */
+  .changes li {
+    position: relative;
+    padding-left: var(--sp-5);
+  }
+
+  .changes li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.55em;
+    width: 8px;
+    height: 8px;
+    border-top: 1.75px solid var(--c-accent-edge);
+    border-right: 1.75px solid var(--c-accent-edge);
+    rotate: -45deg;
+  }
+
+  .theme + .theme {
+    margin-top: var(--sp-4);
   }
 
   .theme-title {
-    margin: 0 0 var(--sp-3);
-    font-size: var(--text-overline);
-    letter-spacing: var(--tracking-overline);
-    text-transform: uppercase;
-    color: var(--c-text-accent);
+    margin: 0 0 var(--sp-2);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text);
   }
 
   dl {
@@ -352,8 +439,7 @@ const ordered = ranks.flatMap((r) => at(r));
 
   dl > div {
     display: grid;
-    grid-template-columns: minmax(10rem, 14rem) 1fr;
-    gap: var(--sp-4);
+    gap: 2px;
   }
 
   dt {
@@ -491,11 +577,6 @@ const ordered = ranks.flatMap((r) => at(r));
 
     .panel {
       padding: var(--sp-4);
-    }
-
-    dl > div {
-      grid-template-columns: 1fr;
-      gap: var(--sp-1);
     }
   }
 
