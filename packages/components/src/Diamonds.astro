@@ -72,7 +72,7 @@ const small = (x: number) => rounded([[x + 4, 50], [x + 50, 18], [x + 96, 50], [
 let hash = 0;
 for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
 const uid = `dia-${(hash >>> 0).toString(36)}`;
-const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repeat ? 'minmax(0, 0.75fr)' : 'minmax(0, 1fr)')).join(' ');
+const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)' : it.phase.repeat ? 'minmax(0, 0.75fr)' : 'minmax(0, 1fr)')).join(' ');
 ---
 
 <figure class:list={['diamonds', className]} data-diamonds>
@@ -102,6 +102,7 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
                           <rect class="close" x={k * 100 + 50} y="0" width="50" height="100" />
                         </g>
                         <path class="edge" d={small(k * 100)} vector-effect="non-scaling-stroke" />
+                        {k < 2 && <line class="link" x1={k * 100 + 97} y1="50" x2={k * 100 + 103} y2="50" vector-effect="non-scaling-stroke" />}
                       </g>
                     ))}
                   </svg>
@@ -215,7 +216,9 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     min-width: 0;
   }
 
-  /* A moment: a stop level with the diamonds' points, its name just under it. */
+  /* A moment: a stop level with the diamonds' points, its name just under it, and a short line
+   * from the point before to the point after, ending in an arrowhead. It never crosses a diamond:
+   * the diamonds are drawn over its ends. */
   .stop-cell {
     position: relative;
     grid-row: 1;
@@ -223,7 +226,36 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     place-items: center;
   }
 
+  .stop-cell::before {
+    content: '';
+    position: absolute;
+    top: calc(50% - 0.75px);
+    left: calc(var(--sp-2) / -2 - 8px);
+    right: calc(var(--sp-2) / -2 - 8px);
+    height: 1.5px;
+    background: var(--c-diagram-line);
+  }
+
+  .row > li:first-child .stop-cell::before {
+    left: 50%;
+  }
+
+  .stop-cell::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    width: 7px;
+    height: 7px;
+    border-top: 1.5px solid var(--c-diagram-line);
+    border-right: 1.5px solid var(--c-diagram-line);
+    translate: 0 -50%;
+    rotate: 45deg;
+  }
+
   .stop {
+    position: relative;
+    z-index: 1;
     width: 12px;
     height: 12px;
     border-radius: 50%;
@@ -253,6 +285,8 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
   }
 
   .shape svg {
+    position: relative;
+    z-index: 1;
     display: block;
     width: 100%;
     height: 100%;
@@ -285,10 +319,16 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
     stroke-dasharray: 3 4;
   }
 
+  .link {
+    stroke: var(--c-diagram-line);
+    stroke-width: 1.5;
+  }
+
   /* Each label centred on its half's own middle, a third of the way in from its point, at one
    * size wherever the diamond is drawn. */
   .halves {
     position: absolute;
+    z-index: 2;
     inset: 0;
     margin: 0;
     color: var(--c-text);
@@ -387,6 +427,11 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'auto' : it.phase.repe
       display: flex;
       justify-content: center;
       gap: var(--sp-3);
+    }
+
+    .stop-cell::before,
+    .stop-cell::after {
+      display: none;
     }
 
     .moment-label {

@@ -22,6 +22,20 @@ import FlowDiagram from '@n1kname/components/FlowDiagram.astro';
       { from: 'b', to: 'a', fromSide: 'left', toSide: 'right', fromShift: 10, toShift: 10, label: 'Pays', labelAt: [280, 86], tone: 'accent', step: 3, flow: true },
       { from: 'c', to: 'b', fromSide: 'left', toSide: 'right', label: 'Pays back', tone: 'accent', step: 4, flow: true },
     ]}
+    narrow={{
+      width: 360,
+      height: 380,
+      nodes: [
+        { id: 'a', x: 70, y: 52 },
+        { id: 'b', x: 270, y: 52 },
+        { id: 'c', x: 70, y: 290 },
+      ],
+      edges: [
+        { from: 'a', to: 'b', fromSide: 'right', toSide: 'left', fromShift: -10, toShift: -10, label: 'Delivers', tone: 'cool', step: 2, flow: true },
+        { from: 'b', to: 'a', fromSide: 'left', toSide: 'right', fromShift: 10, toShift: 10, label: 'Pays', labelAt: [170, 88], tone: 'accent', step: 3, flow: true },
+        { from: 'c', to: 'b', fromSide: 'right', toSide: 'right', turn: 352, label: 'Pays back', tone: 'accent', step: 4, flow: true },
+      ],
+    }}
   />
 </div>
 
@@ -41,7 +55,8 @@ A diagram that makes its point through its shape: a loop that money goes round, 
 - **Edges:** from one node's side to another's. Two horizontal sides make an elbow at `turn` (default: halfway), two vertical sides the same, one of each an L. `fromShift` and `toShift` move an anchor along its side, which is how two lines between the same pair run in parallel. An edge can carry a label, placed above the middle of its longest run unless `labelAt` says otherwise.
 - **Rings:** a dashed circle behind a group, such as a team.
 - **Note:** a few lines of text in a corner, the first one bold, for what the drawing can't say.
-- **Frame:** the sunken surface around it, which scrolls sideways below `minWidth` rather than shrinking the text.
+- **Frame:** the sunken surface around it, which scrolls sideways below `minWidth` rather than shrinking the text, unless there's a narrow drawing.
+- **Narrow drawing:** optional, `narrow`: the same nodes placed again for a phone, with their own edges, rings and note. It takes over below 560px wide and fits the width, so nothing scrolls. `icon: false` on a narrow node leaves a pill's icon out.
 
 ## Variants
 
@@ -67,7 +82,7 @@ Four tones, for nodes and edges alike:
 ## Keyboard and screen reader
 
 - **It is one image,** named by `title` and described by `desc`. Write `desc` as the sentences someone would need if they couldn't see it: who does what to whom. The labels inside are not read one by one.
-- **The frame is a focusable region,** so a keyboard can scroll it sideways when it's narrower than `minWidth`.
+- **The frame is a focusable region,** so a keyboard can scroll it sideways when it's narrower than `minWidth`. A narrow drawing doesn't scroll, so it isn't one. Only the drawing shown is read out.
 - **Ids come from the title,** so two diagrams on one page need different titles.
 
 ## Content

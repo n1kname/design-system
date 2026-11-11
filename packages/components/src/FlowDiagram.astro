@@ -68,9 +68,23 @@ interface Props {
   caption?: string;
   /** Narrowest the drawing may get before it scrolls instead. */
   minWidth?: number;
+  /**
+   * A second drawing of the same diagram for a narrow screen, below 560px wide: its own size, where
+   * each node sits (by id; label, shape and tone come from `nodes`), and its own edges, rings and
+   * note. It fits the width instead of scrolling, so draw it about 360 to 420 wide.
+   */
+  narrow?: {
+    width: number;
+    height: number;
+    /** `icon: false` leaves a pill's icon out where the narrow pill is too short for it. */
+    nodes: { id: string; x: number; y: number; w?: number; h?: number; icon?: IconName | false }[];
+    edges: Edge[];
+    rings?: Ring[];
+    note?: { x: number; y: number; lines: { text: string; tone?: Tone }[] };
+  };
 }
 
-const { title, desc, width, height, nodes, edges, rings = [], note, caption, minWidth = 640 } = Astro.props;
+const { title, desc, width, height, nodes, edges, rings = [], note, caption, minWidth = 640, narrow } = Astro.props;
 // Ids from the title, so two diagrams on a page don't collide and a build stays the same.
 let hash = 0;
 for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
@@ -81,7 +95,6 @@ const size = (n: Node) => {
   if (n.shape === 'icon') return { w: n.w ?? 64, h: n.w ?? 64 };
   return { w: n.w ?? 200, h: n.h ?? 44 };
 };
-const byId = new Map(nodes.map((n) => [n.id, n]));
 
 const anchor = (n: Node, side: Side, shift = 0): [number, number] => {
   const { w, h } = size(n);
@@ -152,7 +165,9 @@ const longest = (pts: [number, number][]): [number, number] => {
   return at;
 };
 
-const drawn = edges.map((e) => {
+const draw = (ns: Node[], es: Edge[]) => {
+  const byId = new Map(ns.map((n) => [n.id, n]));
+  return es.map((e) => {
   const a = anchor(byId.get(e.from)!, e.fromSide, e.fromShift);
   // Stop short of the target so the arrowhead does not sit on its border.
   const t = anchor(byId.get(e.to)!, e.toSide, e.toShift);
@@ -161,7 +176,23 @@ const drawn = edges.map((e) => {
     e.toSide === 'left' ? [t[0] - gap, t[1]] : e.toSide === 'right' ? [t[0] + gap, t[1]] : e.toSide === 'top' ? [t[0], t[1] - gap] : [t[0], t[1] + gap];
   const pts = route(e, a, b);
   return { ...e, d: rounded(pts), head: head(pts), at: e.labelAt ?? longest(pts), tone: e.tone ?? 'quiet', step: e.step ?? 1 };
-});
+  });
+};
+
+// The drawings: the diagram as given, and its narrow one where there is one.
+const narrowNodes = narrow
+  ? narrow.nodes.map((p) => {
+      const n = nodes.find((m) => m.id === p.id);
+      if (!n) throw new Error(`FlowDiagram "${title}": narrow node "${p.id}" is not in nodes.`);
+      return { ...n, ...p, icon: p.icon === false ? undefined : (p.icon ?? n.icon) };
+    })
+  : [];
+const views = [
+  { kind: 'wide', width, height, nodes, drawn: draw(nodes, edges), rings, note, minWidth },
+  ...(narrow
+    ? [{ kind: 'narrow', width: narrow.width, height: narrow.height, nodes: narrowNodes, drawn: draw(narrowNodes, narrow.edges), rings: narrow.rings ?? [], note: narrow.note, minWidth: 0 }]
+    : []),
+];
 
 // Label lines for a circle: break at the space nearest the middle when it is long.
 const lines = (label: string) => {
@@ -181,11 +212,12 @@ const lines = (label: string) => {
 };
 ---
 
-<figure class="flow" data-flow>
-  <div class="scroll" tabindex="0" role="region" aria-label={title}>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby={`${uid}-t ${uid}-d`} style={`min-width: ${minWidth}px`}>
-      <title id={`${uid}-t`}>{title}</title>
-      <desc id={`${uid}-d`}>{desc}</desc>
+<figure class:list={['flow', { 'has-narrow': narrow }]} data-flow>
+  {views.map(({ kind, width, height, nodes, drawn, rings, note, minWidth }) => (
+  <div class:list={['scroll', kind]} tabindex={kind === 'wide' ? '0' : undefined} role={kind === 'wide' ? 'region' : undefined} aria-label={kind === 'wide' ? title : undefined}>
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby={`${uid}-${kind}-t ${uid}-${kind}-d`} style={minWidth ? `min-width: ${minWidth}px` : undefined}>
+      <title id={`${uid}-${kind}-t`}>{title}</title>
+      <desc id={`${uid}-${kind}-d`}>{desc}</desc>
 
       {rings.map((r) => <circle class="ring" data-step={r.step ?? 0} cx={r.cx} cy={r.cy} r={r.r} />)}
 
@@ -263,6 +295,7 @@ const lines = (label: string) => {
       }
     </svg>
   </div>
+  ))}
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
@@ -303,6 +336,24 @@ const lines = (label: string) => {
 <style>
   .flow {
     margin-block: var(--sp-7);
+    container-type: inline-size;
+  }
+
+  /* With a narrow drawing, it takes over below 560px, fitting the width instead of scrolling. */
+  .scroll.narrow {
+    display: none;
+  }
+
+  @container (max-width: 560px) {
+    .has-narrow .scroll.wide {
+      display: none;
+    }
+
+    .has-narrow .scroll.narrow {
+      display: block;
+      overflow: visible;
+      padding: var(--sp-5) var(--sp-3);
+    }
   }
 
   .scroll {
