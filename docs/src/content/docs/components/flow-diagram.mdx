@@ -55,7 +55,7 @@ A diagram that makes its point through its shape: a loop that money goes round, 
 - **Edges:** from one node's side to another's. Two horizontal sides make an elbow at `turn` (default: halfway), two vertical sides the same, one of each an L. `fromShift` and `toShift` move an anchor along its side, which is how two lines between the same pair run in parallel. An edge can carry a label, placed above the middle of its longest run unless `labelAt` says otherwise.
 - **Rings:** a dashed circle behind a group, such as a team.
 - **Note:** a few lines of text in a corner, the first one bold, for what the drawing can't say.
-- **Frame:** the sunken surface around it, which scrolls sideways below `minWidth` rather than shrinking the text, unless there's a narrow drawing.
+- **Frame:** the sunken surface around it. Narrower than `minWidth`, the drawing still fits it, smaller, and an **Enlarge** button in its corner opens it full size in a dialog, where it pans. Nothing scrolls on the page.
 - **Narrow drawing:** optional, `narrow`: the same nodes placed again for a phone, with their own edges, rings and note. It takes over below 560px wide and fits the width, so nothing scrolls. `icon: false` on a narrow node leaves a pill's icon out.
 
 ## Variants
@@ -82,7 +82,7 @@ Four tones, for nodes and edges alike:
 ## Keyboard and screen reader
 
 - **It is one image,** named by `title` and described by `desc`. Write `desc` as the sentences someone would need if they couldn't see it: who does what to whom. The labels inside are not read one by one.
-- **The frame is a focusable region,** so a keyboard can scroll it sideways when it's narrower than `minWidth`. A narrow drawing doesn't scroll, so it isn't one. Only the drawing shown is read out.
+- **Enlarge is a button** named with the diagram's title. The dialog is modal: focus goes to Close, Escape or a click outside closes it, and focus returns to Enlarge. Its full-size drawing is a focusable region, so a keyboard can pan it, and is hidden from screen readers, which have the diagram already. Only the drawing shown is read out.
 - **Ids come from the title,** so two diagrams on one page need different titles.
 
 ## Content

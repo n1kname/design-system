@@ -67,7 +67,7 @@ const rounded = (pts: [number, number][], radii: number[]) =>
       return `${i ? 'L' : 'M'}${a[0]} ${a[1]} Q${p[0]} ${p[1]} ${b[0]} ${b[1]}`;
     })
     .join(' ') + ' Z';
-const big = rounded([[1, 60], [100, 1], [199, 60], [100, 119]], [5, 16, 5, 16]);
+const big = rounded([[1, 70], [100, 1], [199, 70], [100, 139]], [5, 16, 5, 16]);
 const small = (x: number) => rounded([[x + 4, 50], [x + 50, 18], [x + 96, 50], [x + 50, 82]], [3, 9, 3, 9]);
 let hash = 0;
 for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
@@ -108,14 +108,14 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
                   </svg>
                 ) : (
                   <>
-                    <svg viewBox="0 0 200 120" aria-hidden="true">
+                    <svg viewBox="0 0 200 140" aria-hidden="true">
                       <clipPath id={`${uid}-${i}`}>
                         <path d={big} />
                       </clipPath>
                       <g clip-path={`url(#${uid}-${i})`}>
-                        <rect class="open" x="0" y="0" width="100" height="120" />
-                        <rect class="close" x="100" y="0" width="100" height="120" />
-                        <line class="split" x1="100" y1="0" x2="100" y2="120" vector-effect="non-scaling-stroke" />
+                        <rect class="open" x="0" y="0" width="100" height="140" />
+                        <rect class="close" x="100" y="0" width="100" height="140" />
+                        <line class="split" x1="100" y1="0" x2="100" y2="140" vector-effect="non-scaling-stroke" />
                       </g>
                       <path class="edge" d={big} vector-effect="non-scaling-stroke" />
                     </svg>
@@ -277,7 +277,7 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
     align-self: center;
     position: relative;
     width: 100%;
-    aspect-ratio: 5 / 3;
+    aspect-ratio: 10 / 7;
   }
 
   .repeat .shape {
@@ -324,8 +324,9 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
     stroke-width: 1.5;
   }
 
-  /* Each label centred on its half's own middle, a third of the way in from its point, at one
-   * size wherever the diamond is drawn. */
+  /* Each label centred on the middle of its half along the line through the points, where the
+   * half is widest at the label's height, at one size wherever the diamond is drawn. A label too
+   * long for its half wraps. */
   .halves {
     position: absolute;
     z-index: 2;
@@ -341,17 +342,17 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
   .halves span {
     position: absolute;
     top: 50%;
-    width: 30%;
+    width: 40%;
     translate: -50% -50%;
     text-wrap: balance;
   }
 
   .halves span:first-child {
-    left: 34%;
+    left: 27%;
   }
 
   .halves span:last-child {
-    left: 66%;
+    left: 73%;
   }
 
   .name {
@@ -387,6 +388,13 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
   .notes.one {
     grid-template-columns: 1fr;
     text-align: center;
+  }
+
+  /* Where a phase is too narrow for its two notes side by side, they stack. */
+  @container (max-width: 960px) {
+    .notes {
+      grid-template-columns: 1fr;
+    }
   }
 
   .note {

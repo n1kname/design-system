@@ -66,7 +66,10 @@ interface Props {
   /** A short legend in the corner: lines of text, the first one bold. */
   note?: { x: number; y: number; lines: { text: string; tone?: Tone }[] };
   caption?: string;
-  /** Narrowest the drawing may get before it scrolls instead. */
+  /**
+   * Narrowest the drawing reads well at. Narrower, it still fits the width, smaller, and an
+   * Enlarge button opens it full size in a dialog.
+   */
   minWidth?: number;
   /**
    * A second drawing of the same diagram for a narrow screen, below 560px wide: its own size, where
@@ -212,10 +215,18 @@ const lines = (label: string) => {
 };
 ---
 
-<figure class:list={['flow', { 'has-narrow': narrow }]} data-flow>
-  {views.map(({ kind, width, height, nodes, drawn, rings, note, minWidth }) => (
-  <div class:list={['scroll', kind]} tabindex={kind === 'wide' ? '0' : undefined} role={kind === 'wide' ? 'region' : undefined} aria-label={kind === 'wide' ? title : undefined}>
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby={`${uid}-${kind}-t ${uid}-${kind}-d`} style={minWidth ? `min-width: ${minWidth}px` : undefined}>
+<figure class:list={['flow', { 'has-narrow': narrow }]} data-flow data-min={minWidth}>
+  {views.map(({ kind, width, height, nodes, drawn, rings, note }) => (
+  <div class:list={['scroll', kind]}>
+    {kind === 'wide' && (
+      <button type="button" class="enlarge" data-enlarge hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+        </svg>
+        Enlarge<span class="visually-hidden">: {title}</span>
+      </button>
+    )}
+    <svg class="drawing" viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby={`${uid}-${kind}-t ${uid}-${kind}-d`}>
       <title id={`${uid}-${kind}-t`}>{title}</title>
       <desc id={`${uid}-${kind}-d`}>{desc}</desc>
 
@@ -296,10 +307,50 @@ const lines = (label: string) => {
     </svg>
   </div>
   ))}
+  <dialog class="zoom" aria-labelledby={`${uid}-zoom`}>
+    <div class="zoom-bar">
+      <p class="zoom-title" id={`${uid}-zoom`}>{title}</p>
+      <button type="button" class="close" data-close>Close</button>
+    </div>
+    <div class="zoom-scroll" tabindex="0" role="region" aria-label={`${title}, full size`} data-zoom-body></div>
+  </dialog>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
 <script>
+  // Narrower than it reads well at, it fits, smaller, with an Enlarge button that opens a copy
+  // full size in a dialog.
+  document.querySelectorAll<HTMLElement>('[data-flow]').forEach((fig) => {
+    const min = Number(fig.dataset.min) || 0;
+    const wide = fig.querySelector<HTMLElement>('.scroll.wide');
+    const button = fig.querySelector<HTMLButtonElement>('[data-enlarge]');
+    const dialog = fig.querySelector<HTMLDialogElement>('dialog.zoom');
+    const body = fig.querySelector<HTMLElement>('[data-zoom-body]');
+    if (!wide || !button || !dialog || !body) return;
+    const fit = () => {
+      const small = wide.offsetParent !== null && wide.clientWidth < min;
+      button.hidden = !small;
+      fig.classList.toggle('is-small', small);
+    };
+    new ResizeObserver(fit).observe(fig);
+    fit();
+    button.addEventListener('click', () => {
+      const copy = wide.querySelector('svg.drawing')!.cloneNode(true) as SVGSVGElement;
+      copy.removeAttribute('aria-labelledby');
+      copy.setAttribute('aria-hidden', 'true');
+      copy.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+      copy.style.setProperty('--full', `${Math.max(min, 640)}px`);
+      body.replaceChildren(copy);
+      dialog.showModal();
+      // Open on the middle of the drawing, where its point usually is.
+      body.scrollLeft = (body.scrollWidth - body.clientWidth) / 2;
+    });
+    dialog.querySelector('[data-close]')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+  });
+
   // One step is a beat. Arm only what is below the fold, so a diagram already on screen
   // never blinks out, and start the pulses once their line has drawn.
   const STEP = 220;
@@ -351,13 +402,131 @@ const lines = (label: string) => {
 
     .has-narrow .scroll.narrow {
       display: block;
-      overflow: visible;
       padding: var(--sp-5) var(--sp-3);
     }
   }
 
+  /* Narrower than it reads well at: it fits, smaller, and offers itself full size. */
+  .enlarge {
+    position: absolute;
+    top: var(--sp-3);
+    right: var(--sp-3);
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .enlarge[hidden] {
+    display: none;
+  }
+
+  .enlarge svg {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+  }
+
+  .enlarge:hover {
+    border-color: var(--c-border-strong);
+  }
+
+  .is-small .scroll.wide {
+    padding-top: calc(var(--sp-3) * 2 + 28px);
+  }
+
+  .enlarge:focus-visible,
+  .close:focus-visible,
+  .zoom-scroll:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .zoom {
+    width: calc(100vw - var(--sp-4));
+    max-width: none;
+    height: calc(100dvh - var(--sp-4));
+    max-height: none;
+    padding: 0;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--c-bg);
+    color: var(--c-text);
+  }
+
+  .zoom[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .zoom::backdrop {
+    background: color-mix(in oklab, var(--c-bg) 70%, transparent);
+  }
+
+  .zoom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .zoom-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--text-body-sm);
+  }
+
+  .close {
+    padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Full size, so the words read; it pans where the screen is smaller. */
+  .zoom-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: var(--sp-5);
+    background: var(--c-surface-sunken);
+  }
+
+  .zoom-scroll > svg {
+    display: block;
+    width: var(--full);
+    max-width: none;
+    height: auto;
+    overflow: visible;
+  }
+
   .scroll {
-    overflow-x: auto;
+    position: relative;
     background: var(--c-surface-sunken);
     border: 1px solid var(--c-border);
     border-radius: var(--radius-lg);
