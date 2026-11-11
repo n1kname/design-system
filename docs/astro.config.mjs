@@ -103,6 +103,7 @@ export default defineConfig({
             { label: 'Tiers', link: '/components/tiers/' },
             { label: 'Steps', link: '/components/steps/' },
             { label: 'Clip', link: '/components/clip/' },
+            { label: 'At a glance', link: '/components/at-a-glance/' },
           ],
         },
         { label: 'Checks', link: '/checks/' },

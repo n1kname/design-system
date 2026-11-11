@@ -1,0 +1,178 @@
+---
+/**
+ * A long page in one look, at its top: a few labelled parts (a role, the problem, what was done,
+ * what changed), each a sentence or a short list, and the key figures under them. For a case
+ * study, so a reader who stops here still has the story, and one who reads on knows where it goes.
+ *
+ * The parts sit two across where there's room and stack where there isn't. It is a section with
+ * its own heading, so it shows in a page's outline.
+ */
+interface Part {
+  label: string;
+  /** One or two sentences. */
+  text?: string;
+  /** Or a short list: two to four points. */
+  points?: string[];
+}
+
+interface Props {
+  parts: Part[];
+  /** The figures under the parts: a value and what it counts. */
+  figures?: { value: string; label: string }[];
+  title?: string;
+  /** The heading's level, 2 by default. */
+  level?: 2 | 3;
+  id?: string;
+  class?: string;
+}
+
+const { parts, figures = [], title = 'At a glance', level = 2, id = 'at-a-glance', class: className } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+---
+
+<section class:list={['glance', className]} aria-labelledby={`${id}-title`}>
+  <Heading class="glance-title" id={`${id}-title`}>{title}</Heading>
+  <dl class="parts">
+    {
+      parts.map((p) => (
+        <div class="part">
+          <dt>{p.label}</dt>
+          <dd>
+            {p.text && <span class="text">{p.text}</span>}
+            {p.points && p.points.length > 0 && (
+              <ul>
+                {p.points.map((pt) => (
+                  <li>{pt}</li>
+                ))}
+              </ul>
+            )}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+  {
+    figures.length > 0 && (
+      <dl class="figures">
+        {figures.map((f) => (
+          <div>
+            <dt>{f.value}</dt>
+            <dd>{f.label}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+</section>
+
+<style>
+  .glance {
+    container-type: inline-size;
+    padding: var(--sp-5) var(--sp-6) var(--sp-6);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .glance-title {
+    margin: 0 0 var(--sp-4);
+    font-family: var(--font-body);
+    font-size: var(--text-overline);
+    font-weight: 600;
+    line-height: var(--leading-overline);
+    letter-spacing: var(--tracking-overline);
+    text-transform: uppercase;
+    color: var(--c-text-accent);
+  }
+
+  .parts {
+    display: grid;
+    gap: var(--sp-5) var(--sp-7);
+    margin: 0;
+  }
+
+  @container (min-width: 640px) {
+    .parts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .part dt {
+    margin-bottom: var(--sp-1);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+  }
+
+  .part dd {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    color: var(--c-text-secondary);
+  }
+
+  .text {
+    display: block;
+    text-wrap: pretty;
+  }
+
+  ul {
+    display: grid;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    padding-left: var(--sp-4);
+    text-wrap: pretty;
+  }
+
+  li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--c-accent);
+  }
+
+  .text + ul {
+    margin-top: var(--sp-2);
+  }
+
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, max-content));
+    gap: var(--sp-4) var(--sp-8);
+    margin: var(--sp-6) 0 0;
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .figures dt {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    color: var(--c-text);
+  }
+
+  .figures dd {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  @media (forced-colors: active) {
+    li::before {
+      background: CanvasText;
+    }
+  }
+</style>

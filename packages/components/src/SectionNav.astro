@@ -5,9 +5,10 @@
  * margin beside the reading column.
  *
  * It finds where you are from the headings its links point to: the last one above the top third of
- * the window is current, and its link gets `aria-current="location"`. That changes as you scroll,
- * many times a minute, so it changes at once rather than gliding. Before the first heading nothing
- * is current. Without script it is a plain list of links.
+ * the window is current, and its link gets `aria-current="location"`. A marker on the rule glides to
+ * it over --motion-base, short enough to keep up with scrolling, and the text brightens as it lands;
+ * under reduced motion it moves at once. Before the first heading nothing is current. Without
+ * script it is a plain list of links.
  *
  * The page places it: it is sticky inside whatever holds it, so give it a column or a margin that
  * runs the length of the text. It never hides itself, so it is always in the tab order.
@@ -34,6 +35,7 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
 
 <nav id={id} class:list={['section-nav', className]} aria-label={label} data-section-nav>
   {title && <p class="title" aria-hidden="true">{title}</p>}
+  <span class="marker" aria-hidden="true"></span>
   <ol>
     {
       items.map((item) => (
@@ -72,6 +74,31 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
     border-left: 1px solid var(--c-border);
   }
 
+  /* Where you are: one bar on the rule that glides from section to section. */
+  .marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: var(--h, 0);
+    background: var(--c-accent);
+    border-radius: 1px;
+    opacity: 0;
+    translate: 0 var(--y, 0);
+    transition:
+      translate var(--motion-base) var(--ease-out),
+      height var(--motion-base) var(--ease-out),
+      opacity var(--motion-fast) var(--ease-out);
+  }
+
+  .marker.on {
+    opacity: 1;
+  }
+
+  .marker.still {
+    transition: none;
+  }
+
   a {
     display: block;
     margin-left: -1px;
@@ -81,18 +108,17 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
     color: var(--c-text-muted);
     text-decoration: none;
     text-wrap: pretty;
-    transition: color var(--motion-hover) var(--ease-hover);
+    transition: color var(--motion-base) var(--ease-out);
   }
 
   a:hover {
     color: var(--c-text);
   }
 
-  /* Where you are: the text at full strength and the accent bar on the rule. */
+  /* Where you are: the text at full strength; the marker carries the bar. Its weight stays the
+   * same, so the list never reflows as the marker moves. */
   a[aria-current] {
     color: var(--c-text);
-    font-weight: 600;
-    border-left-color: var(--c-accent);
   }
 
   a:focus-visible {
@@ -102,8 +128,8 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
   }
 
   @media (forced-colors: active) {
-    a[aria-current] {
-      border-left-color: CanvasText;
+    .marker {
+      background: CanvasText;
     }
   }
 </style>
@@ -111,6 +137,19 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
 <script>
   document.querySelectorAll<HTMLElement>('[data-section-nav]').forEach((nav) => {
     const links = [...nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')];
+    const marker = nav.querySelector<HTMLElement>('.marker');
+    let placed = false;
+    const mark = (a?: HTMLAnchorElement) => {
+      if (!marker) return;
+      marker.classList.toggle('on', !!a);
+      if (!a) return;
+      // The first time in place; after that it glides.
+      marker.classList.toggle('still', !placed);
+      marker.style.setProperty('--y', `${a.parentElement!.offsetTop}px`);
+      marker.style.setProperty('--h', `${a.parentElement!.offsetHeight}px`);
+      if (!placed) requestAnimationFrame(() => marker.classList.remove('still'));
+      placed = true;
+    };
     const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
     let current = -2;
     const update = () => {
@@ -121,6 +160,7 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
       if (now === current) return;
       current = now;
       links.forEach((a, i) => (i === now ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+      mark(links[now]);
       // Keep the current link in view when the list is taller than the window. The list scrolls
       // itself; the page never moves for it.
       const a = links[now];
@@ -143,7 +183,10 @@ const hash = (h: string) => (h.startsWith('#') ? h : `#${h}`);
       },
       { passive: true },
     );
-    addEventListener('resize', update, { passive: true });
+    addEventListener('resize', () => {
+      update();
+      mark(links[current]);
+    }, { passive: true });
     update();
   });
 </script>

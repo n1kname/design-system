@@ -1,0 +1,84 @@
+---
+title: "At a glance"
+description: "A long page in one look at its top: a few labelled parts and the key figures, so a reader who stops there still has the story."
+---
+
+import AtAGlance from '@n1kname/components/AtAGlance.astro';
+
+<div class="not-content">
+  <AtAGlance
+    level={3}
+    parts={[
+      { label: 'My role', text: 'Led the design from the first sketch to the first release, then guided the designer who took it on.' },
+      { label: 'The problem', text: 'Most customers were companies, on a product built for one person with one device.' },
+      { label: 'What I did', points: ['Talked to the people who sold and supported it.', 'Designed the structure everything else sits on.', 'Chose one group to serve first, and held to it.'] },
+      { label: 'What changed', points: ['Every company customer moved over.', 'Routine tasks became self-service.'] },
+    ]}
+    figures={[
+      { value: '120', label: 'customers onboarded' },
+      { value: '3 years', label: 'hands-on' },
+      { value: 'Shipped', label: 'outcome' },
+    ]}
+  />
+</div>
+
+## What it's for
+
+The top of a case study or any long read: the whole story in a few labelled parts (a role, the problem, what was done, what changed) and the key figures. A reader who stops here leaves with the story; one who reads on knows where it's going.
+
+## When not to use it
+
+- **A short page.** If the page fits on a screen, it is its own summary.
+- **One claim.** That's a pull-quote or a highlighted line, not four parts.
+- **Data.** Use a [Stat strip](/components/stat-strip/) or a chart.
+
+## Anatomy
+
+- **Heading:** "At a glance" by default, small capitals in the accent text colour, as a real heading at `level` 2 or 3.
+- **Parts:** each a label in the display face and a sentence (`text`), a short list (`points`) or both. Two across where there's room, stacked where there isn't.
+- **Figures:** optional, under a rule: a value in the display face and what it counts.
+
+## Variants
+
+None. `title` changes the heading.
+
+## States
+
+- **Width:** parts two across from 640px of its own width, stacked below. Figures wrap.
+
+## Tokens
+
+`--c-surface`, `--c-border`, `--c-accent`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--c-text-accent`, `--font-body`, `--font-display`, `--text-overline`, `--text-sub`, `--text-body`, `--text-h3`, `--text-caption`, `--radius-lg`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate.**
+- **It is a section named by its heading,** so it shows in the page's outline and a screen reader can jump to it.
+- **Parts and figures are description lists,** each label read with its text.
+
+## Content
+
+- **Role:** what you did and for how long, honestly, in one or two sentences.
+- **Problem:** the situation before, with its number if there is one.
+- **What I did and what changed:** two to four points each, each a verb and its result. No point that the page doesn't back up further down.
+- **Figures:** only ones the page backs up.
+
+## Status
+
+New. For a portfolio's case studies.
+
+## Code
+
+```astro wrap
+---
+import AtAGlance from '@n1kname/components/AtAGlance.astro';
+---
+
+<AtAGlance
+  parts={[
+    { label: 'My role', text: '…' },
+    { label: 'What I did', points: ['…', '…'] },
+  ]}
+  figures={[{ value: '120', label: 'customers onboarded' }]}
+/>
+```
