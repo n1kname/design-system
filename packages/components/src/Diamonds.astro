@@ -119,11 +119,11 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
                       </g>
                       <path class="edge" d={big} vector-effect="non-scaling-stroke" />
                     </svg>
-                    <p class="halves">
+                    <div class="halves">
                       {it.phase.halves?.map((h) => (
                         <span>{h.label}</span>
                       ))}
-                    </p>
+                    </div>
                   </>
                 )}
               </div>
