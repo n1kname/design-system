@@ -1,0 +1,329 @@
+---
+/**
+ * A hierarchy in tiers: who sits under whom, one row per tier, laid out for you. An organisation
+ * over its legal entities over their locations, say, with a band under the last tier for who uses
+ * all of it. Give it the tree; it places every node over the middle of what's under it and draws
+ * the lines down.
+ *
+ * Tiers read through tint and border, not a saturated fill: the top tier deepest, with a heavier
+ * edge, then lighter, then plain. Every colour is a diagram token, so it retints in dark mode. The
+ * tier names run down the left.
+ *
+ * It builds itself once, top down, as it comes into view: each tier settles in, then the lines to
+ * the next draw down. Without script, or with reduced motion, it is simply there. Narrower than
+ * `minWidth`, it fits the width, smaller, with an Enlarge button that opens it full size.
+ */
+import DiagramZoom from './parts/DiagramZoom.astro';
+
+interface TierNode {
+  label: string;
+  /** A second, quieter line. */
+  sub?: string;
+  children?: TierNode[];
+}
+
+interface Props {
+  /** What the diagram is, and what it shows in words, for a screen reader. */
+  title: string;
+  desc: string;
+  /** One or more at the top. */
+  root: TierNode | TierNode[];
+  /** The tiers' names, top first, down the left. */
+  tiers?: string[];
+  /** A band under the last tier, across all of it, with one line of text. Its name, if any, is
+   * the entry in `tiers` after the tree's own. */
+  base?: string;
+  caption?: string;
+  /** The width it reads well at. */
+  minWidth?: number;
+  class?: string;
+}
+
+const { title, desc, root, tiers = [], base, caption, minWidth = 760, class: className } = Astro.props;
+
+let hash = 0;
+for (const c of title) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+const uid = `tiers-${(hash >>> 0).toString(36)}`;
+
+// Geometry, in one place.
+const LEFT = tiers.length ? 140 : 20; // where the tree starts, right of the tier names
+const LEAF = 190; // a leaf's width
+const GAP = 20; // between leaves under one parent
+const GROUP = 75; // between leaves under different parents
+const ROW = 110; // from one tier to the next
+const NODE = 60; // a node's height
+const BAND = 50; // the base band's height
+const TOP = 12;
+
+interface Placed {
+  label: string;
+  sub?: string;
+  depth: number;
+  cx: number;
+  w: number;
+  y: number;
+  kids: Placed[];
+  parent?: Placed;
+}
+
+// Leaves are placed left to right; a parent sits over the middle of its children.
+let cursor = LEFT;
+let lastParent: Placed | undefined | null = null;
+const place = (n: TierNode, depth: number, parent?: Placed): Placed => {
+  const p: Placed = { label: n.label, sub: n.sub, depth, cx: 0, w: LEAF, y: TOP + depth * ROW, kids: [], parent };
+  if (n.children?.length) {
+    p.kids = n.children.map((c) => place(c, depth + 1, p));
+    const first = p.kids[0];
+    const last = p.kids[p.kids.length - 1];
+    p.cx = (first.cx + last.cx) / 2;
+    const span = last.cx + last.w / 2 - (first.cx - first.w / 2);
+    p.w = Math.min(Math.max(LEAF + 90, span * 0.6), 340);
+  } else {
+    if (lastParent !== null) cursor += lastParent === parent ? GAP : GROUP;
+    p.cx = cursor + LEAF / 2;
+    cursor += LEAF;
+    lastParent = parent;
+  }
+  return p;
+};
+const roots = (Array.isArray(root) ? root : [root]).map((r) => place(r, 0));
+
+const all: Placed[] = [];
+const walk = (p: Placed) => {
+  all.push(p);
+  p.kids.forEach(walk);
+};
+roots.forEach(walk);
+const leaves = all.filter((p) => !p.kids.length);
+const depth = Math.max(...all.map((p) => p.depth));
+const tone = (d: number) => (d === 0 ? 'primary' : d === 1 && depth > 1 ? 'second' : 'leaf');
+
+const left = Math.min(...all.map((p) => p.cx - p.w / 2));
+const right = Math.max(...all.map((p) => p.cx + p.w / 2));
+const bandY = TOP + (depth + 1) * ROW - 7;
+const width = Math.ceil(right + 20);
+const height = Math.ceil((base ? bandY + BAND : TOP + depth * ROW + NODE) + 12);
+
+// The lines from each parent down to its children: down to halfway, across, down to each.
+const lines = all
+  .filter((p) => p.kids.length)
+  .map((p) => {
+    const bottom = p.y + NODE;
+    const mid = bottom + (ROW - NODE) / 2;
+    const xs = p.kids.map((k) => k.cx);
+    let d = `M${p.cx} ${bottom} V${mid}`;
+    const lo = Math.min(p.cx, ...xs);
+    const hi = Math.max(p.cx, ...xs);
+    if (hi > lo) d += ` M${lo} ${mid} H${hi}`;
+    for (const k of p.kids) d += ` M${k.cx} ${mid} V${k.y}`;
+    return { d, step: p.depth * 2 + 1 };
+  });
+const bandLines = base ? leaves.map((l) => `M${l.cx} ${l.y + NODE} V${bandY}`).join(' ') : '';
+const labelX = LEFT - 16;
+---
+
+<figure class:list={['tiers', className]} data-tiers>
+  <div class="plate">
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby={`${uid}-t ${uid}-d`} data-zoom-source>
+      <title id={`${uid}-t`}>{title}</title>
+      <desc id={`${uid}-d`}>{desc}</desc>
+
+      {
+        tiers.length > 0 && (
+          <g class="tier-names">
+            {tiers.map((t, i) =>
+              i <= depth ? (
+                <text data-step={i * 2} x={labelX} y={TOP + i * ROW + 34}>
+                  {t}
+                </text>
+              ) : (
+                base &&
+                i === depth + 1 && (
+                  <text data-step={depth * 2 + 2} x={labelX} y={bandY + 30}>
+                    {t}
+                  </text>
+                )
+              ),
+            )}
+          </g>
+        )
+      }
+
+      <g class="lines">
+        {lines.map((l) => <path data-step={l.step} d={l.d} />)}
+        {bandLines && <path data-step={depth * 2 + 1} d={bandLines} />}
+      </g>
+
+      {
+        all.map((p) => (
+          <g class:list={['node', tone(p.depth)]} data-step={p.depth * 2}>
+            <rect x={p.cx - p.w / 2} y={p.y} width={p.w} height={NODE} rx="10" />
+            <text x={p.cx} y={p.y + (p.sub ? 26 : 35)} class="name">
+              {p.label}
+            </text>
+            {p.sub && (
+              <text x={p.cx} y={p.y + 46} class="sub">
+                {p.sub}
+              </text>
+            )}
+          </g>
+        ))
+      }
+
+      {
+        base && (
+          <g class="node passive" data-step={depth * 2 + 2}>
+            <rect x={left} y={bandY} width={right - left} height={BAND} rx="10" />
+            <text x={(left + right) / 2} y={bandY + 30} class="sub">
+              {base}
+            </text>
+          </g>
+        )
+      }
+    </svg>
+    <DiagramZoom title={title} min={minWidth} id={uid} />
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  // Even steps are a tier settling in, odd steps the lines drawing down to the next.
+  const STEP = 170;
+  if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    document.querySelectorAll<SVGSVGElement>('[data-tiers] svg[data-zoom-source]').forEach((svg) => {
+      const root = getComputedStyle(document.documentElement);
+      const spring = root.getPropertyValue('--ease-spring').trim() || 'cubic-bezier(0.22, 1, 0.36, 1)';
+      // A tier settles in three quarters of the system's grow.
+      const g = root.getPropertyValue('--motion-grow').trim();
+      const settle = (parseFloat(g) * (g.endsWith('ms') ? 1 : 1000) || 700) * 0.75;
+      const parts = [...svg.querySelectorAll<SVGElement>('[data-step]')].map((el) => {
+        const delay = Number(el.dataset.step) * STEP;
+        const a =
+          el instanceof SVGPathElement
+            ? (el.setAttribute('pathLength', '1'),
+              el.animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], {
+                duration: STEP * 1.6,
+                delay,
+                easing: 'cubic-bezier(0.3, 0, 0.2, 1)',
+                fill: 'backwards',
+              }))
+            : el.animate([{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }], {
+                duration: settle,
+                delay,
+                easing: spring,
+                fill: 'backwards',
+              });
+        a.pause();
+        return a;
+      });
+      // Already on screen when the page opens: it is simply there.
+      if (svg.getBoundingClientRect().top < innerHeight * 0.85) {
+        parts.forEach((a) => a.finish());
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          parts.forEach((a) => a.play());
+        },
+        { rootMargin: '0px 0px -15% 0px' },
+      );
+      io.observe(svg);
+    });
+  }
+</script>
+
+<style>
+  .tiers {
+    margin-block: var(--sp-7);
+  }
+
+  .plate {
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6) var(--sp-5);
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  rect {
+    stroke-width: 1.5;
+  }
+
+  .leaf rect {
+    fill: var(--c-dg-leaf-bg);
+    stroke: var(--c-dg-edge);
+  }
+
+  .leaf text {
+    fill: var(--c-dg-leaf-text);
+  }
+
+  .second rect {
+    fill: var(--c-dg-second-bg);
+    stroke: var(--c-dg-second-border);
+  }
+
+  .second text {
+    fill: var(--c-dg-second-text);
+  }
+
+  /* The top tier reads as first through a heavier edge and a deeper tint, not a saturated fill. */
+  .primary rect {
+    fill: var(--c-dg-primary-bg);
+    stroke: var(--c-dg-primary-border);
+    stroke-width: 2.5;
+  }
+
+  .primary text {
+    fill: var(--c-dg-primary-text);
+  }
+
+  .passive rect {
+    fill: var(--c-dg-passive-bg);
+    stroke: var(--c-dg-edge);
+  }
+
+  .passive text {
+    fill: var(--c-dg-passive-text);
+  }
+
+  .name {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    text-anchor: middle;
+  }
+
+  .sub {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    text-anchor: middle;
+  }
+
+  .tier-names text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-anchor: end;
+    fill: var(--c-text-muted);
+  }
+
+  .lines path {
+    fill: none;
+    stroke: var(--c-dg-line);
+    stroke-width: 1.5;
+  }
+
+  figcaption {
+    max-width: var(--layout-measure);
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+  }
+</style>

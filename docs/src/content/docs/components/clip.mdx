@@ -1,0 +1,69 @@
+---
+title: "Clip"
+description: "A short looping product clip on a plate, that never starts itself under reduced motion and always has a Pause button."
+---
+
+import Clip from '@n1kname/components/Clip.astro';
+
+<div class="not-content">
+  <Clip alt="A filter being applied to a list of charge points: the list narrows to the ones with a fault." caption="Without a clip yet, a placeholder holds the place at the same size." width={1240} height={698} />
+</div>
+
+## What it's for
+
+A short loop where movement carries the point better than a still: a flow running, a theme swapping, a filter applied. It sits on a sunken plate with a caption, like a [Figure](/components/figure/).
+
+## When not to use it
+
+- **A still would do.** A clip costs bandwidth and attention; use a picture when nothing important moves.
+- **A walkthrough with sound or steps.** That's a video with controls, not a loop.
+- **Decoration.** Motion that says nothing is noise.
+
+## Anatomy
+
+- **Plate:** the sunken surface, centring the clip up to `maxWidth`.
+- **Clip:** muted, looping, inline, with its still frame (`poster`) showing until it plays.
+- **Play/Pause:** a button in the corner, always visible.
+- **Placeholder:** without `src`, a dashed box at the clip's size with its label, size and what it will show.
+- **Caption:** optional.
+
+## Variants
+
+None. `placeholder` changes the placeholder's label.
+
+## States
+
+- **Arriving:** it starts on its own once it's on screen, but only when motion is welcome. Under reduced motion it waits on its still frame until someone presses Play.
+- **Playing and paused:** the button says Pause or Play and its `aria-pressed` follows.
+- **No video:** anyone whose browser blocks video sees the still frame.
+
+## Tokens
+
+`--c-surface-sunken`, `--c-surface`, `--c-border`, `--c-border-strong`, `--c-focus`, `--c-text`, `--c-text-muted`, `--font-body`, `--font-mono`, `--text-body-sm`, `--text-caption`, `--radius-lg`, `--radius-sm`, `--radius-full`, `--motion-hover`, `--ease-hover`, `--layout-measure`.
+
+## Keyboard and screen reader
+
+- **The button is a toggle** (`aria-pressed`) named Play or Pause, reachable by Tab, and works with Enter and Space.
+- **The clip is named by `alt`,** and so is the placeholder.
+- **A loop longer than five seconds can be stopped** (WCAG 2.2.2): that's what the button is for.
+
+## Content
+
+- **Alt:** what happens in the clip, in order, in a sentence or two.
+- **Caption:** why the movement matters, not what it shows.
+
+## Status
+
+New. Taken from a portfolio's product clips.
+
+## Code
+
+```astro wrap
+---
+import Clip from '@n1kname/components/Clip.astro';
+---
+
+<Clip src="/video/signup.mp4" poster="/video/signup.webp" alt="The signup flow running." width={1240} height={698} />
+```
+
+A clip without `poster` fails the build: without a still it's a blank rectangle until it loads.

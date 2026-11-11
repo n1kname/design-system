@@ -1,0 +1,165 @@
+---
+/**
+ * A sequence of stages, each with its number, its name, a line on what it was, and a picture of it:
+ * wireframes, prototype, beta, shipped. The words are text and only the screens are pictures, so it
+ * reads at any size, is found by search, and reflows: four across, then two, then one, by the width
+ * it has.
+ *
+ * The numbers carry the order. An arrow between columns would say the same and then break as soon
+ * as the row reflows.
+ *
+ * A picture is an imported image (it goes through astro:assets, sized and converted to webp) or an
+ * address. Leave it off and a labelled placeholder holds the slot.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Step {
+  label: string;
+  body?: string;
+  image?: ImageMetadata | string;
+  /** What the picture shows. */
+  alt?: string;
+}
+
+interface Props {
+  steps: Step[];
+  caption?: string;
+  class?: string;
+}
+
+const { steps, caption, class: className } = Astro.props;
+---
+
+<figure class:list={['steps', className]}>
+  <ol>
+    {
+      steps.map((s, i) => (
+        <li>
+          <div class="number">{String(i + 1).padStart(2, '0')}</div>
+          <div class="label">{s.label}</div>
+          {s.body && <div class="body">{s.body}</div>}
+          <div class="shot">
+            {typeof s.image === 'object' ? (
+              <Image
+                src={s.image}
+                alt={s.alt ?? ''}
+                widths={[...new Set([320, 640, 918].filter((w) => w <= (s.image as ImageMetadata).width))]}
+                sizes="(max-width: 620px) 100vw, (max-width: 1000px) 45vw, 310px"
+                format="webp"
+                quality={80}
+                loading="lazy"
+              />
+            ) : s.image ? (
+              <img src={s.image} alt={s.alt ?? ''} loading="lazy" />
+            ) : (
+              <div class="placeholder" role="img" aria-label={`Placeholder. ${s.alt ?? s.label}`}>
+                <span>{s.label}</span>
+              </div>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .steps {
+    margin-block: var(--sp-6) var(--sp-7);
+    container-type: inline-size;
+  }
+
+  ol {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--sp-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @container (max-width: 860px) {
+    ol {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--sp-6) var(--sp-5);
+    }
+  }
+
+  @container (max-width: 480px) {
+    ol {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Divs, not paragraphs, so a page's paragraph spacing can't reach in. */
+  .number {
+    margin-bottom: var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--c-text-accent);
+  }
+
+  .label {
+    margin-bottom: var(--sp-2);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    letter-spacing: var(--tracking-sub);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  .body {
+    margin-bottom: var(--sp-4);
+    font-size: var(--text-body-sm);
+    line-height: 1.5;
+    color: var(--c-text-muted);
+  }
+
+  /* Each picture runs at its own height rather than cropped to a shared one: a fixed window left a
+   * sliver of the next screen showing, which reads as a mistake. The columns are top-aligned, so a
+   * ragged bottom edge costs nothing. */
+  .shot {
+    padding: var(--sp-3);
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .shot :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+  }
+
+  .placeholder {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 2 / 5;
+    background: var(--c-surface);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: 2px;
+  }
+
+  .placeholder span {
+    padding: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+    text-align: center;
+  }
+
+  figcaption {
+    max-width: var(--layout-measure);
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+  }
+</style>

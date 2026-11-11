@@ -1,0 +1,84 @@
+---
+title: "Tiers"
+description: "A hierarchy in tiers, laid out for you: who sits under whom, one row per tier, with the lines drawn down."
+---
+
+import Tiers from '@n1kname/components/Tiers.astro';
+
+<div class="not-content">
+  <Tiers
+    title="A made-up company"
+    desc="Three tiers. Northwind Group holds two companies, Northwind North and Northwind South. North runs two depots, Harbour and Ridge; South runs one, Meadow. Everyone who works there sits under the depots."
+    tiers={['Group', 'Company', 'Depot', 'People']}
+    root={{
+      label: 'Northwind Group',
+      sub: 'Policy · Finance',
+      children: [
+        { label: 'Northwind North', sub: 'Access · Reporting', children: [{ label: 'Harbour', sub: 'Support' }, { label: 'Ridge', sub: 'Support' }] },
+        { label: 'Northwind South', sub: 'Access', children: [{ label: 'Meadow', sub: 'Support' }] },
+      ],
+    }}
+    base="Drivers · Planners · Mechanics"
+    caption="Made-up names. Narrow your window to see it fit, with Enlarge."
+  />
+</div>
+
+## What it's for
+
+A hierarchy whose point is its tiers: an organisation over its companies over their sites, and who uses all of it. Give it the tree and it lays it out: leaves left to right, each parent over the middle of what's under it, the lines down from each to its children.
+
+## When not to use it
+
+- **Anything that isn't a tree:** loops, people in several places, who pays whom. That's a [Flow diagram](/components/flow-diagram/), placed by hand.
+- **Many leaves.** Past six or seven at the bottom it gets wide; a list or a table reads better.
+- **Data.** Use a chart.
+
+## Anatomy
+
+- **Tier names:** down the left, in the mono face, one per row.
+- **Nodes:** a label and an optional second line. The top tier is the deepest tint with a heavier edge, the next lighter, the rest plain.
+- **Lines:** from each parent down to halfway, across, and down to each child.
+- **Base band:** optional, `base`: a quiet band under the last tier, across all of it, with one line. Its name is the entry in `tiers` after the tree's own.
+- **Caption:** optional.
+
+## Variants
+
+None. `root` takes one node or several.
+
+## States
+
+- **Arriving:** below the fold, it waits until it scrolls in, then builds top down: each tier settles in, then the lines draw down to the next. Already on screen, or under reduced motion, it is simply there.
+- **Narrower than `minWidth`** (760 by default): it fits the width, smaller, and an **Enlarge** button under it opens it full size in a dialog, as [Flow diagram](/components/flow-diagram/) does.
+
+## Tokens
+
+`--c-dg-primary-bg`, `--c-dg-primary-border`, `--c-dg-primary-text`, `--c-dg-second-bg`, `--c-dg-second-border`, `--c-dg-second-text`, `--c-dg-leaf-bg`, `--c-dg-leaf-text`, `--c-dg-passive-bg`, `--c-dg-passive-text`, `--c-dg-edge`, `--c-dg-line`, `--c-surface-sunken`, `--c-border`, `--c-text-muted`, `--font-body`, `--font-mono`, `--radius-lg`, `--motion-grow`, `--ease-spring`.
+
+## Keyboard and screen reader
+
+- **It is one image** named by `title` and described by `desc`. Write `desc` as the hierarchy in sentences; the drawing itself isn't read out.
+- **Enlarge** is a button named with the title; the dialog is modal and closes with Escape.
+
+## Content
+
+- **Labels:** the names as people use them.
+- **Second lines:** what that tier does or holds, a few words joined with a middle dot.
+
+## Status
+
+New. Taken from a portfolio's account hierarchy, which had its four tiers placed by hand.
+
+## Code
+
+```astro wrap
+---
+import Tiers from '@n1kname/components/Tiers.astro';
+---
+
+<Tiers
+  title="Accounts"
+  desc="One group over two companies…"
+  tiers={['Group', 'Company']}
+  root={{ label: 'Group', children: [{ label: 'North' }, { label: 'South' }] }}
+/>
+```

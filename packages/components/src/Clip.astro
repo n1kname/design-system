@@ -1,0 +1,198 @@
+---
+/**
+ * A short looping product clip, for where movement carries the point better than a still: a flow
+ * running, a theme swapping, a filter applied. On a sunken plate, with a caption.
+ *
+ * Three things it gets right, which is why it is a component rather than a bare <video>:
+ *   1. It never starts on its own for someone who asked for reduced motion. CSS can't cancel
+ *      autoplay, so it is started from script, and only when motion is welcome and the clip is
+ *      on screen.
+ *   2. Anything that moves for more than five seconds needs a way to stop it (WCAG 2.2.2). The
+ *      Pause button is always there, never a hover reveal, so touch and keyboard have it too.
+ *   3. The still frame (`poster`) is required with a clip: it is what shows before the video
+ *      loads, and all there is for anyone who never gets the video.
+ *
+ * Leave `src` off and a labelled placeholder holds the place at the same size, so a page can be
+ * written and reviewed before the clip exists.
+ */
+interface Props {
+  /** The clip's address. Leave off for a placeholder. */
+  src?: string;
+  /** The still frame's address. Required with `src`. */
+  poster?: string;
+  /** What the clip shows, for a screen reader, and on the placeholder. */
+  alt: string;
+  caption?: string;
+  width: number;
+  height: number;
+  /** Widest the clip is drawn, in px. */
+  maxWidth?: number;
+  type?: string;
+  /** The placeholder's label. */
+  placeholder?: string;
+  class?: string;
+}
+
+const { src, poster, alt, caption, width, height, maxWidth = 1240, type = 'video/mp4', placeholder = 'Clip to add', class: className } = Astro.props;
+
+if (src && !poster) {
+  throw new Error(
+    `Clip "${src}" has no poster. A clip without a still frame is a blank rectangle until it downloads, and stays blank for anyone who blocks video.`,
+  );
+}
+---
+
+<figure class:list={['clip', className]}>
+  <div class="plate">
+    {
+      src ? (
+        <div class="frame" style={`max-width: ${maxWidth}px; aspect-ratio: ${width} / ${height}`}>
+          <video data-clip muted loop playsinline preload="metadata" poster={poster} aria-label={alt}>
+            <source src={src} type={type} />
+          </video>
+          <button type="button" class="toggle" data-clip-toggle aria-pressed="false">
+            <span data-label>Play</span>
+          </button>
+        </div>
+      ) : (
+        <div class="placeholder" role="img" aria-label={`Placeholder. ${alt}`} style={`max-width: ${maxWidth}px; aspect-ratio: ${width} / ${height}`}>
+          <span class="pl-label">{placeholder}</span>
+          <span class="spec">
+            {width} × {height}
+          </span>
+          <span class="brief">{alt}</span>
+        </div>
+      )
+    }
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  document.querySelectorAll<HTMLVideoElement>('video[data-clip]').forEach((video) => {
+    const frame = video.closest('.frame');
+    const button = frame?.querySelector<HTMLButtonElement>('[data-clip-toggle]');
+    const label = button?.querySelector('[data-label]');
+    const sync = () => {
+      const playing = !video.paused && !video.ended;
+      button?.setAttribute('aria-pressed', String(playing));
+      if (label) label.textContent = playing ? 'Pause' : 'Play';
+    };
+    button?.addEventListener('click', () => (video.paused ? video.play() : video.pause()));
+    video.addEventListener('play', sync);
+    video.addEventListener('pause', sync);
+    // Starts on its own only when motion is welcome, and only once it is on screen: a clip already
+    // scrolled past shouldn't spend bandwidth.
+    if (!reduce.matches) {
+      new IntersectionObserver(
+        (entries, obs) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          video.play().catch(() => {});
+          obs.disconnect();
+        },
+        { rootMargin: '100px' },
+      ).observe(video);
+    }
+    sync();
+  });
+</script>
+
+<style>
+  .clip {
+    margin-block: var(--sp-6) var(--sp-7);
+  }
+
+  .plate {
+    display: flex;
+    justify-content: center;
+    padding: var(--sp-6);
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .frame {
+    position: relative;
+    width: 100%;
+  }
+
+  video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+  }
+
+  .toggle {
+    position: absolute;
+    right: var(--sp-3);
+    bottom: var(--sp-3);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 5px var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-family: var(--font-body);
+    font-size: var(--text-body-sm);
+    line-height: 1.4;
+    cursor: pointer;
+    transition: border-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .toggle:hover {
+    border-color: var(--c-border-strong);
+  }
+
+  .toggle:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .placeholder {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--sp-2);
+    width: 100%;
+    padding: var(--sp-6);
+    text-align: center;
+    background: var(--c-surface);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--radius-sm);
+  }
+
+  .pl-label {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-body-sm);
+    color: var(--c-text);
+  }
+
+  .spec {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  .brief {
+    max-width: 46ch;
+    margin-top: var(--sp-2);
+    font-size: var(--text-caption);
+    line-height: 1.5;
+    color: var(--c-text-muted);
+  }
+
+  figcaption {
+    max-width: var(--layout-measure);
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+  }
+</style>

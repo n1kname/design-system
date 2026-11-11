@@ -1,0 +1,74 @@
+---
+title: "Steps"
+description: "A sequence of stages, each with its number, name, a line on what it was and a picture of it, reflowing from four across to one."
+---
+
+import Steps from '@n1kname/components/Steps.astro';
+
+<div class="not-content">
+  <Steps
+    steps={[
+      { label: 'Sketches', body: 'Drawn with the team in the first week.' },
+      { label: 'Prototype', body: 'Tested with six people over two days.' },
+      { label: 'Beta', body: 'Opened to the first customers.' },
+      { label: 'Shipped', body: 'Live for everyone.' },
+    ]}
+    caption="Made-up stages. Without pictures, placeholders hold the slots."
+  />
+</div>
+
+## What it's for
+
+How something got made, stage by stage: each with its number, its name, a line on what it was for, and a picture of it. The words are text and only the screens are pictures, so it reads at any size and reflows on a phone.
+
+## When not to use it
+
+- **A process with phases and steps inside them.** That's [Phases](/components/phases/).
+- **What happened when.** Use a [Timeline](/components/timeline/).
+- **One picture with a caption.** That's a [Figure](/components/figure/).
+
+## Anatomy
+
+- **Number:** two digits in the mono face, in the accent text colour. The numbers carry the order, so there are no arrows to break when it reflows.
+- **Name:** the stage, and a line on what it was for under it.
+- **Picture:** on a small sunken plate, at its own height. An imported image goes through `astro:assets` (sized and converted to webp); an address is used as it is.
+- **Placeholder:** without a picture, a dashed slot with the stage's name.
+- **Caption:** optional.
+
+## Variants
+
+None.
+
+## States
+
+- **Width:** four across, two across below 860px of its own width, one below 480px. It follows the space it has, not the window.
+
+## Tokens
+
+`--c-surface-sunken`, `--c-surface`, `--c-border`, `--c-border-strong`, `--c-text`, `--c-text-muted`, `--c-text-accent`, `--font-body`, `--font-mono`, `--text-sub`, `--text-body-sm`, `--text-caption`, `--radius-sm`, `--layout-measure`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate.**
+- **It is an ordered list,** so the order is read out as well as numbered.
+- **Each picture has its `alt`;** a placeholder is named as one.
+
+## Content
+
+- **Names:** short, a noun: "Wireframes", "Shipped product".
+- **Body:** who it was for, or what it settled, in one sentence.
+
+## Status
+
+New. Taken from a portfolio's case studies, where it replaced a picture with the headings baked in.
+
+## Code
+
+```astro wrap
+---
+import Steps from '@n1kname/components/Steps.astro';
+import wireframes from '../assets/wireframes.png';
+---
+
+<Steps steps={[{ label: 'Wireframes', body: 'Tested with stakeholders.', image: wireframes, alt: 'Greyscale wireframes of the dashboard.' }]} />
+```

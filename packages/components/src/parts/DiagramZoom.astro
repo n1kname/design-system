@@ -1,0 +1,190 @@
+---
+/**
+ * The Enlarge button and dialog a drawn diagram (Flow diagram, Tiers) carries. Put it inside the
+ * diagram's plate, after the drawing, and mark the drawing `data-zoom-source`. When the plate is
+ * narrower than `min`, the drawing fits it, smaller, and the button shows; it opens a copy of the
+ * drawing full size in a modal dialog, centred, to pan. Without script the button never shows.
+ */
+interface Props {
+  title: string;
+  /** The width the drawing reads well at, in px. */
+  min: number;
+  id: string;
+}
+
+const { title, min, id } = Astro.props;
+---
+
+<div class="zoom-host" data-diagram-zoom data-min={min}>
+  <button type="button" class="enlarge" data-enlarge hidden>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+    </svg>
+    Enlarge<span class="visually-hidden">: {title}</span>
+  </button>
+  <dialog class="zoom" aria-labelledby={`${id}-zoom`}>
+    <div class="zoom-bar">
+      <p class="zoom-title" id={`${id}-zoom`}>{title}</p>
+      <button type="button" class="close" data-close>Close</button>
+    </div>
+    <div class="zoom-scroll" tabindex="0" role="region" aria-label={`${title}, full size`} data-zoom-body></div>
+  </dialog>
+</div>
+
+<style>
+  .zoom-host {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .enlarge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    margin-top: var(--sp-3);
+    padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--motion-hover) var(--ease-hover);
+  }
+
+  .enlarge[hidden] {
+    display: none;
+  }
+
+  .enlarge svg {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+  }
+
+  .enlarge:hover {
+    border-color: var(--c-border-strong);
+  }
+
+  .enlarge:focus-visible,
+  .close:focus-visible,
+  .zoom-scroll:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .zoom {
+    width: calc(100vw - var(--sp-4));
+    max-width: none;
+    height: calc(100dvh - var(--sp-4));
+    max-height: none;
+    padding: 0;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--c-bg);
+    color: var(--c-text);
+  }
+
+  .zoom[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .zoom::backdrop {
+    background: color-mix(in oklab, var(--c-bg) 70%, transparent);
+  }
+
+  .zoom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .zoom-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--text-body-sm);
+  }
+
+  .close {
+    padding: var(--sp-1) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Full size, so the words read; it pans where the screen is smaller. */
+  .zoom-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: var(--sp-5);
+    background: var(--c-surface-sunken);
+  }
+
+  .zoom-scroll > :global(svg) {
+    display: block;
+    width: var(--full);
+    min-width: var(--full);
+    max-width: none;
+    height: auto;
+    overflow: visible;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-diagram-zoom]').forEach((host) => {
+    const min = Number(host.dataset.min) || 0;
+    const plate = host.parentElement!;
+    const fig = host.closest('figure');
+    const source = plate.querySelector<SVGSVGElement>('[data-zoom-source]');
+    const button = host.querySelector<HTMLButtonElement>('[data-enlarge]')!;
+    const dialog = host.querySelector<HTMLDialogElement>('dialog')!;
+    const body = host.querySelector<HTMLElement>('[data-zoom-body]')!;
+    if (!source) return;
+    const fit = () => {
+      const small = plate.offsetParent !== null && plate.clientWidth < min;
+      button.hidden = !small;
+      fig?.classList.toggle('is-small', small);
+    };
+    new ResizeObserver(fit).observe(plate);
+    fit();
+    button.addEventListener('click', () => {
+      const copy = source.cloneNode(true) as SVGSVGElement;
+      copy.removeAttribute('aria-labelledby');
+      copy.removeAttribute('data-zoom-source');
+      copy.setAttribute('aria-hidden', 'true');
+      copy.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+      copy.style.setProperty('--full', `${Math.max(min, 640)}px`);
+      body.replaceChildren(copy);
+      dialog.showModal();
+      // Open on the middle of the drawing, where its point usually is.
+      body.scrollLeft = (body.scrollWidth - body.clientWidth) / 2;
+    });
+    dialog.querySelector('[data-close]')?.addEventListener('click', () => dialog.close());
+    // Back to Enlarge on close, however it closed: Safari doesn't focus a button that's clicked,
+    // so it has nothing to go back to on its own.
+    dialog.addEventListener('close', () => button.focus());
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+  });
+</script>
