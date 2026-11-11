@@ -9,15 +9,15 @@ import AtAGlance from '@n1kname/components/AtAGlance.astro';
   <AtAGlance
     level={3}
     parts={[
-      { label: 'My role', text: 'Led the design from the first sketch to the first release, then guided the designer who took it on.' },
-      { label: 'The problem', text: 'Most customers were companies, on a product built for one person with one device.' },
-      { label: 'What I did', points: ['Talked to the people who sold and supported it.', 'Designed the structure everything else sits on.', 'Chose one group to serve first, and held to it.'] },
-      { label: 'What changed', points: ['Every company customer moved over.', 'Routine tasks became self-service.'] },
+      { label: 'My role', icon: 'compass', text: 'Led the design from the first sketch to the first release, then guided the designer who took it on.' },
+      { label: 'The problem', icon: 'search', text: 'Most customers were companies, on a product built for one person with one device.' },
+      { label: 'What I did', icon: 'workflow', points: ['Talked to the people who sold and supported it.', 'Designed the structure everything else sits on.', 'Chose one group to serve first, and held to it.'] },
+      { label: 'What changed', icon: 'trending-up', points: ['Every company customer moved over.', 'Routine tasks became self-service.'] },
     ]}
     figures={[
-      { value: '120', label: 'customers onboarded' },
-      { value: '3 years', label: 'hands-on' },
-      { value: 'Shipped', label: 'outcome' },
+      { value: '120', label: 'customers onboarded', icon: 'building-2' },
+      { value: '3 years', label: 'hands-on', icon: 'calendar' },
+      { value: 'Shipped', label: 'outcome', icon: 'circle-check' },
     ]}
   />
 </div>
@@ -35,8 +35,8 @@ The top of a case study or any long read: the whole story in a few labelled part
 ## Anatomy
 
 - **Heading:** "At a glance" by default, small capitals in the accent text colour, as a real heading at `level` 2 or 3.
-- **Parts:** each a label in the display face and a sentence (`text`), a short list (`points`) or both. Two across where there's room, stacked where there isn't.
-- **Figures:** optional, under a rule: a value in the display face and what it counts.
+- **Parts:** each a label in the display face, led by an optional icon in a soft disc, and a sentence (`text`), a short list (`points`) or both. Two across where there's room, stacked where there isn't. The points keep small dots: an icon on every point gets noisy.
+- **Figures:** optional, under a rule, as [Facts](/components/facts/) tiles: what it counts, an optional icon, and the value.
 
 ## Variants
 
@@ -48,7 +48,7 @@ None. `title` changes the heading.
 
 ## Tokens
 
-`--c-surface`, `--c-border`, `--c-accent`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--c-text-accent`, `--font-body`, `--font-display`, `--text-overline`, `--text-sub`, `--text-body`, `--text-h3`, `--text-caption`, `--radius-lg`.
+`--c-surface`, `--c-surface-tint`, `--c-border`, `--c-accent`, `--c-text`, `--c-text-secondary`, `--c-text-muted`, `--c-text-accent`, `--font-body`, `--font-display`, `--text-overline`, `--text-sub`, `--text-body`, `--text-h3`, `--text-caption`, `--radius-lg`.
 
 ## Keyboard and screen reader
 

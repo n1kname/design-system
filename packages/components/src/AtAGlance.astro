@@ -4,11 +4,18 @@
  * what changed), each a sentence or a short list, and the key figures under them. For a case
  * study, so a reader who stops here still has the story, and one who reads on knows where it goes.
  *
- * The parts sit two across where there's room and stack where there isn't. It is a section with
- * its own heading, so it shows in a page's outline.
+ * The parts sit two across where there's room and stack where there isn't; each can lead with an
+ * icon. The figures are Facts tiles, as everywhere else. It is a section with its own heading, so
+ * it shows in a page's outline.
  */
+import type { IconName } from './icons';
+import Icon from './Icon.astro';
+import Facts from './Facts.astro';
+
 interface Part {
   label: string;
+  /** Leads the label, from the icon set. One per part; the points keep their dots. */
+  icon?: IconName;
   /** One or two sentences. */
   text?: string;
   /** Or a short list: two to four points. */
@@ -17,8 +24,8 @@ interface Part {
 
 interface Props {
   parts: Part[];
-  /** The figures under the parts: a value and what it counts. */
-  figures?: { value: string; label: string }[];
+  /** The figures under the parts, as Facts tiles: a value, what it counts, and an icon. */
+  figures?: { value: string; label: string; icon?: IconName; unit?: string }[];
   title?: string;
   /** The heading's level, 2 by default. */
   level?: 2 | 3;
@@ -36,7 +43,14 @@ const Heading = `h${level}` as 'h2' | 'h3';
     {
       parts.map((p) => (
         <div class="part">
-          <dt>{p.label}</dt>
+          <dt>
+            {p.icon && (
+              <span class="part-icon" aria-hidden="true">
+                <Icon name={p.icon} size={16} />
+              </span>
+            )}
+            {p.label}
+          </dt>
           <dd>
             {p.text && <span class="text">{p.text}</span>}
             {p.points && p.points.length > 0 && (
@@ -53,14 +67,9 @@ const Heading = `h${level}` as 'h2' | 'h3';
   </dl>
   {
     figures.length > 0 && (
-      <dl class="figures">
-        {figures.map((f) => (
-          <div>
-            <dt>{f.value}</dt>
-            <dd>{f.label}</dd>
-          </div>
-        ))}
-      </dl>
+      <div class="figures">
+        <Facts items={figures.map((f) => ({ label: f.label, value: f.value, unit: f.unit, icon: f.icon }))} />
+      </div>
     )
   }
 </section>
@@ -98,12 +107,26 @@ const Heading = `h${level}` as 'h2' | 'h3';
   }
 
   .part dt {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
     margin-bottom: var(--sp-1);
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-sub);
     line-height: var(--leading-sub);
     color: var(--c-text);
+  }
+
+  .part-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--c-surface-tint);
+    color: var(--c-text-accent);
   }
 
   .part dd {
@@ -148,26 +171,9 @@ const Heading = `h${level}` as 'h2' | 'h3';
   }
 
   .figures {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9rem, max-content));
-    gap: var(--sp-4) var(--sp-8);
-    margin: var(--sp-6) 0 0;
+    margin-top: var(--sp-6);
     padding-top: var(--sp-5);
     border-top: 1px solid var(--c-border);
-  }
-
-  .figures dt {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: var(--text-h3);
-    line-height: var(--leading-h3);
-    color: var(--c-text);
-  }
-
-  .figures dd {
-    margin: 0;
-    font-size: var(--text-caption);
-    color: var(--c-text-muted);
   }
 
   @media (forced-colors: active) {
