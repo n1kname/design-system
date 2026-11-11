@@ -24,8 +24,9 @@ interface Part {
 
 interface Props {
   parts: Part[];
-  /** The figures under the parts, as Facts tiles: a value, what it counts, and an icon. */
-  figures?: { value: string; label: string; icon?: IconName; unit?: string }[];
+  /** The figures under the parts, as Facts tiles: a value, what it counts, and an icon, in the
+   * accent by default, so they read as this block's. */
+  figures?: { value: string; label: string; icon?: IconName; unit?: string; accent?: string }[];
   title?: string;
   /** The heading's level, 2 by default. */
   level?: 2 | 3;
@@ -68,7 +69,7 @@ const Heading = `h${level}` as 'h2' | 'h3';
   {
     figures.length > 0 && (
       <div class="figures">
-        <Facts items={figures.map((f) => ({ label: f.label, value: f.value, unit: f.unit, icon: f.icon }))} />
+        <Facts items={figures.map((f) => ({ label: f.label, value: f.value, unit: f.unit, icon: f.icon, accent: f.accent ?? 'var(--c-text-accent)' }))} />
       </div>
     )
   }
