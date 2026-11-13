@@ -1,0 +1,65 @@
+---
+title: "Notice"
+description: "A one-line caveat above the content it's about."
+---
+
+import Notice from '@n1kname/components/Notice.astro';
+import Stack from '@n1kname/components/Stack.astro';
+
+<div class="not-content">
+  <Stack gap={3}>
+    <Notice><strong>Figures are a day old.</strong> The sensor was offline overnight; the next reading arrives at 08:00.</Notice>
+    <Notice tone="info">Averages leave out nights nobody was home.</Notice>
+  </Stack>
+</div>
+
+## What it's for
+
+Saying something about the content below it that a reader should know before trusting it, while the content still shows.
+
+## When not to use it
+
+- **Nothing to show.** That's an [empty state](/components/empty-state/).
+- **It failed to load.** That's [Load failed](/components/load-failed/).
+- **Notes on a chart's data.** Those are [Caveats](/components/caveats/), under the chart.
+
+## Anatomy
+
+- **Text:** one line, an optional bold lead.
+- **Edge:** a coloured rule on the left for the tone.
+
+## Variants
+
+| Tone | For |
+|---|---|
+| `warning` (default) | Something is off: data is late, a source is down. |
+| `info` | Something to know that isn't a problem. |
+
+## States
+
+It has no states of its own.
+
+## Tokens
+
+`--c-accent`, `--c-status-warning`, `--c-surface`, `--c-text`, `--c-text-secondary`, `--leading-body-sm`, `--radius-sm`, `--sp-3`, `--sp-4`, `--text-body-sm`.
+
+## Keyboard and screen reader
+
+- **Read in place,** with no role: it's there when the page loads. For news that arrives later, use a [toast](/components/toast/).
+
+## Content
+
+- **Lead with what's true now, then why:** "Figures are a day old. The sensor was offline overnight."
+- **One line.** Two is a paragraph, and belongs on the page.
+
+## Status
+
+New in 0.30.0.
+
+## Code
+
+```astro wrap
+import Notice from '@n1kname/components/Notice.astro';
+
+<Notice><strong>Figures are a day old.</strong> The sensor was offline overnight.</Notice>
+```

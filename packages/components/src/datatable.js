@@ -17,6 +17,9 @@ export const setRows = (table, rows, rowClass = () => '') => {
       return `<tr class="${rowClass(rows[r], r)}">${tds.join('')}</tr>`;
     })
     .join('');
+  body.removeAttribute('aria-busy');
+  const wrap = table.closest('.data-table-wrap');
+  if (wrap) wrap.dataset.state = rows.length === 0 && wrap.querySelector('[data-state-for="empty"]') ? 'empty' : 'ready';
 };
 
 // Sorting: each header button cycles descending, then ascending. Rows without a value stay last.
@@ -57,4 +60,25 @@ export const setColumns = (table, columns) => {
     })
     .join('');
   makeSortable(table);
+};
+
+// The table's state, for data that arrives at runtime: 'loading' writes placeholder rows in the
+// table's shape (shown after 300ms, so a fast load shows nothing), 'empty' and 'failed' show the
+// DataTable's `empty` or `failed` slot instead of the body, 'ready' shows the rows. setRows()
+// moves to 'ready', or to 'empty' when there are no rows and the table has an empty slot.
+export const setState = (table, state, { rows = 6 } = {}) => {
+  const wrap = table.closest('.data-table-wrap');
+  const body = table.tBodies[0];
+  if (state === 'loading') {
+    const head = [...table.tHead.rows[0].cells];
+    const scope = [...table.attributes].find((a) => a.name.startsWith('data-astro-cid'))?.name;
+    const s = scope ? ` ${scope}` : '';
+    const cell = (th) => `<td class="${['left', 'wrap'].filter((c) => th.classList.contains(c)).join(' ')}"${s}><span class="bar"${s}></span></td>`;
+    body.innerHTML = Array.from({ length: rows }, () => `<tr class="placeholder" aria-hidden="true"${s}>${head.map(cell).join('')}</tr>`).join('');
+    body.setAttribute('aria-busy', 'true');
+  } else {
+    body.removeAttribute('aria-busy');
+    body.querySelectorAll('tr.placeholder').forEach((tr) => tr.remove());
+  }
+  if (wrap) wrap.dataset.state = state;
 };

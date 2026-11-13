@@ -1,0 +1,233 @@
+/*
+ * Controls for pages that change things: Field, IconButton, Toast and Notice. Plain classes, not
+ * scoped, so rows a page writes at runtime (setRows, iconButtonHTML) get them too. The components
+ * import this file; a page that only writes the markup imports it itself:
+ *
+ *     import '@n1kname/components/controls.css';
+ *
+ * New in 0.30.0.
+ */
+
+/* ---- Field ---- */
+.field-label {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--c-text-secondary);
+}
+
+.field {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  /* 16px stops iOS zooming into the field. */
+  font-size: max(16px, var(--text-body-sm));
+  transition: border-color var(--motion-hover) var(--ease-hover);
+}
+
+textarea.field {
+  padding-block: var(--sp-2);
+  line-height: var(--leading-body-sm, 1.5);
+  resize: vertical;
+}
+
+select.field {
+  appearance: none;
+  padding-right: var(--sp-7);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--sp-3) center;
+}
+
+.field::placeholder {
+  color: var(--c-text-muted);
+}
+
+.field:hover {
+  border-color: var(--c-text-muted);
+}
+
+.field:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.field[aria-invalid='true'] {
+  border-color: var(--c-status-critical);
+}
+
+.field-error {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--c-status-critical);
+}
+
+.field-hint {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--c-text-muted);
+}
+
+/* ---- IconButton ---- */
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-hover) var(--ease-hover),
+    border-color var(--motion-hover) var(--ease-hover),
+    color var(--motion-hover) var(--ease-hover),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+@media (pointer: coarse) {
+  .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.icon-button:hover {
+  background: var(--c-surface-hover);
+  color: var(--c-text);
+}
+
+.icon-button[aria-pressed='true'] {
+  background: var(--c-surface-tint);
+  border-color: var(--c-accent-edge);
+  color: var(--c-text-accent);
+}
+
+.icon-button[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.icon-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.icon-button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-button:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ---- Toast ---- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(var(--sp-5), env(safe-area-inset-bottom));
+  z-index: var(--z-panel);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  max-width: calc(100vw - 2 * var(--sp-4));
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--c-text);
+  color: var(--c-bg);
+  font-size: var(--text-body-sm);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  translate: -50% 0;
+  transition:
+    opacity var(--motion-base) var(--ease-out),
+    translate var(--motion-spring) var(--ease-spring);
+}
+
+.toast[hidden] {
+  display: flex !important;
+  opacity: 0;
+  translate: -50% 12px;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity var(--motion-base) var(--ease-standard),
+    translate var(--motion-base) var(--ease-standard),
+    visibility 0s var(--motion-base);
+}
+
+.toast-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toast button {
+  flex: none;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.toast button:hover {
+  background: color-mix(in oklab, var(--c-bg) 14%, transparent);
+}
+
+.toast button:focus-visible {
+  outline: 2px solid var(--c-bg);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toast[hidden] {
+    translate: -50% 0;
+  }
+}
+
+/* ---- Notice ---- */
+.notice {
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 3px solid var(--c-status-warning);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm, 1.5);
+  color: var(--c-text-secondary);
+}
+
+.notice.info {
+  border-left-color: var(--c-accent);
+}
+
+.notice strong {
+  color: var(--c-text);
+}

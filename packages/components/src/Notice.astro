@@ -1,0 +1,15 @@
+---
+/**
+ * A one-line caveat above the content it's about: the figures are a day old, a sensor is down.
+ * Quieter than EmptyState kind="error": the content still shows. Warning by default; info for
+ * something to know that isn't a problem.
+ */
+import './controls.css';
+
+interface Props {
+  tone?: 'warning' | 'info';
+}
+const { tone = 'warning' } = Astro.props;
+---
+
+<p class:list={['notice', { info: tone === 'info' }]}><slot /></p>

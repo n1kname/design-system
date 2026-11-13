@@ -1,0 +1,46 @@
+---
+/**
+ * A labelled input, select or textarea. The label sits above, a hint or an error under it, tied to
+ * the field for a screen reader. 44px tall, and 16px text so iOS doesn't zoom in. For a search box
+ * with a clear button, use SearchField.
+ */
+import './controls.css';
+
+interface Props {
+  label: string;
+  name?: string;
+  id?: string;
+  as?: 'input' | 'select' | 'textarea';
+  /** For an input: text, email, url, number, date… */
+  type?: string;
+  value?: string;
+  placeholder?: string;
+  /** For a select. */
+  options?: { value: string; label: string }[];
+  /** A line under the field: what to put in it. */
+  hint?: string;
+  /** What's wrong with what's in it. Marks the field invalid. */
+  error?: string;
+  required?: boolean;
+  /** For a textarea. */
+  rows?: number;
+  autocomplete?: string;
+}
+const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const { label, name, id = `field-${slug(name ?? Astro.props.label)}`, as = 'input', type = 'text', value, placeholder, options = [], hint, error, required, rows = 4, autocomplete } = Astro.props;
+const described = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(' ') || undefined;
+const common = { id, name, required, 'aria-describedby': described, 'aria-invalid': error ? 'true' : undefined, class: 'field' };
+---
+
+<div class="field-group">
+  <label class="field-label" for={id}>{label}</label>
+  {as === 'select' ? (
+    <select {...common}>{options.map((o) => <option value={o.value} selected={o.value === value}>{o.label}</option>)}</select>
+  ) : as === 'textarea' ? (
+    <textarea {...common} rows={rows} placeholder={placeholder}>{value}</textarea>
+  ) : (
+    <input {...common} type={type} value={value} placeholder={placeholder} autocomplete={autocomplete} />
+  )}
+  {hint && <p class="field-hint" id={`${id}-hint`}>{hint}</p>}
+  {error && <p class="field-error" id={`${id}-error`}>{error}</p>}
+</div>

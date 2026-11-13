@@ -1,0 +1,68 @@
+---
+title: "Toast"
+description: "A short message after an action, with an optional Undo, that goes by itself."
+---
+
+import ToastDemo from '../../../components/ToastDemo.astro';
+
+<div class="not-content">
+  <ToastDemo />
+</div>
+
+## What it's for
+
+Confirming an action whose result isn't visible where the person is looking, and offering a way back: a row removed and gone, a status saved.
+
+## When not to use it
+
+- **An error.** Show it where it happened, and keep it until it's fixed.
+- **Anything someone must read.** It goes by itself.
+- **A result that's already visible.** The change itself is the confirmation.
+
+## Anatomy
+
+- **Message:** one short line.
+- **Action:** optional, one word, usually Undo.
+
+## Variants
+
+None.
+
+## States
+
+| State | What shows |
+|---|---|
+| Shown | Rises in at the bottom of the window. |
+| Pointer or focus on it | It stays, so Undo can't vanish under the pointer. |
+| Gone | After five seconds, or after the action. |
+
+## Tokens
+
+`--c-bg`, `--c-text`, `--ease-out`, `--ease-spring`, `--ease-standard`, `--motion-base`, `--motion-spring`, `--radius-md`, `--radius-sm`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--text-body-sm`, `--z-panel`.
+
+## Keyboard and screen reader
+
+- **`role="status"`,** so the message is read politely, without interrupting.
+- **The action is a real button,** reachable with Tab while the toast shows.
+- **Under reduced motion it fades,** without rising.
+
+## Content
+
+- **Past tense, what happened:** "Removed: Alder".
+- **One action at most.**
+
+## Status
+
+New in 0.30.0.
+
+## Code
+
+```astro wrap
+import Toast from '@n1kname/components/Toast.astro';
+
+<Toast />
+<script>
+  import { showToast } from '@n1kname/components/controls.js';
+  showToast('Removed: Alder', { action: 'Undo', onAction: () => restore() });
+</script>
+```

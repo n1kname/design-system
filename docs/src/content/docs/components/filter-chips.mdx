@@ -56,6 +56,8 @@ To filter what a page shows to one value of a few to a dozen: an activity, a cat
 
 ## Status
 
+0.30.0 added icons, the count's contrast on a chosen chip, and counts that arrive after a load landing without a fade.
+
 New. Taken from a dashboard's Places and Workouts pages.
 
 ## Code
@@ -74,6 +76,10 @@ import FilterChips from '@n1kname/components/FilterChips.astro';
   chips.addEventListener('chips-change', (e) => show(e.detail.value));
 </script>
 ```
+
+## Icons
+
+An option can carry `icon`, from the [icon set](/components/icons/), in place of the swatch, drawn in the chip's colour, for a taxonomy people recognise by its mark: a kind of activity, a status. `setChips()` takes it too. On a chosen chip the count turns to the secondary text colour, since muted falls under 4.5:1 on a coloured tint.
 
 ## Keep in mind
 

@@ -1,0 +1,29 @@
+---
+/**
+ * A square button with only an icon, named for a screen reader by `label`. With `pressed` it's a
+ * toggle (a favourite or not): aria-pressed, a tint and a filled icon when on. With
+ * `href` it's a link. 36px, 44px on a touch screen. For rows written at runtime, iconButtonHTML()
+ * from controls.js writes the same markup.
+ */
+import './controls.css';
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Props {
+  icon: IconName;
+  label: string;
+  /** Leave out for a plain button; true or false makes it a toggle. */
+  pressed?: boolean;
+  href?: string;
+  disabled?: boolean;
+  id?: string;
+  class?: string;
+}
+const { icon, label, pressed, href, disabled, id, class: className } = Astro.props;
+---
+
+{href ? (
+  <a class:list={['icon-button', className]} href={href} aria-label={label} title={label} id={id}><Icon name={icon} /></a>
+) : (
+  <button type="button" class:list={['icon-button', className]} aria-label={label} title={label} aria-pressed={pressed === undefined ? undefined : String(pressed)} disabled={disabled} id={id}><Icon name={icon} /></button>
+)}

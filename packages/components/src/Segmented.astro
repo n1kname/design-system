@@ -1,17 +1,19 @@
 ---
 /**
  * One of a few fixed options side by side, such as Top 20 / 50 / 100 / 200. The marker slides to
- * the chosen one on the spring. Fires `segment-change` with its value. For a value with many
- * options, or with counts, use FilterChips.
+ * the chosen one on the spring. Fires `segment-change` with its value; setSegmented() from
+ * segmented.js sets it from code, or chooses none. For a value with many options, or with
+ * counts, use FilterChips.
  */
 interface Props {
   /** What is chosen, for a screen reader: "How many". */
   label: string;
   options: { value: string; label: string }[];
-  value?: string;
+  /** null for none chosen yet: no marker until one is. */
+  value?: string | null;
   id?: string;
 }
-const { label, options, value = options[0]?.value, id } = Astro.props;
+const { label, options, value = options[0]?.value ?? null, id } = Astro.props;
 ---
 
 <div class="segmented" role="group" aria-label={label} id={id} data-segmented>
@@ -41,6 +43,7 @@ const { label, options, value = options[0]?.value, id } = Astro.props;
     left: 3px;
     border-radius: calc(var(--radius-md) - 3px);
     background: var(--c-surface);
+    transition: opacity var(--motion-base) var(--ease-out);
     box-shadow:
       0 0 0 1px var(--c-border-strong),
       0 1px 2px rgb(0 0 0 / 0.08);

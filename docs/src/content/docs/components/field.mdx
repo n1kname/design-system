@@ -1,0 +1,81 @@
+---
+title: "Field"
+description: "A labelled input, select or textarea, with a hint or an error under it."
+---
+
+import Field from '@n1kname/components/Field.astro';
+import Stack from '@n1kname/components/Stack.astro';
+
+<div class="not-content" style="max-width: 420px">
+  <Stack gap={4}>
+    <Field label="Room" name="room" placeholder="Alder" />
+    <Field label="Ventilation" name="ventilation" as="select" value="low" options={[{ value: 'off', label: 'Off' }, { value: 'low', label: 'Low' }, { value: 'high', label: 'High' }]} />
+    <Field label="Alert threshold" name="threshold" type="number" hint="In parts per million." value="1000" />
+    <Field label="Report link" name="url" type="url" value="alder-report" error="That isn't a web address. Start with https://" />
+    <Field label="Note" name="note" as="textarea" rows={3} placeholder="What stood out" />
+  </Stack>
+</div>
+
+## What it's for
+
+Anything a person types or picks in a form: a filter, a note, a setting. The label is always visible above the field, so it doesn't vanish once someone starts typing.
+
+## When not to use it
+
+- **A search box.** That's [Search field](/components/search-field/), with its clear button.
+- **Two to five fixed options.** Show them all with [Segmented](/components/segmented/) or [Filter chips](/components/filter-chips/).
+- **Signing in.** [Sign in](/components/sign-in/) has its own fields.
+
+## Anatomy
+
+- **Label:** above, always shown.
+- **Field:** an input, a select or a textarea, 44px tall.
+- **Hint:** optional, under it: what to put in.
+- **Error:** optional, under it in the critical colour: what's wrong and how to fix it.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `as` | `input` (default), `select` or `textarea`. |
+| `type` | For an input: `text`, `email`, `url`, `number`, `date`… |
+| `options` | For a select. |
+| `hint`, `error` | The lines under it. An error marks the field invalid. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Hover | A stronger border. |
+| Focus | The focus ring. |
+| Invalid | A critical border and the error line. |
+
+## Tokens
+
+`--c-border-strong`, `--c-focus`, `--c-status-critical`, `--c-surface`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--leading-caption`, `--radius-md`, `--sp-1`, `--sp-3`, `--text-body-sm`, `--text-caption`, `--text-label`.
+
+## Keyboard and screen reader
+
+- **The label is a real `<label>`,** so clicking it focuses the field.
+- **The hint and the error are tied to the field** with `aria-describedby`, and an error sets `aria-invalid`.
+- **16px text at least,** so iOS doesn't zoom in on focus.
+
+## Content
+
+- **Labels are nouns, in sentence case:** "Alert threshold", not "Enter your alert threshold".
+- **An error says how to fix it,** not just that something is wrong.
+
+## Status
+
+New in 0.30.0.
+
+## Code
+
+```astro wrap
+import Field from '@n1kname/components/Field.astro';
+
+<Field label="Alert threshold" name="threshold" type="number" hint="In parts per million." />
+<Field label="Ventilation" name="ventilation" as="select" options={[{ value: 'low', label: 'Low' }]} />
+```
+
+For markup a page writes itself, import `@n1kname/components/controls.css` and use the classes `field-label`, `field`, `field-hint` and `field-error`.

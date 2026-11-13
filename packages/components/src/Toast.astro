@@ -1,0 +1,13 @@
+---
+/**
+ * A short message after an action, at the bottom of the window, with an optional Undo. Put one on
+ * a page and call showToast() from controls.js; it's announced politely and goes after five
+ * seconds, or stays while the pointer or focus is on it.
+ */
+import './controls.css';
+---
+
+<div class="toast" role="status" aria-live="polite" hidden data-toast>
+  <span class="toast-text"></span>
+  <button type="button" hidden></button>
+</div>

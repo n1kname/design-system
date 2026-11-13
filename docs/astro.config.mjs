@@ -60,6 +60,7 @@ export default defineConfig({
             { label: 'Empty state', link: '/components/empty-state/' },
             { label: 'Load failed', link: '/components/load-failed/' },
             { label: 'Caveats', link: '/components/caveats/' },
+            { label: 'Notice', link: '/components/notice/' },
             { label: 'Legend', link: '/components/legend/' },
             { label: 'Ramp legend', link: '/components/ramp-legend/' },
             { label: 'Hex map', link: '/components/hex-map/' },
@@ -81,6 +82,9 @@ export default defineConfig({
           label: 'Components',
           items: [
             { label: 'Buttons', link: '/components/buttons/' },
+            { label: 'Icon button', link: '/components/icon-button/' },
+            { label: 'Field', link: '/components/field/' },
+            { label: 'Toast', link: '/components/toast/' },
             { label: 'Tags and links', link: '/components/tags/' },
             { label: 'Icons', link: '/components/icons/' },
             { label: 'Swatch', link: '/components/swatch/' },

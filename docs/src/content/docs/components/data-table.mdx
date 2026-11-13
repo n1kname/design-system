@@ -44,7 +44,10 @@ For looking up an exact figure, and for reading every value in a chart without a
 
 | Prop | Does |
 |---|---|
-| `density` | `default` or `compact`. |
+| `density` | `default`, `compact` (32px), or `comfortable` (56px with more air, for a list read row by row). |
+| `stack` | Below 640px each row becomes a card instead of scrolling sideways. A cell's `.stack-label` shows only then; class `stack-hide` hides a cell then. |
+| `loading` | Starts with placeholder rows in the table's shape. |
+| `empty`, `failed` slots | Shown instead of the body when there's nothing, or it failed: an [empty state](/components/empty-state/) or [Load failed](/components/load-failed/). |
 | `align`, per column | `right` by default, for numbers. `left` for words. |
 | `wrap`, per column | Off by default. On for words that can run long, such as a name or a description, so the figures stay in view on a phone. |
 | `sortable`, per column | On by default. `false` for a column with nothing to compare. |
@@ -56,7 +59,9 @@ For looking up an exact figure, and for reading every value in a chart without a
 | Hover | A tint on the row. Off the path if you never hover. |
 | Sorted | An arrow on that column only, and `aria-sort`. |
 | Empty cell | A dash. Empty rows sort last either way. |
-| Whole table empty | An [empty state](/components/empty-state/) instead of a table. |
+| Loading | Placeholder rows in the table's shape, after 300ms so a fast load shows nothing. A soft sweep, still under reduced motion. `aria-busy` on the body. |
+| Whole table empty | The `empty` slot instead of the body, or an [empty state](/components/empty-state/) instead of the table. |
+| Failed | The `failed` slot instead of the body. |
 
 ## Tokens
 
@@ -78,6 +83,8 @@ For looking up an exact figure, and for reading every value in a chart without a
 
 ## Status
 
+0.30.0 added `comfortable`, `stack`, `loading` and the `empty` and `failed` slots.
+
 New. Used by a dashboard.
 
 ## Code
@@ -97,6 +104,37 @@ import DataTable from '@n1kname/components/DataTable.astro';
 <script>
   import { setRows } from '@n1kname/components/datatable.js';
   setRows(document.getElementById('weeks'), rows);
+</script>
+```
+
+## Loading, empty and failed
+
+<div class="not-content">
+  <DataTable
+    density="comfortable"
+    stack
+    loading
+    loadingRows={3}
+    caption="Fictional rooms, still loading"
+    columns={[
+      { label: 'Room', align: 'left', wrap: true },
+      { label: 'Floor', align: 'left' },
+      { label: 'Average', unit: 'ppm' },
+    ]}
+  />
+</div>
+
+A table filled at runtime starts with `loading`, then `setRows()` ends it: with rows it's ready, with none it shows the `empty` slot. `setState(table, 'failed')` shows the `failed` slot, and `setState(table, 'loading')` brings the placeholders back for a reload.
+
+```astro wrap
+<DataTable id="rooms" density="comfortable" stack loading columns={columns}>
+  <EmptyState slot="empty" kind="filtered" title="No rooms match these filters"><Button variant="quiet">Clear filters</Button></EmptyState>
+  <LoadFailed slot="failed" title="Couldn't load the rooms" />
+</DataTable>
+<script>
+  import { setRows, setState } from '@n1kname/components/datatable.js';
+  const table = document.getElementById('rooms');
+  fetch('/api/rooms').then((r) => r.json()).then((rooms) => setRows(table, rooms.map(toRow))).catch(() => setState(table, 'failed'));
 </script>
 ```
 

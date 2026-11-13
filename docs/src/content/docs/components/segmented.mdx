@@ -47,7 +47,13 @@ None. Keep the labels short.
 
 - **One or two words per option,** in the same form: "Top 20", "Top 50".
 
+## Setting it from code
+
+`setSegmented(root, value)` from `segmented.js` chooses an option without firing `segment-change`, for a page restoring a filter from the address. `null` chooses none, and the marker fades out; `value={null}` starts that way.
+
 ## Status
+
+0.30.0 added `setSegmented()` and the none-chosen state.
 
 New. Taken from a dashboard's Places page and its labs.
 

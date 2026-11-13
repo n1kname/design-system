@@ -1,0 +1,14 @@
+---
+import Toast from '@n1kname/components/Toast.astro';
+import Button from '@n1kname/components/Button.astro';
+---
+
+<Button id="toast-demo">Remove a room</Button>
+<Toast />
+
+<script>
+  import { showToast } from '@n1kname/components/controls.js';
+  document.getElementById('toast-demo')?.addEventListener('click', () =>
+    showToast('Removed: Alder', { action: 'Undo', onAction: () => showToast('Back in the list') }),
+  );
+</script>

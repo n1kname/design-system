@@ -21,18 +21,31 @@ interface Props {
   caption?: string;
   /** Names the table for a screen reader without a visible caption, such as the title of the figure around it. */
   label?: string;
-  /** 40px rows by default; compact is 32px, for dense tables. */
-  density?: 'default' | 'compact';
+  /** 40px rows by default; compact is 32px, for dense tables; comfortable is 56px with more air,
+   *  for a list someone reads row by row (a name and its details, a place, a date). */
+  density?: 'default' | 'compact' | 'comfortable';
+  /** Below 640px each row becomes a card instead of scrolling sideways: the first cell across the
+   *  top beside the last (the row's actions), the cells between on a line under them. A cell's
+   *  `.stack-label` shows only then; a cell with class `stack-hide` hides then. */
+  stack?: boolean;
+  /** Starts in the loading state: placeholder rows in the table's shape, shown after 300ms so a
+   *  fast load doesn't flash. setRows() or setState() from datatable.js ends it. */
+  loading?: boolean;
+  /** How many placeholder rows while loading. */
+  loadingRows?: number;
   /** A long table scrolls in a region of its own this tall (such as "min(70vh, 640px)"), with its
    *  header staying in view, so what follows the table stays in place. Leave out to show every row. */
   height?: string;
   id?: string;
 }
-const { columns, rows = [], caption, label, density = 'default', height, id } = Astro.props;
+const { columns, rows = [], caption, label, density = 'default', stack = false, loading = false, loadingRows = 6, height, id } = Astro.props;
+const hasEmpty = Astro.slots.has('empty');
+const hasFailed = Astro.slots.has('failed');
 const num = (v: number) => new Intl.NumberFormat('nl-NL').format(v);
 const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) : typeof c === 'string' ? c : '');
 ---
 
+<div class:list={['data-table-wrap', { stacked: stack }]} data-state={loading ? 'loading' : rows.length === 0 && hasEmpty ? 'empty' : 'ready'}>
 <div class:list={['scroll', { tall: height }]} tabindex="0" role="region" aria-label={caption ?? label ?? 'Table'} style={height ? `--height:${height}` : undefined}>
   <table class:list={['data-table', density]} id={id} data-data-table>
     {caption && <caption>{caption}</caption>}
@@ -51,7 +64,15 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
         }
       </tr>
     </thead>
-    <tbody>
+    <tbody aria-busy={loading ? 'true' : undefined}>
+      {loading &&
+        Array.from({ length: loadingRows }, () => (
+          <tr class="placeholder" aria-hidden="true">
+            {columns.map((c) => (
+              <td class:list={{ left: c.align === 'left', wrap: c.wrap }}><span class="bar" /></td>
+            ))}
+          </tr>
+        ))}
       {
         rows.map((row) => (
           <tr>
@@ -69,6 +90,9 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
       }
     </tbody>
   </table>
+</div>
+{hasEmpty && <div class="state empty" data-state-for="empty"><slot name="empty" /></div>}
+{hasFailed && <div class="state failed" data-state-for="failed"><slot name="failed" /></div>}
 </div>
 
 <script>
@@ -187,6 +211,85 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
     height: 32px;
   }
 
+  .comfortable :global(td) {
+    height: 56px;
+    padding-block: var(--sp-3);
+  }
+
+  .comfortable :global(td.wrap) {
+    padding-block: var(--sp-3);
+  }
+
+  /* Loading: placeholder rows in the table's shape, faded in after 300ms so a fast load shows
+   * nothing at all. Empty and failed replace the body with their slot. */
+  .state {
+    display: none;
+    padding-block: var(--sp-4);
+  }
+
+  .data-table-wrap[data-state='empty'] .state.empty,
+  .data-table-wrap[data-state='failed'] .state.failed {
+    display: block;
+  }
+
+  .data-table-wrap[data-state='empty'] tbody,
+  .data-table-wrap[data-state='failed'] tbody {
+    display: none;
+  }
+
+  .data-table :global(tr.placeholder) {
+    opacity: 0;
+    animation: placeholder-in var(--motion-base) var(--ease-out) 300ms forwards;
+  }
+
+  .data-table :global(tr.placeholder:hover) {
+    background: none;
+  }
+
+  .data-table :global(tr.placeholder .bar) {
+    display: inline-block;
+    width: 60%;
+    max-width: 14ch;
+    height: 0.7em;
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--c-text) 9%, transparent);
+    vertical-align: middle;
+  }
+
+  .data-table :global(tr.placeholder td.left .bar) {
+    width: 80%;
+    max-width: 24ch;
+  }
+
+  @keyframes placeholder-in {
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .data-table :global(tr.placeholder .bar) {
+      background: linear-gradient(90deg, color-mix(in oklab, var(--c-text) 9%, transparent) 30%, color-mix(in oklab, var(--c-text) 15%, transparent) 50%, color-mix(in oklab, var(--c-text) 9%, transparent) 70%);
+      background-size: 300% 100%;
+      animation: placeholder-sweep 1.6s linear infinite;
+    }
+  }
+
+  @keyframes placeholder-sweep {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: 0 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .data-table :global(tr.placeholder) {
+      animation-duration: 1ms;
+    }
+  }
+
   .data-table :global(td:last-child) {
     padding-right: 0;
   }
@@ -216,5 +319,108 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
   /* A row that isn't whole yet. */
   .data-table :global(tr.faint) {
     color: var(--c-text-muted);
+  }
+</style>
+
+<style is:global>
+  /* Stacked (the `stack` prop): below 640px each row becomes a card, the first cell across the top
+   * beside the last, the cells between on one line under them, each with its .stack-label. Global,
+   * because rows written by setRows() have no scope; table.data-table outranks the scoped
+   * min-width whichever loads last. New in 0.30.0. */
+  .stack-label {
+    display: none;
+  }
+  
+  @media (max-width: 639px) {
+    /* table.data-table outranks the component's own min-width, whichever loads last. */
+    .data-table-wrap.stacked table.data-table {
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+  
+    .data-table-wrap.stacked .data-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+  
+    .data-table-wrap.stacked .data-table tbody,
+    .data-table-wrap.stacked .data-table tr {
+      display: block;
+    }
+  
+    .data-table-wrap.stacked .data-table tbody tr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--sp-1) var(--sp-3);
+      padding: var(--sp-3) 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+  
+    /* The line break between the top line and the facts under it. */
+    .data-table-wrap.stacked .data-table tbody tr::before {
+      content: '';
+      order: 2;
+      flex-basis: 100%;
+      height: 0;
+    }
+  
+    .data-table-wrap.stacked .data-table tbody td {
+      display: block;
+      height: auto;
+      padding: 0;
+      border: 0;
+      order: 3;
+      text-align: left;
+      white-space: normal;
+    }
+  
+    .data-table-wrap.stacked .data-table tbody td:first-child {
+      order: 0;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  
+    .data-table-wrap.stacked .data-table tbody td:last-child {
+      order: 1;
+    }
+  
+    .data-table-wrap.stacked .data-table tbody td.wrap {
+      min-width: 0;
+    }
+  
+    .data-table-wrap.stacked .data-table tbody td:empty {
+      display: none;
+    }
+  
+    .data-table-wrap.stacked .data-table caption {
+      display: block;
+    }
+
+    /* A placeholder cell in a card has no width of its own to take a share of. */
+    .data-table-wrap.stacked .data-table tr.placeholder td .bar {
+      width: 9ch;
+    }
+
+    .data-table-wrap.stacked .data-table tr.placeholder td:first-child .bar {
+      width: 70%;
+    }
+
+    .stack-label {
+      display: inline;
+      color: var(--c-text-muted);
+      font-family: var(--font-body);
+    }
+  }
+  
+  /* A cell with nothing worth saying in a card (an empty score, "New") hides when stacked. */
+  @media (max-width: 639px) {
+    .data-table-wrap.stacked .data-table tbody td.stack-hide {
+      display: none;
+    }
   }
 </style>

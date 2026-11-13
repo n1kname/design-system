@@ -1,5 +1,6 @@
 // Drives Segmented: the marker slides to the chosen option on the spring, and `segment-change`
-// fires with its value.
+// fires with its value. setSegmented(root, value) chooses one from code, or none with null (the
+// marker fades out), without firing the event.
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const token = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 const ms = (name, fallback) => {
@@ -12,6 +13,7 @@ export const wireSegmented = (root) => {
   const marker = root.querySelector('.marker');
   const place = (animate) => {
     const on = root.querySelector('[aria-pressed="true"]');
+    marker.style.opacity = on ? '1' : '0';
     if (!on) return;
     const r = root.getBoundingClientRect();
     const b = on.getBoundingClientRect();
@@ -27,5 +29,13 @@ export const wireSegmented = (root) => {
     root.dispatchEvent(new CustomEvent('segment-change', { detail: { value: b.dataset.value } }));
   });
   new ResizeObserver(() => place(false)).observe(root);
+  root._place = place;
   place(false);
+};
+
+export const setSegmented = (root, value) => {
+  const was = root.querySelector('[aria-pressed="true"]');
+  root.querySelectorAll('button[data-value]').forEach((x) => x.setAttribute('aria-pressed', String(value !== null && x.dataset.value === value)));
+  // From nothing chosen, the marker appears in place rather than sliding in from the left.
+  root._place?.(Boolean(was));
 };

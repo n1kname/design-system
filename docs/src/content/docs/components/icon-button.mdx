@@ -1,0 +1,76 @@
+---
+title: "Icon button"
+description: "A square button with only an icon, named for a screen reader, that can be a toggle."
+---
+
+import IconButton from '@n1kname/components/IconButton.astro';
+import Cluster from '@n1kname/components/Cluster.astro';
+
+<div class="not-content">
+  <Cluster gap={2}>
+    <IconButton icon="heart" label="Favourite" pressed={false} />
+    <IconButton icon="heart" label="Favourite" pressed={true} />
+    <IconButton icon="x" label="Remove" />
+    <IconButton icon="search" label="Search" disabled />
+  </Cluster>
+</div>
+
+## What it's for
+
+An action repeated on every row, where a word would crowd the row: favourite, remove, open. The icon has to be one people already read without a label.
+
+## When not to use it
+
+- **An action that needs explaining.** Use a [button](/components/buttons/) with words.
+- **The one main action on a page.** Give it words.
+- **An icon nobody would guess.** Words, again.
+
+## Anatomy
+
+- **Icon:** from the [icon set](/components/icons/), 18px.
+- **Name:** `label`, read by a screen reader and shown as a tooltip.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `pressed` | Leave out for a plain button. `true` or `false` makes it a toggle. |
+| `href` | Makes it a link. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Hover | A tint, and the icon at full strength. |
+| Pressed (toggle on) | The accent tint and edge, the icon filled. |
+| Active | A small press, off under reduced motion. |
+| Disabled | Half strength, for while the change is saving. |
+
+## Tokens
+
+`--c-accent-edge`, `--c-focus`, `--c-surface-hover`, `--c-surface-tint`, `--c-text`, `--c-text-accent`, `--c-text-muted`, `--ease-hover`, `--ease-out`, `--motion-fast`, `--motion-hover`, `--radius-sm`.
+
+## Keyboard and screen reader
+
+- **Always a `label`.** An icon on its own is silent.
+- **A toggle uses `aria-pressed`,** so it's read as "Favourite, toggle button, pressed".
+- **36px, 44px on a touch screen.**
+
+## Content
+
+- **Name the action, not the icon:** "Remove", not "Close icon".
+- **A toggle's name stays the same** whichever state it's in; the pressed state says the rest.
+
+## Status
+
+New in 0.30.0.
+
+## Code
+
+```astro wrap
+import IconButton from '@n1kname/components/IconButton.astro';
+
+<IconButton icon="heart" label="Favourite" pressed={false} />
+```
+
+For rows written at runtime, `iconButtonHTML({ icon, label, pressed })` from `@n1kname/components/controls.js` writes the same markup; import `controls.css` once on the page.

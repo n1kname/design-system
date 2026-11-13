@@ -3,13 +3,16 @@
  * One of several values to filter by, each a chip with a swatch and, under a search, how many
  * items it has. The chosen one takes a tint of its own colour, never an inverted fill; states fade
  * into each other. A second press goes back to All. Fires `chips-change`; fill or update it with
- * setChips() from chips.js.
+ * setChips() from chips.js. An option can carry an icon instead of the swatch.
  */
+import { ICONS, type IconName } from './icons';
 interface Option {
   value: string;
   label: string;
   /** A token, such as var(--c-chart-3), for the swatch and the tint. */
   color?: string;
+  /** An icon from the set in place of the swatch, in the chip's colour: what kind of thing it is. */
+  icon?: IconName;
   count?: number;
 }
 interface Props {
@@ -29,7 +32,11 @@ const list = all ? [{ value: 'all', label: all, count: options.every((o) => o.co
   {
     list.map((o) => (
       <button type="button" data-value={o.value} aria-pressed={String(o.value === selected)} disabled={o.count === 0 && o.value !== selected} style={`--chip:${(o as Option).color ?? 'var(--c-accent)'}`}>
-        {(o as Option).color && <i class="chip-swatch" style={`background:${(o as Option).color}`} />}
+        {(o as Option).icon ? (
+          <svg class="chip-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[(o as Option).icon as IconName]} />
+        ) : (
+          (o as Option).color && <i class="chip-swatch" style={`background:${(o as Option).color}`} />
+        )}
         {o.label}
         {o.count !== undefined && <span class="n">{o.count}</span>}
       </button>
@@ -97,6 +104,28 @@ const list = all ? [{ value: 'all', label: all, count: options.every((o) => o.co
     font-variant-numeric: tabular-nums;
   }
 
+  /* On a chosen chip's tint, muted measures 4.2 to 4.4:1 on chart-1 and chart-2 in light mode;
+   * secondary stays quieter than the label and passes. */
+  .filter-chips :global(button[aria-pressed='true'] .n) {
+    color: var(--c-text-secondary);
+  }
+
+  .filter-chips :global(.chip-icon) {
+    flex: none;
+    color: var(--chip);
+    transition: transform var(--motion-spring) var(--ease-spring);
+  }
+
+  .filter-chips :global(button[aria-pressed='true'] .chip-icon) {
+    transform: scale(1.12);
+  }
+
+  /* The first counts to arrive land at once: chips don't fade in from disabled after a load. */
+  .filter-chips:global(.settling) :global(button),
+  .filter-chips:global(.settling) :global(.chip-swatch) {
+    transition: none;
+  }
+
   .filter-chips :global(.chip-swatch) {
     display: inline-block;
     width: 8px;
@@ -111,7 +140,8 @@ const list = all ? [{ value: 'all', label: all, count: options.every((o) => o.co
 
   @media (prefers-reduced-motion: reduce) {
     .filter-chips :global(button),
-    .filter-chips :global(.chip-swatch) {
+    .filter-chips :global(.chip-swatch),
+    .filter-chips :global(.chip-icon) {
       transition: none;
     }
   }
