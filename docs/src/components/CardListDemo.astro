@@ -1,0 +1,30 @@
+---
+import CardList from '@n1kname/components/CardList.astro';
+import EmptyState from '@n1kname/components/EmptyState.astro';
+
+const actions = (pressed = false) => [
+  { action: 'like', icon: 'heart', label: 'Favourite', pressed },
+  { action: 'remove', icon: 'x', label: 'Remove' },
+];
+const items = [
+  { id: 'alder', title: 'Alder', subtitle: 'Ground floor, east', score: 8.4, chips: [{ icon: 'map-pin', label: 'Next to the hall', tone: 'good' as const }, { icon: 'clock', label: 'Measured 08:00' }], actions: actions(true) },
+  { id: 'birch', title: 'Birch', subtitle: 'First floor, south', score: 6.1, chips: [{ icon: 'clock', label: 'Measured 07:40' }, { icon: 'users', label: 'Two sleep here' }], actions: actions() },
+  { id: 'cedar', title: 'Cedar', subtitle: 'First floor, north', score: 3.5, chips: [{ icon: 'clock', label: 'Measured 07:55' }], actions: actions() },
+  { id: 'dogwood', title: 'Dogwood', subtitle: 'Attic', score: null, chips: [{ icon: 'clock', label: 'No reading yet' }], actions: actions() },
+];
+---
+
+<CardList id="rooms-demo" label="Fictional rooms, by air quality" level={2} items={items}>
+  <EmptyState slot="empty" kind="filtered" title="No rooms left" text="Reload the page to bring them back." />
+</CardList>
+
+<script>
+  import { removeCard } from '@n1kname/components/cardlist.js';
+  const list = document.getElementById('rooms-demo');
+  list?.addEventListener('card-action', (e) => {
+    const { id, action, button } = (e as CustomEvent).detail;
+    if (action === 'like') button.setAttribute('aria-pressed', String(button.getAttribute('aria-pressed') !== 'true'));
+    if (action === 'remove') removeCard(list, id).then(() => { if (!list.children.length) list.closest('.card-list-wrap')!.setAttribute('data-state', 'empty'); });
+  });
+  list?.addEventListener('card-open', (e) => { const t = list.querySelector(`[data-key="${(e as CustomEvent).detail.id}"] .card-open`); t?.animate([{ opacity: 1 }, { opacity: 0.5 }, { opacity: 1 }], 300); });
+</script>

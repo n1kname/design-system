@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -28,7 +28,9 @@
     "./loadfailed.js": "./src/loadfailed.js",
     "./hexmap.js": "./src/hexmap.js",
     "./controls.css": "./src/controls.css",
-    "./controls.js": "./src/controls.js"
+    "./controls.js": "./src/controls.js",
+    "./cardlist.css": "./src/cardlist.css",
+    "./cardlist.js": "./src/cardlist.js"
   },
   "scripts": {
     "check": "node src/yearcalendar.test.mjs && node src/facts.test.mjs"

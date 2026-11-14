@@ -1,0 +1,289 @@
+/*
+ * CardList: one long card per item. Plain classes, not scoped, because setCards() writes the cards
+ * at runtime. CardList imports this file with controls.css (the actions are IconButtons).
+ */
+.card-list {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'lead head actions'
+    'lead chips actions';
+  align-items: center;
+  column-gap: var(--sp-4);
+  row-gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  transition:
+    border-color var(--motion-hover) var(--ease-hover),
+    transform var(--motion-hover) var(--ease-hover),
+    box-shadow var(--motion-hover) var(--ease-hover);
+}
+
+.card-item:not(.placeholder) .card:hover {
+  border-color: var(--c-border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
+}
+
+.card:focus-within:has(.card-open:focus-visible) {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.card-lead {
+  grid-area: lead;
+}
+
+.card-head {
+  grid-area: head;
+  min-width: 0;
+}
+
+.card-list .card-title {
+  margin: 0;
+  color: var(--c-text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* The title opens the card, and its ::after covers the whole card, so a click anywhere opens it.
+ * The actions sit above it and stay controls of their own. */
+.card-open {
+  all: unset;
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.card-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.card-open:focus-visible {
+  outline: none;
+}
+
+.card-sub {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--text-body-sm);
+  color: var(--c-text-secondary);
+}
+
+.card-chips {
+  grid-area: chips;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 var(--sp-2);
+  border-radius: 999px;
+  background: var(--c-surface-sunken, var(--c-bg));
+  color: var(--c-text-secondary);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+}
+
+.fact-chip svg {
+  flex: none;
+  color: var(--c-text-muted);
+}
+
+/* Something in the item's favour. The page decides what; the chip only says good. */
+.fact-chip.good {
+  background: color-mix(in oklab, var(--c-status-good) 16%, var(--c-surface));
+  color: var(--c-text);
+}
+
+.fact-chip.good svg {
+  color: var(--c-status-good);
+}
+
+.card-actions {
+  grid-area: actions;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: var(--sp-1);
+}
+
+/* reveal: the actions show on hover or focus, where there's a pointer that hovers. */
+@media (hover: hover) and (pointer: fine) {
+  .card-list.reveal .card-actions {
+    opacity: 0;
+    transition: opacity var(--motion-hover) var(--ease-hover);
+  }
+
+  .card-list.reveal .card:hover .card-actions,
+  .card-list.reveal .card:focus-within .card-actions,
+  .card-list.reveal .card-actions:has([aria-pressed='true']) {
+    opacity: 1;
+  }
+}
+
+/* ---- The score dial: a ring filled to the score, the figure in the middle ---- */
+.score-dial {
+  --dial: var(--c-text-muted);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(var(--dial) calc(var(--p, 0) * 360deg), var(--c-border) 0);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.score-dial::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--c-surface);
+}
+
+.score-dial > span {
+  position: relative;
+}
+
+.score-dial.good {
+  --dial: var(--c-status-good);
+}
+
+.score-dial.warning {
+  --dial: var(--c-status-warning);
+}
+
+.score-dial.none {
+  background: var(--c-border);
+  color: var(--c-text-muted);
+}
+
+/* ---- Below 640px: dial and title on top, chips under them, actions bottom right ---- */
+@media (max-width: 639px) {
+  .card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'lead head head'
+      'chips chips actions';
+    padding: var(--sp-3) var(--sp-4);
+    column-gap: var(--sp-3);
+  }
+
+  .card-actions {
+    align-self: end;
+  }
+
+  .score-dial {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ---- States, as DataTable's ---- */
+.card-list-wrap > .state {
+  display: none;
+}
+
+.card-list-wrap[data-state='empty'] > .state.empty,
+.card-list-wrap[data-state='failed'] > .state.failed {
+  display: block;
+}
+
+.card-list-wrap[data-state='empty'] > .card-list,
+.card-list-wrap[data-state='failed'] > .card-list {
+  display: none;
+}
+
+.card-item.placeholder {
+  opacity: 0;
+  animation: card-in var(--motion-base) var(--ease-out) 300ms forwards;
+}
+
+.card-item.placeholder .card-head {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.card-item.placeholder .bar {
+  display: block;
+  width: 9ch;
+  height: 0.75em;
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--c-text) 9%, transparent);
+}
+
+.card-item.placeholder .bar.wide {
+  width: min(32ch, 80%);
+}
+
+.card-item.placeholder .bar.chip {
+  width: 10ch;
+  height: 26px;
+  border-radius: 999px;
+}
+
+/* ---- Motion: the first cards rise in, staggered ---- */
+.card-item.enter {
+  animation: card-rise var(--motion-base) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes card-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card-list.reveal .card-actions {
+    transition: none;
+  }
+
+  .card-item:not(.placeholder) .card:hover {
+    transform: none;
+  }
+
+  .card-item.enter {
+    animation: none;
+  }
+
+  .card-item.placeholder {
+    animation-duration: 1ms;
+  }
+}

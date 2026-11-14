@@ -1,0 +1,64 @@
+---
+/**
+ * A list of long cards, one per item: a score dial (or any lead), a title and a secondary line,
+ * fact chips with a tone, and actions. The whole card opens the item; the actions stay controls of
+ * their own. For a list someone works through one item at a time, where a table row is too thin.
+ *
+ * Fill it at build time with `items`, or at runtime with setCards() from cardlist.js, which also
+ * has setCardState() for loading, empty and failed, and removeCard(), which slides a card out and
+ * closes the gap. Fires `card-open` and `card-action` with the item's id. The page sorts.
+ */
+import './controls.css';
+import './cardlist.css';
+import { cardHTML, placeholdersHTML } from './cardlist.js';
+
+interface Chip {
+  icon?: string;
+  label: string;
+  /** good: something in the item's favour, in the status-good tint. The page decides what. */
+  tone?: 'neutral' | 'good';
+}
+interface Item {
+  id: string;
+  title: string;
+  subtitle?: string;
+  href?: string;
+  score?: number | null;
+  scoreText?: string;
+  chips?: Chip[];
+  actions?: { action: string; icon: string; label: string; pressed?: boolean }[];
+}
+interface Props {
+  items?: Item[];
+  /** Names the list for a screen reader. */
+  label: string;
+  /** The dial is good from this score, warning from `warning`, neutral below. */
+  good?: number;
+  warning?: number;
+  /** The top of the scale. */
+  max?: number;
+  /** The heading level of each card's title, to follow the page's own headings. */
+  level?: 2 | 3 | 4 | 5;
+  /** Actions show on hover or focus where a pointer hovers; always on touch. Off: always shown. */
+  reveal?: boolean;
+  /** Starts with placeholder cards; setCards() or setCardState() ends it. */
+  loading?: boolean;
+  loadingCards?: number;
+  id?: string;
+}
+const { items = [], label, good = 7, warning = 5, max = 10, level = 3, reveal = false, loading = false, loadingCards = 4, id } = Astro.props;
+const hasEmpty = Astro.slots.has('empty');
+const html = loading ? placeholdersHTML(loadingCards) : items.map((i) => cardHTML(i, { good, warning, max, level })).join('');
+const state = loading ? 'loading' : items.length === 0 && hasEmpty ? 'empty' : 'ready';
+---
+
+<div class="card-list-wrap" data-state={state}>
+  <ul class:list={['card-list', { reveal }]} id={id} aria-label={label} data-card-list data-good={good} data-warning={warning} data-max={max} data-level={level} aria-busy={loading ? 'true' : undefined} data-filled={items.length ? '' : undefined} set:html={html} />
+  {hasEmpty && <div class="state empty" data-state-for="empty"><slot name="empty" /></div>}
+  {Astro.slots.has('failed') && <div class="state failed" data-state-for="failed"><slot name="failed" /></div>}
+</div>
+
+<script>
+  import { wireCards } from './cardlist.js';
+  document.querySelectorAll<HTMLElement>('[data-card-list]').forEach(wireCards);
+</script>

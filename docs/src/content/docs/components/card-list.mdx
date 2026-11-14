@@ -1,0 +1,103 @@
+---
+title: "Card list"
+description: "One long card per item: a score dial, a title, fact chips and actions, for a list worked through item by item."
+---
+
+import CardListDemo from '../../../components/CardListDemo.astro';
+import CardList from '@n1kname/components/CardList.astro';
+
+<div class="not-content">
+  <CardListDemo />
+</div>
+
+## What it's for
+
+A list someone works through one item at a time, deciding on each: keep, drop, open. A card has room for a judgement (the dial), what the item is (title and line), the facts that decide it (chips) and the actions, where a table row would be too thin.
+
+## When not to use it
+
+- **Comparing figures across items.** That's a [data table](/components/data-table/), sortable, in columns.
+- **Links to elsewhere.** That's a [link card](/components/link-card/).
+- **Fewer than three items.** Say it on the page.
+
+## Anatomy
+
+- **Lead:** a score dial, a ring filled to the score with the figure in mono in the middle, coloured by threshold. Or anything in `lead`.
+- **Head:** the title, which opens the item, and a secondary line.
+- **Chips:** facts with an icon, a label and a tone.
+- **Actions:** [icon buttons](/components/icon-button/), a toggle and a remove.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `good`, `warning` | The dial is good from `good` (7), warning from `warning` (5), neutral below. No score shows a dash. |
+| `max` | The top of the scale, 10. |
+| `level` | The heading level of each title, 3 by default, to follow the page's headings. |
+| `reveal` | Actions show on hover or focus where a pointer hovers; always on touch. Off by default: always shown. |
+| `loading` | Starts with placeholder cards. |
+| `empty`, `failed` slots | Shown instead of the cards, as DataTable's. |
+| Chip `tone` | `neutral` (default) or `good`: something in the item's favour. The page decides what counts. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Hover | The card lifts 1px, the border goes stronger. |
+| Focus | The focus ring around the whole card; the actions get their own. |
+| Loading | Placeholder cards after 300ms, so a fast load shows nothing. |
+| First fill | Cards rise in, staggered, the first twelve. |
+| Removed | `removeCard()` slides it out and the gap closes. |
+| Toggled on | The heart pops. |
+| Empty, failed | Their slot instead of the cards. |
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-focus`, `--c-status-good`, `--c-status-warning`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--font-body`, `--font-mono`, `--motion-base`, `--motion-hover`, `--radius-lg`, `--radius-sm`, `--sp-1` to `--sp-5`, `--text-body-sm`, `--text-caption`, `--text-mono`.
+
+## Keyboard and screen reader
+
+- **The title is the card's one link or button,** stretched over the card, so Tab reaches each card once, then its actions.
+- **The dial is an image with a name,** "Score 8.4 out of 10".
+- **The list is named** with `label`, and `aria-busy` while loading.
+- **Under reduced motion** nothing lifts, rises, slides or pops.
+
+## Content
+
+- **Title: what the item is.** Line: who or where it belongs to.
+- **Chips are facts, two to four,** short enough not to wrap: "Haarlem, 12 km", "Remote", "€5–7k".
+- **Good means good for this person,** set by the page. Don't colour a chip just to decorate it.
+
+## Status
+
+New in 0.31.0.
+
+## Code
+
+```astro wrap
+import CardList from '@n1kname/components/CardList.astro';
+
+<CardList id="list" label="Rooms" loading>
+  <EmptyState slot="empty" kind="filtered" title="No rooms match" />
+  <LoadFailed slot="failed" />
+</CardList>
+<script>
+  import { setCards, setCardState, removeCard } from '@n1kname/components/cardlist.js';
+  const list = document.getElementById('list');
+  fetch('/api/rooms').then((r) => r.json())
+    .then((rooms) => setCards(list, rooms.map((r) => ({
+      id: r.id, title: r.name, subtitle: r.floor, score: r.score,
+      chips: [{ icon: 'map-pin', label: r.place, tone: r.near ? 'good' : 'neutral' }],
+      actions: [{ action: 'like', icon: 'heart', label: 'Favourite', pressed: r.liked }, { action: 'remove', icon: 'x', label: 'Remove' }],
+    }))))
+    .catch(() => setCardState(list, 'failed'));
+  list.addEventListener('card-open', (e) => open(e.detail.id));
+  list.addEventListener('card-action', (e) => e.detail.action === 'remove' && removeCard(list, e.detail.id));
+</script>
+```
+
+## Loading
+
+<div class="not-content">
+  <CardList label="Fictional rooms, still loading" loading loadingCards={2} />
+</div>

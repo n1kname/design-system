@@ -55,6 +55,7 @@ export default defineConfig({
             { label: 'Filter chips', link: '/components/filter-chips/' },
             { label: 'Segmented', link: '/components/segmented/' },
             { label: 'Data table', link: '/components/data-table/' },
+            { label: 'Card list', link: '/components/card-list/' },
             { label: 'Disclosure list', link: '/components/disclosure-list/' },
             { label: 'Side panel', link: '/components/side-panel/' },
             { label: 'Empty state', link: '/components/empty-state/' },

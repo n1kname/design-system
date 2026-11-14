@@ -18,7 +18,7 @@ import type { IconName } from './icons';
 interface Props {
   icon?: IconName;
   href?: string;
-  tone?: 'accent' | 'quiet' | 'warm' | 'cool';
+  tone?: 'accent' | 'quiet' | 'warm' | 'cool' | 'good';
   small?: boolean;
   /** No lift or press, for a linked tag inside something that moves as a whole. */
   still?: boolean;
@@ -67,6 +67,12 @@ const Tag = href ? 'a' : 'span';
   .cool {
     background: var(--c-tag-cool-bg);
     color: var(--c-tag-cool-text);
+  }
+
+  /* Something in its favour: the page decides what (nearby, remote), the tag only says good. */
+  .good {
+    background: color-mix(in oklab, var(--c-status-good) 16%, var(--c-surface));
+    color: var(--c-text);
   }
 
   .tag.small {
