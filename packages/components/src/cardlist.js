@@ -84,7 +84,10 @@ export const removeCard = (root, id) =>
   new Promise((done) => {
     const li = [...root.children].find((x) => x.dataset.key === String(id));
     if (!li) return done();
+    let gone = false;
     const go = () => {
+      if (gone) return;
+      gone = true;
       const before = snapshot(root);
       li.remove();
       flip(root, before);
@@ -92,6 +95,8 @@ export const removeCard = (root, id) =>
     };
     if (reduced()) return go();
     li.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(24px)' }], { duration: 180, easing: 'ease-in' }).finished.then(go, go);
+    // A hidden or background tab doesn't paint, so `finished` may never come: don't let a caller hang.
+    setTimeout(go, 280);
   });
 
 export const wireCards = (root) => {
