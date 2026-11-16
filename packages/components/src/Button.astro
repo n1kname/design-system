@@ -51,7 +51,6 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
     --spot: rgb(255 255 255 / 0.32);
     position: relative;
     isolation: isolate;
-    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -80,6 +79,8 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
     position: absolute;
     inset: 0;
     z-index: -1;
+    /* Rounded with the button instead of clipped by it: overflow: hidden would let a flex row squeeze the button below its label. */
+    border-radius: inherit;
     opacity: 0;
     background: radial-gradient(120px circle at var(--x) var(--y), var(--spot), transparent 60%);
     transition: opacity 200ms var(--ease-out);
