@@ -6,6 +6,9 @@
  * `mark.highlight.glow` is the quiet look: a soft blue light behind the words that fades in once
  * and then holds still. It reaches past the line, so it never stops in a hard edge.
  *
+ * `mark.highlight.spotlight` passes a slanted band of blue light through the letters once, then
+ * rests as plain text. It needs `--chars` (Highlight sets it) to keep one speed.
+ *
  * Used by Highlight and PageHeader. A page that writes its words once its data arrives can wrap
  * them in <mark class="highlight"> itself, and the sweep plays as they land.
  *
@@ -83,7 +86,48 @@
   }
 }
 
+/* The spotlight: the words' fill is a gradient clipped to the glyphs, text colour either side of
+ * a soft band of light slanted like the streaks. At rest the visible third is plain text colour.
+ * One continuous sweep when the words wrap (slice, not clone), at one speed: 175ms a character. */
+:where(mark.highlight.spotlight) {
+  --highlight-shine: color-mix(in oklab, var(--c-chart-2), #fff 25%);
+  --highlight-strength: 60%;
+  padding-inline: 0;
+  margin-inline: 0;
+  color: var(--c-text);
+  background: linear-gradient(105deg,
+      var(--c-text) 36%,
+      color-mix(in oklab, var(--highlight-shine) var(--highlight-strength), var(--c-text)) 50%,
+      var(--c-text) 64%)
+    0 0 / 300% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  box-decoration-break: slice;
+  -webkit-box-decoration-break: slice;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(mark.highlight.spotlight) {
+    animation: highlight-spotlight calc(var(--chars, 10) * 175ms) cubic-bezier(0.45, 0, 0.25, 1)
+      calc(var(--highlight-delay, 300ms) + var(--n, 0) * var(--highlight-step, 450ms)) both;
+  }
+}
+
+@keyframes highlight-spotlight {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
 @media (forced-colors: active) {
+  :where(mark.highlight.spotlight) {
+    -webkit-text-fill-color: CanvasText;
+  }
+
   :where(mark.highlight, .page-header .text mark) {
     background: none;
     text-decoration: underline 0.2em;

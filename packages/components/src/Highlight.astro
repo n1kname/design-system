@@ -5,16 +5,25 @@
  * the timing live in highlight.css, shared with PageHeader.
  *
  *   band  the highlighter, a band behind the lower half of the words (default)
- *   glow  a soft blue light behind them that fades in once and holds; for a big headline
+ *   glow       a soft blue light behind them that fades in once and holds
+ *   spotlight  a slanted band of blue light that passes through the letters once; the words keep
+ *              their colour. Each sweep lasts as long as the words have characters, so the light
+ *              moves at one speed through a short phrase and a long one.
  */
 import './highlight.css';
 
 interface Props {
   /** This mark's place among the marks on the page, from 0. */
   n?: number;
-  variant?: 'band' | 'glow';
+  variant?: 'band' | 'glow' | 'spotlight';
 }
 const { n = 0, variant = 'band' } = Astro.props;
+const html = Astro.slots.has('default') ? await Astro.slots.render('default') : '';
+// The words as a reader counts them: no tags, an entity as one character.
+const chars = [...html.replace(/<[^>]*>/g, '').replace(/&#?\w+;/g, 'x')].length;
 ---
 
-<mark class:list={['highlight', { glow: variant === 'glow' }]} style={`--n: ${n}`}><slot /></mark>
+<mark
+  class:list={['highlight', { glow: variant === 'glow', spotlight: variant === 'spotlight' }]}
+  style={`--n: ${n}; --chars: ${chars}`}
+><Fragment set:html={html} /></mark>

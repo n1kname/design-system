@@ -1,6 +1,6 @@
 ---
 title: "Highlight"
-description: "A band or a soft glow behind the words a heading is about, that arrives once."
+description: "A band, a glow or a passing light on the words a heading is about, that arrives once."
 ---
 
 import Highlight from '@n1kname/components/Highlight.astro';
@@ -8,6 +8,7 @@ import Highlight from '@n1kname/components/Highlight.astro';
 <div class="not-content">
   <p class="t-h2">Systems that had to be <Highlight>correct</Highlight>, not merely <Highlight n={1}>usable</Highlight>.</p>
   <p class="t-h2">Ten years of <Highlight variant="glow" n={2}>sensor data</Highlight>, room by room.</p>
+  <p class="t-h2">Every room, <Highlight variant="spotlight" n={3}>measured every minute</Highlight>.</p>
 </div>
 
 ## What it's for
@@ -24,6 +25,7 @@ To point at the words a heading or a lede is about, such as the figure that answ
 
 - **The band:** the accent mixed into the page colour, so it holds up in dark.
 - **The glow,** in that look: a soft ellipse of the chart blue behind the words, reaching a little above and below the line so it never ends in a hard edge.
+- **The spotlight,** in that look: no band at all. A slanted band of blue light passes through the letters once, and the words keep their own colour before and after.
 - **The words:** keep their own colour.
 
 ## Variants
@@ -32,14 +34,15 @@ To point at the words a heading or a lede is about, such as the figure that answ
 |---|---|
 | `band` (default) | The highlighter: a band behind the lower half of the words, sweeping in. |
 | `glow` | A soft blue light behind the words that fades in once and then holds still. Quieter than the band; for a big headline that already has an accent nearby. |
+| `spotlight` | A slanted band of blue light that passes through the letters once, then rests as plain text. Each sweep lasts 175ms a character, so a long phrase takes longer rather than rushing. For a big headline; it plays once on load and nothing replays it. |
 
 `n` gives a mark its place among the marks on the page, so several arrive one after the other. [Page header](/components/page-header/) uses the same highlighter for its `mark` prop.
 
 ## States
 
-- **Arriving:** sweeps in (the glow fades in) 300ms after load, then 450ms per mark. A page can set `--highlight-delay` and `--highlight-step` to wait for its own opening.
-- **Reduced motion:** the band or glow is simply there.
-- **Forced colours:** an underline instead of the band or glow.
+- **Arriving:** sweeps in (the glow fades in, the spotlight passes) 300ms after load, then 450ms per mark. A page can set `--highlight-delay` and `--highlight-step` to wait for its own opening.
+- **Reduced motion:** the band or glow is simply there; the spotlight never passes, so the words are plain text.
+- **Forced colours:** an underline instead, and the spotlight's words keep a real text colour.
 
 ## Tokens
 
@@ -55,7 +58,7 @@ A few words, never a whole sentence.
 
 ## Status
 
-Used by the portfolio and, through Page header, a dashboard. The glow is new in 0.34.0, for the portfolio's landing headline.
+Used by the portfolio and, through Page header, a dashboard. The glow is new in 0.34.0 and the spotlight in 0.35.0, both for the portfolio's landing headline.
 
 ## Code
 
@@ -67,4 +70,6 @@ import Highlight from '@n1kname/components/Highlight.astro';
 <h1>Systems that had to be <Highlight>correct</Highlight>, not merely <Highlight n={1}>usable</Highlight>.</h1>
 
 <h1>Ten years of <Highlight variant="glow">sensor data</Highlight>, room by room.</h1>
+
+<h1>Every room, <Highlight variant="spotlight">measured every minute</Highlight>.</h1>
 ```
