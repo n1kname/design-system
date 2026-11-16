@@ -3,14 +3,18 @@
  * Highlights the words a heading or lede is about, with a band that sweeps in once. Give each
  * mark its place with `n` when there are several, so they sweep one after the other. The look and
  * the timing live in highlight.css, shared with PageHeader.
+ *
+ *   band  the highlighter, a band behind the lower half of the words (default)
+ *   glow  a soft blue light behind them that fades in once and holds; for a big headline
  */
 import './highlight.css';
 
 interface Props {
   /** This mark's place among the marks on the page, from 0. */
   n?: number;
+  variant?: 'band' | 'glow';
 }
-const { n = 0 } = Astro.props;
+const { n = 0, variant = 'band' } = Astro.props;
 ---
 
-<mark class="highlight" style={`--n: ${n}`}><slot /></mark>
+<mark class:list={['highlight', { glow: variant === 'glow' }]} style={`--n: ${n}`}><slot /></mark>

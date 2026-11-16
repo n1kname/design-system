@@ -3,6 +3,9 @@
  * by line, and is mixed into the page colour rather than see-through, so it holds up in dark. It
  * sweeps in once, a moment after the words land; several marks go one after the other, by --n.
  *
+ * `mark.highlight.glow` is the quiet look: a soft blue light behind the words that fades in once
+ * and then holds still. It reaches past the line, so it never stops in a hard edge.
+ *
  * Used by Highlight and PageHeader. A page that writes its words once its data arrives can wrap
  * them in <mark class="highlight"> itself, and the sweep plays as they land.
  *
@@ -32,6 +35,51 @@
 @keyframes highlight {
   from {
     background-size: 0% var(--highlight-band);
+  }
+}
+
+/* The glow: a soft ellipse of blue behind the words. The atmosphere blue of the case heroes on a
+ * light page; on a dark one, the chart blue, since the dark atmosphere blue is too deep to glow. Vertical padding
+ * on an inline box moves no text but widens what its background can paint, so the light runs
+ * past the line instead of stopping at the glyphs' box. Its strength is a registered property,
+ * so it can fade: a gradient can't. */
+@property --highlight-glow {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+:where(mark.highlight.glow) {
+  --highlight-glow: 60%;
+  --highlight-glow-color: var(--c-atmosphere-b);
+  padding: 0.35em 0.3em;
+  margin-inline: -0.3em;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--highlight-glow-color) var(--highlight-glow), transparent), transparent)
+    no-repeat 50% 55% / 100% 100%;
+}
+
+:root[data-theme='dark'] :where(mark.highlight.glow) {
+  --highlight-glow: 24%;
+  --highlight-glow-color: var(--c-chart-2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) :where(mark.highlight.glow) {
+    --highlight-glow: 24%;
+    --highlight-glow-color: var(--c-chart-2);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(mark.highlight.glow) {
+    animation-name: highlight-glow;
+    animation-duration: calc(var(--motion-draw, 1000ms) * 1.6);
+  }
+}
+
+@keyframes highlight-glow {
+  from {
+    --highlight-glow: 0%;
   }
 }
 

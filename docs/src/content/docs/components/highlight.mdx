@@ -1,12 +1,13 @@
 ---
 title: "Highlight"
-description: "A band behind the words a heading is about, that sweeps in once."
+description: "A band or a soft glow behind the words a heading is about, that arrives once."
 ---
 
 import Highlight from '@n1kname/components/Highlight.astro';
 
 <div class="not-content">
   <p class="t-h2">Systems that had to be <Highlight>correct</Highlight>, not merely <Highlight n={1}>usable</Highlight>.</p>
+  <p class="t-h2">Ten years of <Highlight variant="glow" n={2}>sensor data</Highlight>, room by room.</p>
 </div>
 
 ## What it's for
@@ -22,21 +23,27 @@ To point at the words a heading or a lede is about, such as the figure that answ
 ## Anatomy
 
 - **The band:** the accent mixed into the page colour, so it holds up in dark.
+- **The glow,** in that look: a soft ellipse of the chart blue behind the words, reaching a little above and below the line so it never ends in a hard edge.
 - **The words:** keep their own colour.
 
 ## Variants
 
-`n` gives a mark its place among the marks on the page, so several sweep one after the other. [Page header](/components/page-header/) uses the same highlighter for its `mark` prop.
+| Variant | For |
+|---|---|
+| `band` (default) | The highlighter: a band behind the lower half of the words, sweeping in. |
+| `glow` | A soft blue light behind the words that fades in once and then holds still. Quieter than the band; for a big headline that already has an accent nearby. |
+
+`n` gives a mark its place among the marks on the page, so several arrive one after the other. [Page header](/components/page-header/) uses the same highlighter for its `mark` prop.
 
 ## States
 
-- **Arriving:** sweeps in 300ms after load, then 450ms per mark. A page can set `--highlight-delay` and `--highlight-step` to wait for its own opening.
-- **Reduced motion:** the band is simply there.
-- **Forced colours:** an underline instead of the band.
+- **Arriving:** sweeps in (the glow fades in) 300ms after load, then 450ms per mark. A page can set `--highlight-delay` and `--highlight-step` to wait for its own opening.
+- **Reduced motion:** the band or glow is simply there.
+- **Forced colours:** an underline instead of the band or glow.
 
 ## Tokens
 
-`--c-accent`, `--c-bg`, `--ease-out`
+`--c-accent`, `--c-bg`, `--c-atmosphere-b` and `--c-chart-2` (glow), `--ease-out`
 
 ## Keyboard and screen reader
 
@@ -48,7 +55,7 @@ A few words, never a whole sentence.
 
 ## Status
 
-Used by the portfolio and, through Page header, a dashboard.
+Used by the portfolio and, through Page header, a dashboard. The glow is new in 0.34.0, for the portfolio's landing headline.
 
 ## Code
 
@@ -58,4 +65,6 @@ import Highlight from '@n1kname/components/Highlight.astro';
 ---
 
 <h1>Systems that had to be <Highlight>correct</Highlight>, not merely <Highlight n={1}>usable</Highlight>.</h1>
+
+<h1>Ten years of <Highlight variant="glow">sensor data</Highlight>, room by room.</h1>
 ```

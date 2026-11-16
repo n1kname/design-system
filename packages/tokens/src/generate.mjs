@@ -294,7 +294,9 @@ const TYPE = {
 };
 
 const FAMILY = {
-  display: ['Bitter', 'Georgia', 'serif'],
+  // @fontsource-variable/bitter registers the face as "Bitter Variable"; with 'Bitter' alone every
+  // heading fell back to Georgia. 'Bitter' stays for a site that installs the static font.
+  display: ['Bitter Variable', 'Bitter', 'Georgia', 'serif'],
   body: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
   mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
 };
