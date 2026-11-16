@@ -23,7 +23,7 @@ A little life behind a page's opening, such as a portfolio's name and lede, with
 
 ## When not to use it
 
-- **Behind text people read at length.** It's for an opening, not a page.
+- **Behind text people read at length.** It's for an opening, not a page. Fixed, it sits behind the whole page, so keep long text on surfaces of their own, like cards.
 - **More than once a page.**
 - **With other motion in the same place,** such as a chart drawing itself.
 
@@ -41,9 +41,11 @@ A little life behind a page's opening, such as a portfolio's name and lede, with
 
 Each is stronger on the dark theme, where light needs more to show.
 
+`fixed` fills the window instead of its section and stays put while the page scrolls past. Where the browser can tie animation to the scroll, the streaks also drift up a little slower than the text. It makes the body its own stacking context, so the streaks sit on the page colour and under everything else, and it needs no positioned parent. Use it once, near the top of the page.
+
 ## States
 
-It has no states. Under reduced motion the streaks stand still.
+It has no states. Under reduced motion the streaks stand still, and fixed ones don't drift with the scroll.
 
 ## Tokens
 
@@ -59,7 +61,7 @@ None of its own. Keep the type over it at full contrast: the streaks stay under 
 
 ## Status
 
-New in 0.32.0, for the portfolio's landing.
+New in 0.32.0, for the portfolio's landing. `fixed` is new in 0.33.0.
 
 ## Code
 
@@ -70,4 +72,7 @@ import Streaks from '@n1kname/components/Streaks.astro';
   <Streaks />
   <h1>…</h1>
 </section>
+
+<!-- Or behind the whole page, fixed: -->
+<Streaks fixed />
 ```

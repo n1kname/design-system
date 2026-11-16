@@ -8,12 +8,18 @@
  *   whisper  barely there
  *   subtle   atmosphere that never competes with the type (default)
  *   present  closer to a motion background; for a dark band, not behind body text
+ *
+ * `fixed` fills the window instead and stays put while the page scrolls past, drifting up a
+ * little slower than the text where the browser can tie it to the scroll. It isolates the body,
+ * so it sits on the page colour and under everything else; it needs no positioned parent.
  */
 interface Props {
   strength?: 'whisper' | 'subtle' | 'present';
+  /** Fill the window behind the whole page, fixed, drifting with the scroll. */
+  fixed?: boolean;
   class?: string;
 }
-const { strength = 'subtle', class: className } = Astro.props;
+const { strength = 'subtle', fixed = false, class: className } = Astro.props;
 const streaks = [
   { c: 'var(--c-accent)', top: 18, h: 3, w: 52, d: 34, delay: -4, still: 10, blur: 5 },
   { c: 'var(--c-chart-2)', top: 30, h: 8, w: 40, d: 46, delay: -20, still: 60, blur: 10 },
@@ -24,7 +30,7 @@ const streaks = [
 ];
 ---
 
-<div class:list={['streaks', strength, className]} aria-hidden="true">
+<div class:list={['streaks', strength, { fixed }, className]} aria-hidden="true">
   <div class="field">
     {streaks.map((s) => (
       <i style={`top:${s.top}%;--c:${s.c};--h:${s.h}px;--w:${s.w}%;--d:${s.d}s;--delay:${s.delay}s;--still:${s.still}%;--blur:${s.blur}px`} />
@@ -41,6 +47,17 @@ const streaks = [
     pointer-events: none;
     /* Fades out towards the edges, so it never ends in a hard line. */
     mask-image: radial-gradient(ellipse 80% 90% at 50% 45%, #000 45%, transparent 100%);
+  }
+
+  /* The window, not a section: fixed behind the whole page. The body becomes its own stacking
+   * context, so the streaks paint on its background and under everything in it. */
+  .fixed {
+    position: fixed;
+    mask-image: radial-gradient(ellipse 110% 100% at 50% 35%, #000 35%, transparent 100%);
+  }
+
+  :global(body:has(.streaks.fixed)) {
+    isolation: isolate;
   }
 
   .field {
@@ -80,6 +97,27 @@ const streaks = [
   @keyframes drift {
     from { transform: translateX(-60%); }
     to { transform: translateX(260%); }
+  }
+
+  /* Fixed, they drift up a little slower than the page scrolls. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      .fixed .field {
+        animation: streaks-scroll linear both;
+      }
+
+      /* A rule of its own, more specific: a minifier folds the timeline into the shorthand above,
+       * which browsers then drop whole. */
+      .streaks.fixed > .field {
+        animation-timeline: scroll(root);
+      }
+    }
+  }
+
+  @keyframes streaks-scroll {
+    to {
+      transform: rotate(-22deg) translateY(-22%);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
