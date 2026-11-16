@@ -6,12 +6,16 @@
  *   primary    the one main action in a view
  *   secondary  everything else
  *   quiet      low-emphasis actions beside content
+ *   danger     an action that deletes or can't be undone
+ *
+ * On hover a soft light follows the pointer, and a press springs back. A trailing icon with
+ * class `forward` (an arrow) steps 2px ahead on hover. All of it is off under reduced motion.
  *
  * `selected` is for a toggle, and sets aria-pressed. Pass any other attribute through,
  * such as id, type or disabled.
  */
 interface Props {
-  variant?: 'primary' | 'secondary' | 'quiet';
+  variant?: 'primary' | 'secondary' | 'quiet' | 'danger';
   href?: string;
   selected?: boolean;
   disabled?: boolean;
@@ -26,8 +30,28 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
 
 <Tag class:list={['button', variant, className]} {...attrs} {...rest}><slot /></Tag>
 
+<script>
+  // The spotlight: one listener for the page, so buttons added later get it too.
+  if (!(window as any).__buttonSpot) {
+    (window as any).__buttonSpot = true;
+    document.addEventListener('pointermove', (e) => {
+      const b = (e.target as Element)?.closest?.('.button') as HTMLElement | null;
+      if (!b) return;
+      const r = b.getBoundingClientRect();
+      b.style.setProperty('--x', `${e.clientX - r.left}px`);
+      b.style.setProperty('--y', `${e.clientY - r.top}px`);
+    }, { passive: true });
+  }
+</script>
+
 <style>
   .button {
+    --x: 50%;
+    --y: 50%;
+    --spot: rgb(255 255 255 / 0.32);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -50,6 +74,29 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
       transform var(--motion-fast) var(--ease-out);
   }
 
+  /* The spotlight: a soft light under the pointer, fading in on hover. */
+  .button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    background: radial-gradient(120px circle at var(--x) var(--y), var(--spot), transparent 60%);
+    transition: opacity 200ms var(--ease-out);
+  }
+
+  .button:hover:not(:disabled)::before {
+    opacity: 1;
+  }
+
+  .button :global(svg.forward) {
+    transition: transform 200ms var(--ease-out);
+  }
+
+  .button:hover :global(svg.forward) {
+    transform: translateX(2px);
+  }
+
   /* A fingertip needs more room than a pointer. */
   @media (pointer: coarse) {
     .button {
@@ -67,6 +114,7 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
   }
 
   .secondary {
+    --spot: color-mix(in oklab, var(--c-accent) 16%, transparent);
     background: var(--c-surface);
     border-color: var(--c-border-strong);
     color: var(--c-text);
@@ -78,6 +126,7 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
   }
 
   .quiet {
+    --spot: var(--c-surface-hover);
     background: transparent;
     color: var(--c-text-secondary);
   }
@@ -85,6 +134,17 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
   .quiet:hover {
     background: var(--c-surface-hover);
     color: var(--c-text);
+  }
+
+  /* The page's background colour as text: light on the light theme's deep red, dark on the dark
+   * theme's brighter red; both pass 4.5:1. */
+  .danger {
+    background: var(--c-status-critical);
+    color: var(--c-bg);
+  }
+
+  .danger:hover {
+    background: color-mix(in oklab, var(--c-status-critical) 88%, var(--c-text));
   }
 
   .button[aria-pressed='true'] {
@@ -98,8 +158,10 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
     outline-offset: 2px;
   }
 
+  /* The press springs back. */
   .button:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(0.96);
+    transition: transform var(--motion-spring) var(--ease-spring);
   }
 
   .button:disabled {
@@ -108,8 +170,14 @@ const attrs = href ? { href } : { type, disabled, 'aria-pressed': selected === u
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .button:active:not(:disabled) {
+    .button:active:not(:disabled),
+    .button:hover :global(svg.forward) {
       transform: none;
+    }
+
+    .button::before,
+    .button :global(svg.forward) {
+      transition: none;
     }
   }
 

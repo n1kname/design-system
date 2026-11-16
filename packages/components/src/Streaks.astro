@@ -1,0 +1,91 @@
+---
+/**
+ * Soft diagonal light drifting slowly behind a hero, in the accent, the chart teal and a warm grey.
+ * Pure CSS: a few blurred streaks, no canvas. It sits behind whatever holds it (give that
+ * `position: relative` and room), takes no pointer events and is hidden from screen readers.
+ * Stands still under reduced motion.
+ *
+ *   whisper  barely there
+ *   subtle   atmosphere that never competes with the type (default)
+ *   present  closer to a motion background; for a dark band, not behind body text
+ */
+interface Props {
+  strength?: 'whisper' | 'subtle' | 'present';
+  class?: string;
+}
+const { strength = 'subtle', class: className } = Astro.props;
+const streaks = [
+  { c: 'var(--c-accent)', top: 18, h: 3, w: 52, d: 34, delay: -4, still: 10, blur: 5 },
+  { c: 'var(--c-chart-2)', top: 30, h: 8, w: 40, d: 46, delay: -20, still: 60, blur: 10 },
+  { c: 'var(--c-border-strong)', top: 44, h: 2, w: 58, d: 30, delay: -12, still: 30, blur: 5 },
+  { c: 'var(--c-accent)', top: 58, h: 6, w: 36, d: 52, delay: -30, still: 90, blur: 9 },
+  { c: 'var(--c-chart-2)', top: 70, h: 2, w: 48, d: 38, delay: -8, still: 50, blur: 5 },
+  { c: 'var(--c-border-strong)', top: 82, h: 4, w: 44, d: 42, delay: -26, still: 20, blur: 5 },
+];
+---
+
+<div class:list={['streaks', strength, className]} aria-hidden="true">
+  <div class="field">
+    {streaks.map((s) => (
+      <i style={`top:${s.top}%;--c:${s.c};--h:${s.h}px;--w:${s.w}%;--d:${s.d}s;--delay:${s.delay}s;--still:${s.still}%;--blur:${s.blur}px`} />
+    ))}
+  </div>
+</div>
+
+<style>
+  .streaks {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    /* Fades out towards the edges, so it never ends in a hard line. */
+    mask-image: radial-gradient(ellipse 80% 90% at 50% 45%, #000 45%, transparent 100%);
+  }
+
+  .field {
+    position: absolute;
+    inset: -20% -10%;
+    transform: rotate(-22deg);
+  }
+
+  i {
+    position: absolute;
+    left: 0;
+    height: var(--h);
+    width: var(--w);
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, var(--c) 45%, var(--c) 55%, transparent);
+    filter: blur(var(--blur));
+    opacity: var(--o);
+    animation: drift var(--d) linear infinite;
+    animation-delay: var(--delay);
+  }
+
+  .whisper { --o: 0.14; }
+  .subtle { --o: 0.26; }
+  .present { --o: 0.45; }
+
+  /* Light on a dark page needs more to be seen at all. */
+  :global(:root[data-theme='dark']) .whisper { --o: 0.22; }
+  :global(:root[data-theme='dark']) .subtle { --o: 0.38; }
+  :global(:root[data-theme='dark']) .present { --o: 0.6; }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .whisper { --o: 0.22; }
+    :global(:root:not([data-theme='light'])) .subtle { --o: 0.38; }
+    :global(:root:not([data-theme='light'])) .present { --o: 0.6; }
+  }
+
+  @keyframes drift {
+    from { transform: translateX(-60%); }
+    to { transform: translateX(260%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    i {
+      animation: none;
+      transform: translateX(var(--still));
+    }
+  }
+</style>

@@ -100,6 +100,7 @@ export default defineConfig({
             { label: 'Copy tag', link: '/components/copy-tag/' },
             { label: 'Highlight', link: '/components/highlight/' },
             { label: 'Reveal', link: '/components/reveal/' },
+            { label: 'Streaks', link: '/components/streaks/' },
             { label: 'Flow diagram', link: '/components/flow-diagram/' },
             { label: 'Diamonds', link: '/components/diamonds/' },
             { label: 'Phases', link: '/components/phases/' },

@@ -1,0 +1,73 @@
+---
+title: "Streaks"
+description: "Soft diagonal light drifting slowly behind a hero."
+---
+
+import Streaks from '@n1kname/components/Streaks.astro';
+
+<div class="not-content streaks-demo">
+  <Streaks />
+  <p class="demo-name">A name, over streaks</p>
+  <p class="demo-line">Subtle, the default: atmosphere that never competes with the type.</p>
+</div>
+
+<style>{`
+  .streaks-demo { position: relative; isolation: isolate; padding: 4rem 2rem; border: 1px solid var(--c-border); border-radius: var(--radius-lg); background: var(--c-bg); }
+  .streaks-demo .demo-name { margin: 0 0 .5rem; font: 700 2rem/1.15 var(--font-display); color: var(--c-text); }
+  .streaks-demo .demo-line { margin: 0; color: var(--c-text-secondary); }
+`}</style>
+
+## What it's for
+
+A little life behind a page's opening, such as a portfolio's name and lede, without an image or a video. It moves so slowly that it reads as light, not as motion.
+
+## When not to use it
+
+- **Behind text people read at length.** It's for an opening, not a page.
+- **More than once a page.**
+- **With other motion in the same place,** such as a chart drawing itself.
+
+## Anatomy
+
+- **Six streaks:** blurred, on a 22° diagonal, in the accent, the chart teal and the strong border grey, each drifting at its own pace (30 to 52 seconds across).
+
+## Variants
+
+| Strength | For |
+|---|---|
+| `whisper` | Barely there. |
+| `subtle` (default) | Atmosphere that never competes with the type. |
+| `present` | Closer to a motion background; for a dark band, not behind body text. |
+
+Each is stronger on the dark theme, where light needs more to show.
+
+## States
+
+It has no states. Under reduced motion the streaks stand still.
+
+## Tokens
+
+`--c-accent`, `--c-border-strong`, `--c-chart-2`.
+
+## Keyboard and screen reader
+
+- **Hidden from screen readers** and from the pointer; it's decoration.
+
+## Content
+
+None of its own. Keep the type over it at full contrast: the streaks stay under 0.3 opacity on the light theme.
+
+## Status
+
+New in 0.32.0, for the portfolio's landing.
+
+## Code
+
+```astro wrap
+import Streaks from '@n1kname/components/Streaks.astro';
+
+<section style="position: relative; isolation: isolate">
+  <Streaks />
+  <h1>…</h1>
+</section>
+```

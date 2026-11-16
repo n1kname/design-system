@@ -1,14 +1,17 @@
 ---
 title: "Buttons"
-description: "Primary, secondary and quiet buttons, with hover, press, focus, selected and disabled states."
+description: "Primary, secondary, quiet and danger buttons, with a pointer spotlight, a springy press, focus, selected and disabled states."
 ---
 
 import Button from '@n1kname/components/Button.astro';
+import Icon from '@n1kname/components/Icon.astro';
 
 <div class="not-content demo-row">
   <Button variant="primary">Primary</Button>
   <Button>Secondary</Button>
   <Button variant="quiet">Quiet</Button>
+  <Button variant="danger">Remove</Button>
+  <Button variant="primary">View the work <svg class="forward" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></Button>
   <Button selected={true}>Selected</Button>
   <Button selected={false}>Not selected</Button>
   <Button disabled>Disabled</Button>
@@ -37,13 +40,16 @@ To do something on this page. Give it an `href` and it becomes a link that looks
 | `primary` | The one main action in a view. |
 | `secondary` | Everything else, and the default. |
 | `quiet` | Low-emphasis actions beside content. |
+| `danger` | An action that deletes or can't be undone. Text in the page's background colour, 4.5:1 on both themes' red. New in 0.32.0. |
+
+A trailing icon with class `forward`, such as an arrow, steps 2px ahead on hover.
 
 ## States
 
 | State | What changes |
 |---|---|
-| Hover | Darker fill on primary, accent edge on secondary, a tint on quiet. |
-| Press | Scales to 97%, so you feel the click. Off with reduced motion. |
+| Hover | A soft light follows the pointer (white on filled buttons, an accent tint on secondary, a surface tint on quiet), over the darker fill or accent edge. A `forward` icon steps 2px ahead. |
+| Press | Scales to 96% and springs back, so you feel the click. Off with reduced motion, as is the light. |
 | Focus | A 2px ring. |
 | Selected | A tint and an accent edge, and `aria-pressed="true"`. |
 | Disabled | Half opacity and no press. WCAG exempts disabled controls from contrast, so explain why elsewhere if it isn't obvious. |
@@ -65,6 +71,8 @@ To do something on this page. Give it an `href` and it becomes a link that looks
 - **A link goes somewhere, a button does something.** Pick by what it does, not by how it looks.
 
 ## Status
+
+0.32.0 added `danger`, the pointer spotlight, the springy press and the `forward` icon step.
 
 Used by the portfolio. Also used by a dashboard.
 
