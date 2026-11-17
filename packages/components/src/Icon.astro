@@ -1,19 +1,34 @@
 ---
+/**
+ * An icon from the set in icons.ts, in the text colour.
+ *
+ * `draw` lets the icon draw itself in once, line by line, as it arrives: with the Reveal it sits in
+ * (on that Reveal's own beat) or, outside one, as it comes a third into view. Icons that arrive
+ * together go 110ms apart. For a moment people see rarely, such as a list of what someone does or
+ * an empty page; never in a toolbar or a row. Under reduced motion, or without script, the icon is
+ * simply there.
+ */
 import { ICONS, type IconName } from './icons';
 
 interface Props {
   name: IconName;
   size?: number;
   stroke?: number;
+  /** Draws the icon in once, as it arrives. */
+  draw?: boolean;
+  class?: string;
 }
 
-const { name, size = 18, stroke } = Astro.props;
+const { name, size = 18, stroke, draw = false, class: className } = Astro.props;
 // Lucide is drawn at 24px with stroke 2. Below ~20px that reads heavy.
 const strokeWidth = stroke ?? (size < 20 ? 1.75 : 2);
+// Every shape measured as one, so a single dash can cover it and draw it back.
+const shapes = draw ? ICONS[name].replace(/<(path|circle|rect|line|polyline|polygon|ellipse)\b/g, '<$1 pathLength="1"') : ICONS[name];
 ---
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
+  class={className}
   width={size}
   height={size}
   viewBox="0 0 24 24"
@@ -23,5 +38,55 @@ const strokeWidth = stroke ?? (size < 20 ? 1.75 : 2);
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-hidden="true"
-  set:html={ICONS[name]}
+  data-draw={draw ? '' : undefined}
+  set:html={shapes}
 />
+
+<script>
+  // Arms every drawing icon (hidden only from here on, so nothing is lost without script). One
+  // inside a Reveal draws when that Reveal arrives, with its delay; one outside, or in a Reveal
+  // that was already on screen, draws as it comes into view.
+  if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const go = (svg: SVGElement, delay: number) => {
+      if (svg.classList.contains('drawn')) return;
+      svg.style.setProperty('--icon-draw-delay', `${delay}ms`);
+      svg.classList.add('drawn');
+      seen.unobserve(svg);
+    };
+    const seen = new IntersectionObserver(
+      (entries) => {
+        entries
+          .filter((e) => e.isIntersecting)
+          .forEach((e, k) => {
+            const svg = e.target as SVGElement;
+            const host = svg.closest('[data-reveal]');
+            if (host?.classList.contains('reveal-armed') && !host.classList.contains('reveal-in')) return;
+            go(svg, k * 110);
+          });
+      },
+      { threshold: 0.33 },
+    );
+    document.querySelectorAll<SVGElement>('svg[data-draw]:not(.draw-armed)').forEach((svg) => {
+      svg.classList.add('draw-armed');
+      svg.closest('[data-reveal]')?.addEventListener('reveal', (e) => go(svg, (e as CustomEvent).detail?.delay ?? 0), { once: true });
+      seen.observe(svg);
+    });
+  }
+</script>
+
+<style is:global>
+  svg.draw-armed > * {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  svg.draw-armed.drawn > * {
+    animation: icon-draw var(--motion-draw, 1000ms) var(--ease-soft) var(--icon-draw-delay, 0ms) forwards;
+  }
+
+  @keyframes icon-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+</style>

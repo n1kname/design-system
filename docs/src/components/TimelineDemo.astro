@@ -2,6 +2,15 @@
 // Made-up projects, in the three shapes a case uses: a history in years, a plan in phases (the
 // first under way, the rest to come) and checks by area, with icons.
 import Timeline from '@n1kname/components/Timeline.astro';
+import Tag from '@n1kname/components/Tag.astro';
+
+// A made-up career, newest first, for the fill.
+const career = [
+  { period: '2024 to now', label: 'Northwind Energy', meta: 'Product Designer', icon: 'zap', story: 'Rebuilding a billing platform screen by screen, with the design system in code.', tags: ['Design systems', 'Billing'] },
+  { period: '2018 to 2024', label: 'Harbour Mobility', meta: 'Design Lead', icon: 'smartphone', story: 'Grew the team from one designer to five and shipped the driver app in four countries.', tags: ['Leadership', 'Mobile'] },
+  { period: '2013 to 2018', label: 'Atlas Software', meta: 'Interaction Designer', icon: 'layers', story: 'Content tools for large publishers: hard problems, patient users.', tags: ['B2B'] },
+  { period: '2009 to 2013', label: 'University of the Coast', meta: 'Interaction design', icon: 'graduation-cap', story: 'Where the habit of testing before building started.', tags: [] },
+] as const;
 ---
 
 <div class="not-content timeline-demo" id="timeline-demo">
@@ -27,6 +36,25 @@ import Timeline from '@n1kname/components/Timeline.astro';
       { period: 'Phase 3', label: 'Insight', icon: 'trending-up', body: 'Partners see how it is going overall, not one transaction at a time.' },
     ]}
   />
+
+  <h3>A career, newest first, filling as you read</h3>
+  <Timeline
+    fill
+    order="newest-first"
+    heading="h4"
+    entries={career.map(({ period, label, meta, icon }) => ({ period, label, meta, icon }))}
+  >
+    {career.map((c, i) => (
+      <div slot={`entry-${i}`}>
+        <p class="td-story">{c.story}</p>
+        {c.tags.length > 0 && (
+          <p class="td-tags">
+            {c.tags.map((t) => <Tag tone={i === 0 ? 'accent' : 'cool'} small>{t}</Tag>)}
+          </p>
+        )}
+      </div>
+    ))}
+  </Timeline>
 
   <h3>Checks, by area</h3>
   <Timeline
@@ -61,6 +89,18 @@ import Timeline from '@n1kname/components/Timeline.astro';
     font-size: var(--text-body-sm);
     font-weight: 600;
     color: var(--c-text-secondary);
+  }
+
+  .td-story {
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  .td-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-3) 0 0;
   }
 
   .td-head {

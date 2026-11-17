@@ -25,7 +25,7 @@ To let rows or cards that start below the fold arrive as you reach them, on a pa
 
 ## Variants
 
-None. Items that arrive together go 90ms apart. A jump past items shows the ones it skipped at once.
+`--reveal-rise` sets how far it rises, 24px by default; a list of small items reads better at 6px. Items that arrive together go 90ms apart. A jump past items shows the ones it skipped at once.
 
 ## States
 
@@ -35,7 +35,7 @@ None. Items that arrive together go 90ms apart. A jump past items shows the ones
 
 ## Tokens
 
-`--ease-out`, `--ease-soft`
+`--ease-out`, `--ease-soft`, `--motion-reveal`. `--reveal-rise` is the page's to set.
 
 ## Keyboard and screen reader
 
@@ -44,7 +44,7 @@ None. Items that arrive together go 90ms apart. A jump past items shows the ones
 
 ## Content
 
-Each item fires `reveal` with its delay in `detail`, for a page that wants to start something of its own as it arrives, such as an icon drawing itself.
+Each item fires `reveal` with its delay in `detail`, for a page that wants to start something of its own as it arrives, such as an icon drawing itself. An [Icon](/components/icons/) with `draw` listens for it on its own.
 
 ## Status
 

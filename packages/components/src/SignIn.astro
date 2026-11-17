@@ -12,7 +12,12 @@
  * the address carries `errorParam` (a redirect back with ?error=1), or when a server removes its
  * `hidden` attribute ([data-sign-in-error]) on the way out. Once shown, the field is marked
  * invalid and takes focus, so typing again needs no click.
+ *
+ * The submit is the design system's primary Button, so it has the same light under the pointer
+ * and the same spring on a press as every other primary action.
  */
+import Button from './Button.astro';
+
 interface Props {
   variant?: 'card' | 'page';
   /** The h1: an app's name, or what the door is in front of. */
@@ -96,7 +101,7 @@ const input =
           aria-invalid={error ? 'true' : undefined}
           {...input}
         />
-        <button class="submit" type="submit"><span class="submit-label">{submit}</span></button>
+        <Button class="submit" variant="primary" type="submit"><span class="submit-label">{submit}</span></Button>
       </div>
     </form>
 
@@ -277,52 +282,25 @@ const input =
     border-color: var(--c-status-critical);
   }
 
-  .submit {
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  /* The Button's look; only its size here, so it stands as tall as the field beside it. */
+  .row :global(.submit) {
     min-height: 44px;
-    padding: 0 var(--sp-5);
-    border: 0;
-    border-radius: var(--radius-md);
-    background: var(--c-accent);
-    color: var(--c-on-accent);
-    font: inherit;
-    font-size: var(--text-body-sm);
-    font-weight: 600;
-    cursor: pointer;
+    padding-inline: var(--sp-5);
     touch-action: manipulation;
-    transition:
-      background-color var(--motion-hover) var(--ease-hover),
-      scale var(--motion-fast) var(--ease-out);
   }
 
-  .card .submit {
+  .card :global(.submit) {
     width: 100%;
     margin-top: var(--sp-2);
   }
 
-  .submit:hover {
-    background: color-mix(in oklab, var(--c-accent) 88%, var(--c-text));
-  }
-
-  .submit:active {
-    scale: 0.98;
-  }
-
-  .submit:focus-visible {
-    outline: 2px solid var(--c-focus);
-    outline-offset: 2px;
-  }
-
   /* Sent: the words fade back while the next page loads. No spinner: it's usually under a
      second, and a spinner that flashes reads as a fault. */
-  .submit[data-busy] {
+  .row :global(.submit[data-busy]) {
     cursor: progress;
   }
 
-  .submit[data-busy] .submit-label {
+  .row :global(.submit[data-busy] .submit-label) {
     opacity: 0.6;
     transition: opacity var(--motion-base) var(--ease-out) 300ms;
   }
@@ -364,8 +342,7 @@ const input =
 
   @media (prefers-reduced-motion: reduce) {
     .field,
-    .submit,
-    .submit[data-busy] .submit-label {
+    .row :global(.submit[data-busy] .submit-label) {
       transition: none;
     }
   }

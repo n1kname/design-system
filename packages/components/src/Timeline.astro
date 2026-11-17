@@ -1,15 +1,26 @@
 ---
 /**
- * A project timeline: a marker and a line down the left, and each entry's period, title and text
- * beside it. The period sits above the title, small, so a year, a phase or a name all read the
- * same, and the text keeps the width.
+ * A timeline: a marker and a line down the left, and each entry's period, title and text beside
+ * it. The period sits above the title, small, so a year, a phase or a name all read the same, and
+ * the text keeps the width.
  *
  * Entries up to `current` are done (filled markers on a solid line); `current` is now (a marker
  * with a halo); any after it are still to come (hollow markers on a dashed line). By default the
- * last entry is now. An entry can carry an icon, shown in a soft disc of the accent.
+ * last entry is now. `order="newest-first"` turns that round for a history read from today back,
+ * such as a career: the first entry is now and the ones below it are done. An entry can carry an
+ * icon, shown in a soft disc of the accent.
  *
  * Once, as each entry comes into view, its marker settles in, its text rises and its line draws on
  * to the next. Nothing moves under reduced motion, and without script everything is simply there.
+ *
+ * `fill` is the other motion, for a long history that is read rather than glanced at: a faint rail
+ * that fills as the reader goes down it, to a line 60% down the window, in the accent through the
+ * step into now and the chart teal for the rest. Each marker it passes turns teal. The entries
+ * don't arrive: the fill is the one moment. Under reduced motion, or without script, the rail is
+ * drawn in full.
+ *
+ * Each entry takes richer content than `body` through a slot named after its place, `entry-0`,
+ * `entry-1` and so on: a story in paragraphs, or tags. It goes after the text.
  */
 import type { IconName } from './icons';
 import Icon from './Icon.astro';
@@ -17,33 +28,63 @@ import Icon from './Icon.astro';
 interface Entry {
   period: string;
   label: string;
-  body: string;
+  /** A line under the title, such as the role held. */
+  meta?: string;
+  body?: string;
   /** What the step was, from the icon set: users, search, route, … */
   icon?: IconName;
 }
 
 interface Props {
   entries: Entry[];
-  /** Which entry is now, 0 first. The last by default; false for a history that is over. */
+  /** Which entry is now, 0 first. The last by default, the first for newest-first; false for a history that is over. */
   current?: number | false;
+  /** How the entries run down the page. */
+  order?: 'oldest-first' | 'newest-first';
+  /** The rail fills as the reader scrolls down it. */
+  fill?: boolean;
+  /** Sets each title as a heading at this level, for a timeline that is a section's main content. */
+  heading?: 'h2' | 'h3' | 'h4';
+  class?: string;
 }
 
-const { entries, current = entries.length - 1 } = Astro.props;
+const { entries, order = 'oldest-first', fill = false, heading, class: className } = Astro.props;
+const newest = order === 'newest-first';
+const current = Astro.props.current === undefined ? (newest ? 0 : entries.length - 1) : Astro.props.current;
 const icons = entries.some((e) => e.icon);
-const state = (i: number) => (current === false || i < current ? 'done' : i === current ? 'current' : 'next');
+const state = (i: number) => {
+  if (current === false) return 'done';
+  if (i === current) return 'current';
+  return (newest ? i > current : i < current) ? 'done' : 'next';
+};
+// The line below an entry is dashed when it runs between now and what is still to come.
+const dashed = (i: number) => (newest ? state(i) === 'next' : state(i + 1) === 'next');
+const Title = heading ?? 'p';
+const extras = await Promise.all(
+  entries.map((_, i) => (Astro.slots.has(`entry-${i}`) ? Astro.slots.render(`entry-${i}`) : Promise.resolve(''))),
+);
 ---
 
-<ol class="timeline" data-icons={icons ? '' : undefined} data-timeline>
+<ol
+  class:list={['timeline', className]}
+  data-icons={icons ? '' : undefined}
+  data-fill={fill ? '' : undefined}
+  data-order={order}
+  data-current={current === false ? undefined : current}
+  data-timeline
+>
   {
     entries.map((e, i) => (
-      <li data-state={state(i)} aria-current={state(i) === 'current' ? 'step' : undefined} data-to={i < entries.length - 1 ? state(i + 1) : undefined}>
+      <li data-state={state(i)} aria-current={state(i) === 'current' ? 'step' : undefined} data-to={i < entries.length - 1 ? (dashed(i) ? 'next' : 'done') : undefined}>
         <span class="marker" aria-hidden="true">
-          {e.icon && <Icon name={e.icon} size={16} />}
+          {e.icon && <Icon name={e.icon} size={fill ? 18 : 16} stroke={fill ? 1.75 : undefined} />}
         </span>
         <div class="content">
           <p class="period">{e.period}</p>
-          <p class="label">{e.label}</p>
-          <p class="text">{e.body}</p>
+          <Title class="label">{e.label}</Title>
+          {e.meta && <p class="meta">{e.meta}</p>}
+          {e.body && <p class="text">{e.body}</p>}
+          {extras[i] && <div class="more"><Fragment set:html={extras[i]} /></div>}
         </div>
       </li>
     ))
@@ -52,7 +93,9 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
 <script is:inline>
   // Before the first paint, so entries waiting to arrive never show and then vanish.
   (function (list) {
-    if (list && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) list.classList.add('arrive');
+    if (!list || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (list.hasAttribute('data-fill')) list.classList.add('filling');
+    else if ('IntersectionObserver' in window) list.classList.add('arrive');
   })(document.currentScript && document.currentScript.previousElementSibling);
 </script>
 
@@ -74,6 +117,43 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
       { threshold: 0.25, rootMargin: '0px 0px -8% 0px' },
     );
     list.querySelectorAll('li').forEach((li) => seen.observe(li));
+  });
+
+  // The fill: from the first marker down to the line being read, 60% down the window, never past
+  // the last marker. The step between now and the entry before it in time is in the accent.
+  document.querySelectorAll<HTMLElement>('[data-timeline].filling').forEach((list) => {
+    const items = [...list.querySelectorAll<HTMLElement>(':scope > li')];
+    if (items.length < 2) return;
+    const now = list.dataset.current === undefined ? -1 : Number(list.dataset.current);
+    const before = list.dataset.order === 'newest-first' ? now + 1 : now - 1;
+    let queued = false;
+    const draw = () => {
+      queued = false;
+      const box = list.getBoundingClientRect();
+      const centre = (li: HTMLElement) => {
+        const m = li.querySelector('.marker')!.getBoundingClientRect();
+        return m.top + m.height / 2 - box.top;
+      };
+      const at = items.map(centre);
+      const first = at[0];
+      const end = Math.max(first, Math.min(at[at.length - 1], innerHeight * 0.6 - box.top));
+      const lit = now >= 0 && at[before] !== undefined ? [Math.min(at[now], at[before]), Math.max(at[now], at[before])] : [0, 0];
+      list.style.setProperty('--fill-top', `${first}px`);
+      list.style.setProperty('--fill-h', `${end - first}px`);
+      list.style.setProperty('--lit-from', `${lit[0] - first}px`);
+      list.style.setProperty('--lit-to', `${lit[1] - first}px`);
+      items.forEach((li, i) => li.classList.toggle('reached', at[i] <= end + 1));
+    };
+    const queue = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(draw);
+      }
+    };
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('resize', queue);
+    document.fonts?.ready.then(queue);
+    queue();
   });
 </script>
 
@@ -212,6 +292,25 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
     color: var(--c-text);
   }
 
+  /* As a heading: the title of a section's main content, in the display face. */
+  :is(h2, h3, h4).label {
+    margin-top: var(--sp-2);
+    font-family: var(--font-display, var(--font-body));
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    letter-spacing: var(--tracking-h3);
+  }
+
+  .meta {
+    margin-top: 2px;
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  .more {
+    margin-top: var(--sp-3);
+  }
+
   .text {
     margin-top: var(--sp-1);
     color: var(--c-text-secondary);
@@ -276,6 +375,127 @@ const state = (i: number) => (current === false || i < current ? 'done' : i === 
     to {
       opacity: 0;
       transform: scale(2);
+    }
+  }
+
+  /* ── Fill ───────────────────────────────────────────────────────────────────
+     The rail runs from marker centre to marker centre under the markers, which sit on discs of the
+     page colour so it seems to pass behind them. Faint teal, and the fill over it. Without the
+     script (or with reduced motion) nothing is held back: the rail and the markers are teal. */
+  [data-fill] {
+    --m: 12px;
+    --mt: 6px;
+    --col: 24px;
+    --gap: var(--sp-8);
+    --rail: var(--c-chart-2);
+    --rail-faint: color-mix(in oklab, var(--c-chart-2) 22%, transparent);
+    position: relative;
+  }
+
+  [data-fill][data-icons] {
+    --m: 26px;
+    --mt: -2px;
+  }
+
+  [data-fill] li {
+    column-gap: var(--sp-5);
+  }
+
+  [data-fill] li:not(:last-child)::before {
+    top: calc(var(--mt) + var(--m) / 2);
+    bottom: calc(-1 * (var(--mt) + var(--m) / 2));
+    background: var(--rail);
+    opacity: 1;
+  }
+
+  [data-fill].filling li:not(:last-child)::before {
+    background: var(--rail-faint);
+  }
+
+  /* Drawn in full (no script, reduced motion): the step into now is still the accent. */
+  [data-fill][data-order='newest-first']:not(.filling) li[data-state='current']:not(:last-child)::before,
+  [data-fill][data-order='oldest-first']:not(.filling) li:has(+ li[data-state='current'])::before {
+    background: var(--c-accent);
+  }
+
+  [data-fill].filling::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(var(--col) / 2 - 1px);
+    top: var(--fill-top, 0px);
+    width: 2px;
+    height: var(--fill-h, 0px);
+    border-radius: 1px;
+    background: linear-gradient(to bottom,
+        var(--rail) 0 var(--lit-from, 0px),
+        var(--c-accent) var(--lit-from, 0px) var(--lit-to, 0px),
+        var(--rail) var(--lit-to, 0px));
+  }
+
+  [data-fill] .marker {
+    z-index: 1;
+    background: var(--rail);
+    box-shadow: 0 0 0 4px var(--c-bg);
+    color: var(--rail);
+    transition:
+      background-color var(--motion-base) var(--ease-out),
+      color var(--motion-base) var(--ease-out);
+  }
+
+  [data-fill].filling li:not(.reached) .marker {
+    background: color-mix(in oklab, var(--c-chart-2) 40%, var(--c-bg));
+  }
+
+  [data-fill] [data-state='current'] .marker,
+  [data-fill] [data-state='next'] .marker {
+    box-shadow: 0 0 0 4px var(--c-bg);
+  }
+
+  [data-fill] [data-state='current'] .marker {
+    background: var(--c-accent);
+  }
+
+  /* With icons: the icon itself on the rail, in a gap of the page colour. Now is larger, in a soft
+     disc of the accent. */
+  [data-fill][data-icons] .marker,
+  [data-fill][data-icons] [data-state] .marker {
+    background: var(--c-bg);
+    box-shadow: none;
+    color: var(--rail);
+  }
+
+  [data-fill][data-icons].filling li:not(.reached) .marker {
+    background: var(--c-bg);
+    color: color-mix(in oklab, var(--c-chart-2) 50%, var(--c-bg));
+  }
+
+  [data-fill][data-icons] [data-state='current'] .marker,
+  [data-fill][data-icons].filling [data-state='current']:not(.reached) .marker {
+    width: calc(var(--m) + 6px);
+    height: calc(var(--m) + 6px);
+    margin-top: calc(var(--mt) - 3px);
+    background: var(--c-surface-tint);
+    color: var(--c-text-accent);
+  }
+
+  [data-fill][data-icons] .content {
+    padding-top: 0;
+  }
+
+  @media (max-width: 560px) {
+    [data-fill] {
+      --col: 18px;
+      --gap: var(--sp-7);
+    }
+
+    [data-fill] li {
+      column-gap: var(--sp-3);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-fill] .marker {
+      transition: none;
     }
   }
 

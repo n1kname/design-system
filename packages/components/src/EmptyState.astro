@@ -5,16 +5,26 @@
  *   filtered nothing matches: that's a result, offer a way back
  *   error    it failed: say what still works
  * An action goes in the slot. An error keeps showing the last good figures if there are any.
+ *
+ * An icon above the title says what would be here. For `empty` it draws itself in once, as the
+ * state comes into view: a place being empty is rare and worth a moment. A filter that matches
+ * nothing happens often and an error is no occasion, so for those it is simply there.
  */
+import type { IconName } from './icons';
+import Icon from './Icon.astro';
+
 interface Props {
   kind?: 'empty' | 'filtered' | 'error';
   title: string;
   text?: string;
+  /** What would be here, from the icon set. */
+  icon?: IconName;
 }
-const { kind = 'empty', title, text } = Astro.props;
+const { kind = 'empty', title, text, icon } = Astro.props;
 ---
 
 <div class:list={['empty-state', kind]} role={kind === 'error' ? 'alert' : undefined}>
+  {icon && <Icon class="icon" name={icon} size={28} stroke={1.5} draw={kind === 'empty'} />}
   <p class="title">{title}</p>
   {text && <p class="text">{text}</p>}
   {Astro.slots.has('default') && <div class="action"><slot /></div>}
@@ -32,6 +42,16 @@ const { kind = 'empty', title, text } = Astro.props;
 
   .error {
     border: 1px solid var(--c-status-critical);
+  }
+
+  .empty-state :global(.icon) {
+    display: block;
+    margin-bottom: var(--sp-1);
+    color: var(--c-chart-2);
+  }
+
+  .error :global(.icon) {
+    color: var(--c-status-critical);
   }
 
   .title {

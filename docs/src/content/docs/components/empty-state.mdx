@@ -10,6 +10,7 @@ import Stack from '@n1kname/components/Stack.astro';
 <div class="not-content">
   <Stack gap={3}>
     <EmptyState title="No figures yet" text="The first night is measured tomorrow morning." />
+    <EmptyState icon="calendar" title="No trips planned" text="Trips you save from the map show up here." />
     <EmptyState kind="filtered" title="No nights above 1.000 ppm" text="That's the result, not a gap in the data.">
       <Button variant="quiet">Show all nights</Button>
     </EmptyState>
@@ -33,6 +34,7 @@ So that nothing just looks broken. "Nothing yet", "nothing matches" and "it fail
 
 - **Title:** what's going on.
 - **Text:** optional, what happens next.
+- **Icon:** optional, above the title, in the chart teal (the critical red for `error`): what would be here.
 - **Action:** optional, a slot.
 
 ## Variants
@@ -45,11 +47,13 @@ So that nothing just looks broken. "Nothing yet", "nothing matches" and "it fail
 
 ## States
 
-It has no states of its own.
+- **Arriving** (`empty` with an icon): the icon draws itself in once, as the state comes into view. A place being empty is rare and worth a moment.
+- **`filtered` and `error`:** the icon is simply there. A filter that matches nothing happens often, and an error is no occasion.
+- **Reduced motion, or no script:** nothing moves.
 
 ## Tokens
 
-`--c-border-strong`, `--c-status-critical`, `--c-text`, `--c-text-secondary`, `--leading-caption`, `--radius-md`, `--sp-1`, `--sp-2`, `--sp-5`, `--text-body-sm`, `--text-caption`.
+`--c-border-strong`, `--c-chart-2`, `--c-status-critical`, `--c-text`, `--c-text-secondary`, `--leading-caption`, `--radius-md`, `--sp-1`, `--sp-2`, `--sp-5`, `--text-body-sm`, `--text-caption`.
 
 ## Keyboard and screen reader
 
@@ -59,11 +63,11 @@ It has no states of its own.
 ## Content
 
 - **Say what happened and what's next,** not "No data".
-- **No apology and no illustration.** It's a data page.
+- **No apology and no illustration.** It's a data page. An icon is fine when it says what would be here: a calendar for trips, a file for documents.
 
 ## Status
 
-New. Used by a dashboard.
+Used by two dashboards. The icon is new in components 0.37.0.
 
 ## Code
 

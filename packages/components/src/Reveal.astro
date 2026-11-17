@@ -5,6 +5,8 @@
  * Items that arrive together go 90ms apart. A jump past items (an anchor, a fast fling) shows the
  * ones it skipped at once, so nothing is left hidden above.
  *
+ * It rises by `--reveal-rise` (24px), so a page can make it quieter where items are small.
+ *
  * Hidden only once the script has armed it, so without script, or with reduced motion, it is
  * simply there. Each item fires `reveal` with its delay in `detail`, for a page that wants to
  * start something of its own as it arrives.
@@ -24,7 +26,7 @@ const { as: Element = 'div', class: className, ...rest } = Astro.props;
 <style is:global>
   [data-reveal].reveal-armed {
     opacity: 0;
-    translate: 0 24px;
+    translate: 0 var(--reveal-rise, 24px);
     transition:
       opacity calc(var(--motion-reveal) * 2 / 3) var(--ease-out),
       translate var(--motion-reveal) var(--ease-soft);

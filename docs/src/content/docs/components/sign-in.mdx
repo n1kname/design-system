@@ -76,7 +76,7 @@ The one page a stranger sees before anything private: a dashboard's password, or
 
 - **Error:** shown when `error` is true, when the address carries `errorParam`, or when a server removes the `hidden` attribute from `[data-sign-in-error]`. The field gets `aria-invalid` and focus, and its border turns the critical colour until you type.
 - **Sent:** once the form goes, the button is marked busy and the word on it fades back after 300ms, so a quick answer shows nothing. A second press does nothing. Coming back with the browser's back button makes it ready again.
-- **Hover and press:** the field's border darkens on hover; the button darkens and presses in by 2%. Both are off under reduced motion.
+- **Hover and press:** the field's border darkens on hover. The button is the primary [Button](/components/buttons/): a soft light follows the pointer and a press springs back. All of it is off under reduced motion.
 
 ## Tokens
 
@@ -99,7 +99,7 @@ The one page a stranger sees before anything private: a dashboard's password, or
 
 ## Status
 
-New. Used by a dashboard and a portfolio.
+Used by a dashboard and a portfolio. Since components 0.37.0 the button is the primary Button rather than a look of its own, so it matches every other primary action.
 
 ## Code
 

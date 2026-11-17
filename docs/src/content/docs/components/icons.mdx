@@ -17,6 +17,17 @@ export const names = Object.keys(ICONS);
   ))}
 </div>
 
+<div class="not-content" style={{ marginTop: 'var(--sp-6)' }}>
+  <p><strong>Drawn in.</strong> With <code>draw</code>, each icon draws itself line by line as it comes into view, once.</p>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-6)', marginTop: 'var(--sp-3)', color: 'var(--c-chart-2)' }}>
+    <Icon name="code" size={32} stroke={1.5} draw />
+    <Icon name="component" size={32} stroke={1.5} draw />
+    <Icon name="layout-dashboard" size={32} stroke={1.5} draw />
+    <Icon name="search" size={32} stroke={1.5} draw />
+    <Icon name="users" size={32} stroke={1.5} draw />
+  </div>
+</div>
+
 ## What it's for
 
 To help someone find a thing they already know by name. [Lucide](https://lucide.dev/) paths, inlined: no package, no webfont, no extra request. Only the icons in real use are here, and adding one is a single line in `icons.ts`.
@@ -34,15 +45,18 @@ To help someone find a thing they already know by name. [Lucide](https://lucide.
 
 ## Variants
 
-None.
+| Option | For |
+|---|---|
+| `draw` | The icon draws itself in once, line by line, as it arrives. Inside a [Reveal](/components/reveal/) it draws when that Reveal arrives, on its beat; outside one, as it comes a third into view. Icons that arrive together go 110ms apart. |
 
 ## States
 
-It has no states of its own.
+- **Drawing** (`draw` only): hidden once the script has armed it, then each line is drawn on over `--motion-draw`.
+- **Without script, or under reduced motion:** simply there.
 
 ## Tokens
 
-It takes the colour of the text around it, so it uses no tokens of its own.
+It takes the colour of the text around it. Drawing uses `--motion-draw` and `--ease-soft`.
 
 ## Keyboard and screen reader
 
@@ -51,10 +65,11 @@ It takes the colour of the text around it, so it uses no tokens of its own.
 ## Content
 
 - **One icon per meaning,** so the same picture never means two things.
+- **Draw only where people look once,** such as a list of what someone does, or an empty page. Never in a toolbar, a row or anything used every day.
 
 ## Status
 
-Used by the portfolio.
+Used by the portfolio. `draw` is new in components 0.37.0, from the portfolio's landing page.
 
 ## Code
 
