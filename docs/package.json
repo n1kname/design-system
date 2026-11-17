@@ -10,11 +10,11 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.3.0",
-    "@astrojs/starlight": "0.42.8",
-    "@fontsource-variable/bitter": "5.2.5",
-    "@fontsource/ibm-plex-mono": "5.2.5",
-    "@fontsource/ibm-plex-sans": "5.2.5",
+    "@astrojs/markdown-remark": "^7.3.7",
+    "@astrojs/starlight": "0.42.10",
+    "@fontsource-variable/bitter": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
     "@n1kname/charts": "workspace:*",
     "@n1kname/components": "workspace:*",
     "@n1kname/tokens": "workspace:*",
