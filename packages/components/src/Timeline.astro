@@ -412,6 +412,13 @@ const extras = await Promise.all(
     background: var(--rail-faint);
   }
 
+  /* The step into now waits in a faint accent rather than faint teal, so it reads orange before
+     the fill reaches it as well as after. */
+  [data-fill][data-order='newest-first'].filling li[data-state='current']:not(:last-child)::before,
+  [data-fill][data-order='oldest-first'].filling li:has(+ li[data-state='current'])::before {
+    background: color-mix(in oklab, var(--c-accent) 28%, transparent);
+  }
+
   /* Drawn in full (no script, reduced motion): the step into now is still the accent. */
   [data-fill][data-order='newest-first']:not(.filling) li[data-state='current']:not(:last-child)::before,
   [data-fill][data-order='oldest-first']:not(.filling) li:has(+ li[data-state='current'])::before {
