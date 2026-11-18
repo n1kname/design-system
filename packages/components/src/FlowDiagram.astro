@@ -410,6 +410,16 @@ const lines = (label: string) => {
     fill: var(--c-on-accent);
   }
 
+  /* An icon node's name and line sit under the disc, on the page, so they keep the page's text
+   * colour; only the glyph inside turns to the on-accent colour. */
+  .solid.icon-node .name {
+    fill: var(--c-text);
+  }
+
+  .solid.icon-node .glyph {
+    color: var(--c-on-accent);
+  }
+
   .glyph {
     fill: none;
     stroke: currentColor;
