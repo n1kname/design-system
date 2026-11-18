@@ -23,7 +23,7 @@ interface Item {
 }
 
 interface Props {
-  groups: { label: string; items: Item[] }[];
+  groups: { label?: string; items: Item[] }[];
   /** The site's name, its link home and, if it has one, its mark. */
   brand: { label: string; href: string; logo?: string };
   /** Names the navigation for a screen reader. */

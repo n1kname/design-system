@@ -20,7 +20,7 @@ To move between the pages of a tool with more of them than a row holds, such as 
 
 ## Anatomy
 
-- **Group label:** a short overline over each group's links.
+- **Group label:** a short overline over each group's links. Leave it out for one page that stands above the groups, such as an overview: its group has no label and, folded, no rule.
 - **Link:** an icon and one or two words, in a 40px square's width when folded.
 - **Current link:** `aria-current="page"`, in the body text colour and semibold, its icon in the accent colour.
 - **Marker:** an empty shape behind the current link. It is a shape of its own, so it can glide without the words.
@@ -45,7 +45,7 @@ To move between the pages of a tool with more of them than a row holds, such as 
 
 ## Keyboard and screen reader
 
-- **A `nav` with a name,** "Pages" unless you pass `label`, and each group a list named by its label.
+- **A `nav` with a name,** "Pages" unless you pass `label`, and each group a list named by its label. A group without a label is a list without a name.
 - **The current page is announced** through `aria-current`.
 - **Folded, every link keeps its name.** The tip is for the eye only, so it's hidden from a screen reader, and it shows on keyboard focus as well as hover. Escape hides it.
 
@@ -53,7 +53,8 @@ To move between the pages of a tool with more of them than a row holds, such as 
 
 - **One or two words a page,** the same words as the page's title.
 - **An icon for every page or none.** A column with gaps in it reads as a mistake.
-- **Group labels name the source or the kind,** such as the app the data comes from.
+- **Group labels name the source or the kind,** such as the app the data comes from, or what the pages are about.
+- **One unlabelled group at most, and first.** It's for the page you land on, not for leftovers.
 
 ## Status
 

@@ -21,7 +21,8 @@ interface Item {
 }
 
 interface Group {
-  label: string;
+  /** Leave it out for a group of its own at the top, such as an overview page. */
+  label?: string;
   items: Item[];
 }
 
@@ -46,10 +47,12 @@ const icon = (name?: IconName) =>
   {
     groups.map((g, i) => (
       <div class="group">
-        <p class="group-label" id={`${id}-g${i}`}>
-          <span>{g.label}</span>
-        </p>
-        <ul aria-labelledby={`${id}-g${i}`}>
+        {g.label && (
+          <p class="group-label" id={`${id}-g${i}`}>
+            <span>{g.label}</span>
+          </p>
+        )}
+        <ul aria-labelledby={g.label ? `${id}-g${i}` : undefined}>
           {g.items.map((item) => (
             <li>
               <a href={item.href} aria-current={item.current ? 'page' : undefined}>
