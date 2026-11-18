@@ -8,7 +8,8 @@
  * with a halo); any after it are still to come (hollow markers on a dashed line). By default the
  * last entry is now. `order="newest-first"` turns that round for a history read from today back,
  * such as a career: the first entry is now and the ones below it are done. An entry can carry an
- * icon, shown in a soft disc of the accent.
+ * icon, shown in a disc: soft for what's done, the accent with a halo for now. With `fill` the discs
+ * are the same, in teal for the history behind and the accent for now.
  *
  * Once, as each entry comes into view, its marker settles in, its text rises and its line draws on
  * to the next. Nothing moves under reduced motion, and without script everything is simply there.
@@ -77,7 +78,7 @@ const extras = await Promise.all(
     entries.map((e, i) => (
       <li data-state={state(i)} aria-current={state(i) === 'current' ? 'step' : undefined} data-to={i < entries.length - 1 ? (dashed(i) ? 'next' : 'done') : undefined}>
         <span class="marker" aria-hidden="true">
-          {e.icon && <Icon name={e.icon} size={fill ? 18 : 16} stroke={fill ? 1.75 : undefined} />}
+          {e.icon && <Icon name={e.icon} size={16} />}
         </span>
         <div class="content">
           <p class="period">{e.period}</p>
@@ -392,9 +393,11 @@ const extras = await Promise.all(
     position: relative;
   }
 
+  /* With icons, the same discs as without the fill. */
   [data-fill][data-icons] {
-    --m: 26px;
-    --mt: -2px;
+    --m: 32px;
+    --mt: 0px;
+    --col: 32px;
   }
 
   [data-fill] li {
@@ -462,31 +465,26 @@ const extras = await Promise.all(
     background: var(--c-accent);
   }
 
-  /* With icons: the icon itself on the rail, in a gap of the page colour. Now is larger, in a soft
-     disc of the accent. */
+  /* With icons: each icon in a disc, as on a timeline without the fill. The discs are opaque, so
+     the rail seems to pass behind them. A disc the fill has passed is a soft teal; one it has yet
+     to reach is fainter; now is the accent itself, with its halo. */
   [data-fill][data-icons] .marker,
   [data-fill][data-icons] [data-state] .marker {
-    background: var(--c-bg);
+    background: color-mix(in oklab, var(--rail) 26%, var(--c-bg));
     box-shadow: none;
     color: var(--rail);
   }
 
   [data-fill][data-icons].filling li:not(.reached) .marker {
-    background: var(--c-bg);
-    color: color-mix(in oklab, var(--c-chart-2) 50%, var(--c-bg));
+    background: color-mix(in oklab, var(--rail) 14%, var(--c-bg));
+    color: color-mix(in oklab, var(--c-chart-2) 55%, var(--c-bg));
   }
 
   [data-fill][data-icons] [data-state='current'] .marker,
   [data-fill][data-icons].filling [data-state='current']:not(.reached) .marker {
-    width: calc(var(--m) + 6px);
-    height: calc(var(--m) + 6px);
-    margin-top: calc(var(--mt) - 3px);
-    background: var(--c-surface-tint);
-    color: var(--c-text-accent);
-  }
-
-  [data-fill][data-icons] .content {
-    padding-top: 0;
+    background: var(--c-accent);
+    color: var(--c-on-accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-accent) 28%, var(--c-bg));
   }
 
   @media (max-width: 560px) {
