@@ -272,7 +272,7 @@
     "overline": {
       "$type": "dimension",
       "$value": {
-        "value": 0.8125,
+        "value": 0.875,
         "unit": "rem"
       }
     },
@@ -378,7 +378,7 @@
     },
     "overline": {
       "$type": "number",
-      "$value": 0.11
+      "$value": 0
     },
     "mono": {
       "$type": "number",

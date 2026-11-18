@@ -289,7 +289,8 @@ const TYPE = {
   body: [1, 1.7, 0, 'body'],
   'body-sm': [0.875, 1.6, 0, 'body'],
   caption: [0.8125, 1.5, 0.01, 'body'],
-  overline: [0.8125, 1.4, 0.11, 'body'],
+  // Sentence case, set a touch larger and semibold, rather than tracked-out capitals.
+  overline: [0.875, 1.4, 0, 'body'],
   mono: [0.875, 1.6, 0, 'mono'],
 };
 
