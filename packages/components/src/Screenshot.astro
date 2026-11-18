@@ -25,7 +25,8 @@ interface Props {
   caption?: string;
   /** Widest the shot is drawn, in px. Keep it well under the source's width. */
   maxWidth?: number;
-  /** The placeholder's size. An image reports its own. */
+  /** The shot's size in px: the placeholder's size, and a plain URL's, so the space is kept while it
+   * loads. An import reports its own. */
   width?: number;
   height?: number;
   /** Keep the light plate in dark mode, for transparent artwork with dark labels. */
@@ -40,8 +41,8 @@ const {
   alt,
   caption,
   maxWidth = 680,
-  width = 1600,
-  height = 1000,
+  width,
+  height,
   lightPlate = false,
   placeholder = 'Screenshot to add',
   class: className,
@@ -49,6 +50,10 @@ const {
 
 const asset = image && typeof image !== 'string' && image.format !== 'svg' ? image : undefined;
 const url = typeof image === 'string' ? image : image && !asset ? image.src : undefined;
+// A plain URL's size comes from the props; an imported SVG knows its own.
+const urlSize = typeof image === 'string' ? { width, height } : image && !asset ? { width: image.width, height: image.height } : { width: undefined, height: undefined };
+// The placeholder needs a shape even when none is given.
+const box = { width: width ?? 1600, height: height ?? 1000 };
 
 // The cap and its 2x for sharp screens, never past what the source holds.
 const widths = asset ? [...new Set([maxWidth, maxWidth * 2].filter((w) => w <= asset.width))] : [];
@@ -70,12 +75,12 @@ if (asset && widths.length === 0) widths.push(asset.width);
           style={`max-width: ${maxWidth}px`}
         />
       ) : url ? (
-        <img src={url} alt={alt} loading="lazy" style={`max-width: ${maxWidth}px`} />
+        <img src={url} alt={alt} width={urlSize.width} height={urlSize.height} loading="lazy" style={`max-width: ${maxWidth}px`} />
       ) : (
-        <div class="placeholder" role="img" aria-label={`Placeholder. ${alt}`} style={`max-width: ${maxWidth}px; aspect-ratio: ${width} / ${height}`}>
+        <div class="placeholder" role="img" aria-label={`Placeholder. ${alt}`} style={`max-width: ${maxWidth}px; aspect-ratio: ${box.width} / ${box.height}`}>
           <span class="label">{placeholder}</span>
           <span class="spec">
-            {width} × {height}
+            {box.width} × {box.height}
           </span>
           <span class="brief">{alt}</span>
         </div>

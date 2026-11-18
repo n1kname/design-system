@@ -33,6 +33,8 @@ import { patternStyle, type Pattern } from './patterns';
 interface Screen {
   image: ImageMetadata | string;
   alt: string;
+  /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
+  size?: { width: number; height: number };
 }
 
 interface Layer {
@@ -46,6 +48,8 @@ interface Layer {
   /** Bobs slowly on its own, down and back, so a card cut out of a page floats above it. */
   float?: boolean;
   alt?: string;
+  /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
+  size?: { width: number; height: number };
 }
 
 interface Props {
@@ -111,7 +115,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
         {layers.map((l, i) => (
           <div class:list={['layer', { float: l.float }]} style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
             {typeof l.image === 'string' ? (
-              <img src={l.image} alt={l.alt ?? ''} loading={eager ? 'eager' : 'lazy'} />
+              <img src={l.image} alt={l.alt ?? ''} width={l.size?.width} height={l.size?.height} loading={eager ? 'eager' : 'lazy'} />
             ) : (
               <Image
                 src={l.image}
@@ -135,7 +139,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
       return (
         <div class={`screen s${i}`}>
           {typeof s.image === 'string' ? (
-            <img src={s.image} alt={s.alt} loading={eager && first ? 'eager' : 'lazy'} />
+            <img src={s.image} alt={s.alt} width={s.size?.width} height={s.size?.height} loading={eager && first ? 'eager' : 'lazy'} />
           ) : (
             <Image
               src={s.image}

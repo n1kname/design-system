@@ -6,14 +6,14 @@ description: "A case on an index as a tile in the client's colour: the name larg
 import CaseTile from '@n1kname/components/CaseTile.astro';
 
 export const laptops = [
-  { image: '/demo/stack-overview.svg' },
-  { image: '/demo/stack-detail.svg' },
-  { image: '/demo/stack-analytics.svg' },
+  { image: '/demo/stack-overview.svg', size: { width: 1200, height: 780 } },
+  { image: '/demo/stack-detail.svg', size: { width: 1200, height: 780 } },
+  { image: '/demo/stack-analytics.svg', size: { width: 1200, height: 780 } },
 ];
 export const phones = [
-  { image: '/demo/phone-home.svg' },
-  { image: '/demo/phone-prices.svg' },
-  { image: '/demo/phone-paid.svg' },
+  { image: '/demo/phone-home.svg', size: { width: 390, height: 844 } },
+  { image: '/demo/phone-prices.svg', size: { width: 390, height: 844 } },
+  { image: '/demo/phone-paid.svg', size: { width: 390, height: 844 } },
 ];
 
 <div class="not-content demo-stack">
@@ -77,7 +77,8 @@ The panel carries a texture under the screens, on a layer of its own that fades 
 | `layout="wide"` | The leading case: words and figures left, screens right. Spans the row. |
 | `layout="half"` | Two to a row: words on top, screens underneath. Any tile under 760px wide uses this layout. |
 | `device="phone"` | Tall phone screens in a thin bezel. |
-| `image` | One picture, such as a photo, for a case without screens. |
+| `image` | One picture, such as a photo, for a case without screens. A plain URL takes `imageSize`. |
+| `size` | On a screen or layer given as a plain URL: its own size in px, `{ width, height }`, so the space is kept while it loads. An import knows its own. |
 | `layers` | Separate pictures on a stage, each placed in percent and given a `depth`: on hover the deeper ones float up further, so a card lifts off the page it came from. Give a layer `float: true` and it drifts 16px down and back on its own, three times over `--motion-float`, then holds still. `stage` sets the stage's ratio. |
 | `ink="dark"` | Dark words and pattern for a light tone, such as a yellow. |
 | `pattern` | The texture: `dots` (default), `grid`, `lines`, `plus`, `waves` or `none`. `patternFade={false}` keeps it even across the tile. |

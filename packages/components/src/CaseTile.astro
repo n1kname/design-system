@@ -33,6 +33,8 @@ interface Screen {
   image: ImageMetadata | string;
   /** Empty by default: the tile is one link, named by its words. */
   alt?: string;
+  /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
+  size?: { width: number; height: number };
 }
 
 interface Layer {
@@ -46,6 +48,8 @@ interface Layer {
   /** Bobs slowly on its own, down and back, so a card cut out of a page floats above it. */
   float?: boolean;
   alt?: string;
+  /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
+  size?: { width: number; height: number };
 }
 
 interface Props {
@@ -61,6 +65,8 @@ interface Props {
   screens?: Screen[];
   /** One picture instead of screens, such as a photo. */
   image?: ImageMetadata | string;
+  /** A plain-URL `image`'s own size in px, so the space is kept while it loads. */
+  imageSize?: { width: number; height: number };
   /** Separate pictures on a stage, in place of screens. */
   layers?: Layer[];
   /** The stage's width over its height. */
@@ -92,6 +98,7 @@ const {
   metrics = [],
   screens = [],
   image,
+  imageSize,
   layers = [],
   stage = 4 / 3,
   ink = 'light',
@@ -165,7 +172,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
           {layers.map((l, i) => (
             <div class:list={['layer', { float: l.float }]} style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
               {typeof l.image === 'string' ? (
-                <img src={l.image} alt={l.alt ?? ''} loading="lazy" />
+                <img src={l.image} alt={l.alt ?? ''} width={l.size?.width} height={l.size?.height} loading="lazy" />
               ) : (
                 <Image src={l.image} alt={l.alt ?? ''} widths={layerWidths(l.image)} sizes={layerSizes(l.width)} format="webp" quality={80} loading="lazy" />
               )}
@@ -183,7 +190,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
             return (
               <div class={`screen s${i}`}>
                 {typeof s.image === 'string' ? (
-                  <img src={s.image} alt={s.alt ?? ''} loading="lazy" />
+                  <img src={s.image} alt={s.alt ?? ''} width={s.size?.width} height={s.size?.height} loading="lazy" />
                 ) : (
                   <Image src={s.image} alt={s.alt ?? ''} widths={fit(s.image)} sizes={sizes} format="webp" quality={80} loading="lazy" />
                 )}
@@ -193,7 +200,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
         : image && (
             <div class="screen picture s0">
               {typeof image === 'string' ? (
-                <img src={image} alt="" loading="lazy" />
+                <img src={image} alt="" width={imageSize?.width} height={imageSize?.height} loading="lazy" />
               ) : (
                 <Image src={image} alt="" widths={fit(image)} sizes="(max-width: 760px) 90vw, 700px" format="webp" quality={78} loading="lazy" />
               )}

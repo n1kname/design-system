@@ -6,7 +6,7 @@ description: "A product screenshot on a sunken plate, with a caption, served sha
 import Screenshot from '@n1kname/components/Screenshot.astro';
 
 <div class="not-content">
-  <Screenshot image="/demo/stack-overview.svg" alt="A fictional overview screen with totals, a chart of sessions by week and a status donut." caption="A caption says why the shot matters, not what it shows." maxWidth={900} />
+  <Screenshot image="/demo/stack-overview.svg" width={1200} height={780} alt="A fictional overview screen with totals, a chart of sessions by week and a status donut." caption="A caption says why the shot matters, not what it shows." maxWidth={900} />
 </div>
 
 ## What it's for
@@ -37,6 +37,7 @@ Showing the product inside a long read, such as a case study. The plate gives a 
 | `maxWidth` | The widest it is drawn, 680px by default. The shot is served at that width and twice it. |
 | `lightPlate` | Transparent artwork with dark labels: keeps the light plate in dark mode. |
 | `placeholder` | The placeholder's label, "Screenshot to add" by default. |
+| `width`, `height` | The shot's size in px: the placeholder's shape, and a plain URL's size so the space is kept while it loads. An import reports its own. |
 
 ## States
 

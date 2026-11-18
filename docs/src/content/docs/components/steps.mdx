@@ -31,7 +31,7 @@ How something got made, stage by stage: each with its number, its name, a line o
 
 - **Number:** two digits in the mono face, in the accent text colour. The numbers carry the order, so there are no arrows to break when it reflows.
 - **Name:** the stage, and a line on what it was for under it.
-- **Picture:** on a small sunken plate, at its own height. An imported image goes through `astro:assets` (sized and converted to webp); an address is used as it is.
+- **Picture:** on a small sunken plate, at its own height. An imported image goes through `astro:assets` (sized and converted to webp); an address is used as it is, and takes `size: { width, height }` so the space is kept while it loads.
 - **Placeholder:** without a picture, a dashed slot with the stage's name.
 - **Caption:** optional.
 

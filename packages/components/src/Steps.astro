@@ -20,6 +20,8 @@ interface Step {
   image?: ImageMetadata | string;
   /** What the picture shows. */
   alt?: string;
+  /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
+  size?: { width: number; height: number };
 }
 
 interface Props {
@@ -54,7 +56,7 @@ const { steps, caption, phone = false, class: className } = Astro.props;
                 loading="lazy"
               />
             ) : s.image ? (
-              <img src={s.image} alt={s.alt ?? ''} loading="lazy" />
+              <img src={s.image} alt={s.alt ?? ''} width={s.size?.width} height={s.size?.height} loading="lazy" />
             ) : (
               <div class="placeholder" role="img" aria-label={`Placeholder. ${s.alt ?? s.label}`}>
                 <span>{s.label}</span>

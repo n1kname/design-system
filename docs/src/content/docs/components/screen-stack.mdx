@@ -8,9 +8,9 @@ import LinkCard from '@n1kname/components/LinkCard.astro';
 import Tag from '@n1kname/components/Tag.astro';
 
 export const screens = [
-  { image: '/demo/stack-overview.svg', alt: 'A fictional overview screen with four figure tiles, a line chart and a donut.' },
-  { image: '/demo/stack-detail.svg', alt: 'A fictional detail screen with figure tiles and a bar chart.' },
-  { image: '/demo/stack-analytics.svg', alt: 'A fictional analytics screen with a heatmap by hour.' },
+  { image: '/demo/stack-overview.svg', size: { width: 1200, height: 780 }, alt: 'A fictional overview screen with four figure tiles, a line chart and a donut.' },
+  { image: '/demo/stack-detail.svg', size: { width: 1200, height: 780 }, alt: 'A fictional detail screen with figure tiles and a bar chart.' },
+  { image: '/demo/stack-analytics.svg', size: { width: 1200, height: 780 }, alt: 'A fictional analytics screen with a heatmap by hour.' },
 ];
 
 <div class="not-content demo-stack">
@@ -18,9 +18,9 @@ export const screens = [
 </div>
 
 export const phones = [
-  { image: '/demo/phone-home.svg', alt: 'A fictional phone screen with a home charger and its price.' },
-  { image: '/demo/phone-prices.svg', alt: 'A fictional phone screen with prices by hour as coloured blocks.' },
-  { image: '/demo/phone-paid.svg', alt: 'A fictional phone screen listing amounts paid back per month.' },
+  { image: '/demo/phone-home.svg', size: { width: 390, height: 844 }, alt: 'A fictional phone screen with a home charger and its price.' },
+  { image: '/demo/phone-prices.svg', size: { width: 390, height: 844 }, alt: 'A fictional phone screen with prices by hour as coloured blocks.' },
+  { image: '/demo/phone-paid.svg', size: { width: 390, height: 844 }, alt: 'A fictional phone screen listing amounts paid back per month.' },
 ];
 
 ## What it's for
@@ -62,6 +62,7 @@ Phone screens step up and right across the panel instead, each in a thin bezel:
 | `size="cover"` | A header band. Follows the pointer. |
 | `device="phone"` | Tall phone screens, side by side in a bezel. Pass the screen alone, without a device frame. |
 | `layers` | Separate pictures on a stage over the right of the panel, each with a `depth`: deeper layers follow the pointer further and lift on hover. `float: true` makes a layer bob 16px down and back on its own. |
+| `size` | On a screen or layer given as a plain URL: its own size in px, `{ width, height }`, so the space is kept while it loads. An import knows its own. |
 | `ink="dark"` | A dark note and pattern for a light tone. |
 | `pattern` | The texture: `dots` (default), `grid`, `lines`, `plus`, `waves` or `none`, fading toward the bottom left unless `patternFade={false}`. |
 | `size="card"` | The `media` slot of a link card. Fans out when the card is hovered or focused. |
