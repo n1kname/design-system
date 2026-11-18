@@ -41,6 +41,29 @@ assert.equal(area.querySelectorAll('.spark-fill').length, 1);
 assert.match(area.querySelector('.spark-fill').getAttribute('d'), /Z$/);
 assert.ok(area.querySelector('.spark-last'), 'last: a dot on the newest value');
 
+// last: on the newest value there is, when the run ends in gaps (a year so far).
+const sofar = svg(sparkline([3, 5, 4, null, null], { kind: 'line', last: true }));
+const dot = sofar.querySelector('.spark-last');
+const ends = sofar.querySelector('.spark-stroke').getAttribute('d').match(/L([\d.]+) ([\d.]+)$/);
+assert.ok(dot, 'a run that ends in gaps still gets its dot');
+assert.equal(dot.getAttribute('cx'), ends[1], 'on the newest value drawn');
+
+// compare: a quiet line under the marks, on the same scale, at the same steps.
+const yoy = svg(sparkline([3, 5, null, null], { kind: 'line', compare: [4, 10, 6, 2] }));
+const cmp = yoy.querySelector('.spark-compare');
+assert.ok(cmp, 'the compared run is drawn');
+assert.ok(yoy.innerHTML.indexOf('spark-compare') < yoy.innerHTML.indexOf('spark-stroke'), 'under the marks');
+const cmpPts = [...cmp.getAttribute('d').matchAll(/[ML]([\d.]+) ([\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+const nowPts = [...yoy.querySelector('.spark-stroke').getAttribute('d').matchAll(/[ML]([\d.]+) ([\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+assert.equal(cmpPts.length, 4);
+assert.deepEqual(nowPts.map((p) => p[0]), cmpPts.slice(0, 2).map((p) => p[0]), 'the same steps across');
+assert.ok(cmpPts[1][1] < nowPts[1][1], 'one scale: the higher value stands higher');
+assert.ok(cmpPts[1][1] < 6, 'the compared peak sets the top');
+assert.ok(svg(sparkline([2, 4], { kind: 'bar', compare: [3, 3] })).querySelector('.spark-compare'), 'over bars too');
+assert.equal(sparkline([null, null], { compare: [1, 2] }), '', 'nothing of its own, no svg');
+const longer = svg(sparkline([1], { kind: 'line', compare: [1, 2, 3] }));
+assert.equal([...longer.querySelector('.spark-compare').getAttribute('d').matchAll(/[ML]/g)].length, 3, 'a longer compared run sets the steps');
+
 // A label makes it an image with a name.
 const named = svg(sparkline([1, 2], { label: 'Steps, last 12 months <rising>' }));
 assert.equal(named.getAttribute('role'), 'img');

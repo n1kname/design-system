@@ -1,6 +1,6 @@
 ---
 title: "Sparkline"
-description: "A small chart beside a figure, for the shape of its recent run: bars, a line or an area, with a reference dashed across."
+description: "A small chart beside a figure, for the shape of its recent run: bars, a line or an area, with a reference dashed across or last year's run under it."
 ---
 
 import SparkDemo from '../../../components/SparkDemo.astro';
@@ -17,13 +17,14 @@ To show the shape of a figure's recent run beside the figure itself, such as the
 
 - **Values to read.** It has no axes and no labels. Use [lines](/components/lines/) or [bars](/components/bars/).
 - **On its own.** It needs a figure beside it that says the number.
-- **Several series.** One per spark. Put two side by side, or use lines.
+- **Several series.** One per spark, and at most one run to compare it with (`compare`). For more, put sparks side by side, or use lines.
 
 ## Anatomy
 
 - **Marks:** bars, a line or an area, from zero (or a line's own range, with `zero: false`), with a little headroom at the top. A missing value is a gap: no bar, or a break in the line.
 - **Reference:** a dashed line across, quiet, under the marks. It is drawn only when it falls inside the scale, so a benchmark far above never squashes the run.
-- **Last value:** optional, a dot on the newest value of a line or an area.
+- **Compared run:** optional, a thin line in the muted text colour under the marks, at the same steps and on the same scale, such as the same months a year earlier. The run in colour reads as now, the grey one as then.
+- **Last value:** optional, a dot on the newest value of a line or an area. When the run ends in gaps, as a year so far does, on the newest value there is.
 - **Size:** 72 by 44px by default, to sit in a card's corner. Bars thin out past eight, so they stay apart.
 
 ## Variants
@@ -34,6 +35,7 @@ To show the shape of a figure's recent run beside the figure itself, such as the
 | `kind: 'line'` | A rate or an average that runs on, such as hours of sleep. |
 | `kind: 'area'` | A line with weight under it, for an amount that builds up. |
 | `reference` | A benchmark, a target or last year's figure, dashed across. |
+| `compare` | A second run over the same steps, such as last year's months under this year's. It counts towards the scale. |
 | `last` | A dot on the newest value, when now is the point. |
 | `zero: false` | A line or area scaled to its own values, for a rate that only moves a little, such as hours of sleep. Bars always stand on zero. |
 | `width`, `height` | Another size. |
@@ -44,7 +46,7 @@ It has no states. Draw it again when the values change.
 
 ## Tokens
 
-`--tone`, set on the spark or any parent, `--c-chart-1` without one. Also `--c-text-muted` for the reference and `--c-surface` round the last dot. In forced colours, it is drawn in the system's text colour.
+`--tone`, set on the spark or any parent, `--c-chart-1` without one. Also `--c-text-muted` for the reference and the compared run and `--c-surface` round the last dot. In forced colours, it is drawn in the system's text colour.
 
 ## Keyboard and screen reader
 
@@ -55,12 +57,21 @@ It has no states. Draw it again when the values change.
 
 - **Say what the run covers** near it, such as "last 12 months", when the card doesn't.
 - **Name the reference** in the card, such as "Benchmark 8,500".
+- **Say what the grey line is** when there is a compared run, once for a row of cards, such as "this year over last year in grey".
 
 ## Status
 
 New. Taken from the Overview page of a dashboard, where each benchmark card drew its own.
 
 ## Code
+
+A year so far over the year before: twelve steps, this year's ending in gaps.
+
+```js wrap
+card.querySelector('.head').insertAdjacentHTML('beforeend', sparkline(thisYear, { kind: 'line', compare: lastYear, last: true }));
+```
+
+A bar run with a benchmark:
 
 ```js wrap
 import { sparkline } from '@n1kname/charts/spark';

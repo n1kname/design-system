@@ -37,6 +37,21 @@
   stroke-width: 1.5;
 }
 
+/* The run compared against, such as last year's: a thin line in the muted text colour, under the
+   marks, so the run in colour reads as now and the grey one as then. */
+.spark .spark-compare {
+  fill: none;
+  stroke: var(--c-text-muted);
+  stroke-opacity: 0.7;
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.spark .spark-compare-dot {
+  fill: var(--c-text-muted);
+}
+
 /* The reference: quiet, dashed, under the marks. */
 .spark .spark-ref {
   stroke: var(--c-text-muted);
@@ -57,6 +72,11 @@
 
   .spark .spark-fill {
     fill: none;
+  }
+
+  .spark .spark-compare {
+    stroke: GrayText;
+    stroke-opacity: 1;
   }
 
   .spark .spark-ref {
