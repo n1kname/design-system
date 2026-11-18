@@ -1,0 +1,374 @@
+---
+/**
+ * A case on an index as a tile in the client's colour: the project's name large, one line on what
+ * it achieved, a few figures, and two or three screens that run off the tile's edge. The whole tile
+ * is one link.
+ *
+ * `layout="wide"` puts the words on the left and the screens on the right, with the figures under
+ * the words; it spans the full row, for the case that leads. `layout="half"` puts the words on top
+ * and the screens underneath, two tiles to a row. Either becomes the half layout once the tile is
+ * narrower than 760px, and the figures drop out there.
+ *
+ * Screens are laptop (wide) or phone (tall) screenshots, or one picture (`image`), such as a photo,
+ * for a case without screens. The first screen sits in front.
+ *
+ * Motion, all of it off under reduced motion: the screens rise in once as the tile scrolls into view,
+ * front first. Under a real pointer the tile lifts and the screens fan out a little; focus does the
+ * same.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Metric {
+  value: string;
+  label: string;
+}
+
+interface Screen {
+  image: ImageMetadata | string;
+  /** Empty by default: the tile is one link, named by its words. */
+  alt?: string;
+}
+
+interface Props {
+  href: string;
+  /** The project's name, set large. */
+  title: string;
+  /** One line on what it achieved. */
+  text?: string;
+  /** Above the title: organisation, years, state. */
+  overline?: string;
+  /** Shown on a wide tile only; up to four. */
+  metrics?: Metric[];
+  screens?: Screen[];
+  /** One picture instead of screens, such as a photo. */
+  image?: ImageMetadata | string;
+  device?: 'laptop' | 'phone';
+  layout?: 'wide' | 'half';
+  /** The tile colour, deep enough for white text. */
+  tone?: string;
+  /** A label on the picture, such as "Concepts". */
+  note?: string;
+  /** A view-transition-name for the screens, shared with the cover on the page it opens. */
+  transition?: string;
+  /** The title's heading level. */
+  as?: 'h2' | 'h3';
+  class?: string;
+}
+
+const {
+  href,
+  title,
+  text,
+  overline,
+  metrics = [],
+  screens = [],
+  image,
+  device = 'laptop',
+  layout = 'half',
+  tone = 'var(--c-accent)',
+  note,
+  transition,
+  as: Heading = 'h2',
+  class: className,
+} = Astro.props;
+
+const shots = screens.slice(0, 3);
+const order = [...shots.keys()].reverse();
+const phone = device === 'phone';
+const widths = phone ? [240, 480] : [600, 1200];
+const sizes = phone ? '(max-width: 760px) 30vw, 200px' : '(max-width: 760px) 80vw, 600px';
+const fit = (img: ImageMetadata) => {
+  const w = widths.filter((x) => x <= img.width);
+  return w.length ? w : [img.width];
+};
+const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
+---
+
+<a
+  class:list={['case-tile', layout, device, { 'has-image': !shots.length && image }, className]}
+  href={href}
+  style={`--tile-tone: ${tone}`}
+  data-case-tile
+>
+  <div class="frame">
+  <div class="copy">
+    {overline && <p class="overline">{overline}</p>}
+    <Heading class="title">{title}</Heading>
+    {text && <p class="text">{text}</p>}
+    {note && <p class="note">{note}</p>}
+    {
+      figures.length > 0 && (
+        <dl class="metrics">
+          {figures.map((m) => (
+            <div>
+              <dt>{m.value}</dt>
+              <dd>{m.label}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+  </div>
+
+  <div class="art" style={transition ? `view-transition-name: ${transition}; view-transition-class: media` : undefined}>
+    {
+      shots.length > 0
+        ? order.map((i) => {
+            const s = shots[i];
+            return (
+              <div class={`screen s${i}`}>
+                {typeof s.image === 'string' ? (
+                  <img src={s.image} alt={s.alt ?? ''} loading="lazy" />
+                ) : (
+                  <Image src={s.image} alt={s.alt ?? ''} widths={fit(s.image)} sizes={sizes} format="webp" quality={80} loading="lazy" />
+                )}
+              </div>
+            );
+          })
+        : image && (
+            <div class="screen picture s0">
+              {typeof image === 'string' ? (
+                <img src={image} alt="" loading="lazy" />
+              ) : (
+                <Image src={image} alt="" widths={fit(image)} sizes="(max-width: 760px) 90vw, 700px" format="webp" quality={78} loading="lazy" />
+              )}
+            </div>
+          )
+    }
+  </div>
+  </div>
+</a>
+
+<script>
+  // Arm the entrance only with script and motion welcome, so without either the screens are simply
+  // there. Each tile plays once, when it first comes into view.
+  const tiles = document.querySelectorAll<HTMLElement>('[data-case-tile]');
+  if (tiles.length && matchMedia('(prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      },
+      { threshold: 0.25 },
+    );
+    for (const t of tiles) {
+      if (t.getBoundingClientRect().top < innerHeight * 0.9) continue;
+      t.classList.add('armed');
+      io.observe(t);
+    }
+  }
+</script>
+
+<style>
+  .case-tile {
+    container-type: inline-size;
+    position: relative;
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 24px;
+    color: #fff;
+    text-decoration: none;
+    background:
+      radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.13) 1px, transparent 0) 0 0 / 22px 22px,
+      linear-gradient(
+        150deg,
+        color-mix(in oklab, var(--tile-tone), white 10%),
+        var(--tile-tone) 50%,
+        color-mix(in oklab, var(--tile-tone), black 32%)
+      );
+    transition:
+      translate var(--motion-spring, 500ms) var(--ease-spring, ease-out),
+      box-shadow var(--motion-hover, 160ms) var(--ease-hover, ease-out);
+  }
+
+  .case-tile:focus-visible {
+    outline: 3px solid var(--c-focus, #fff);
+    outline-offset: 3px;
+  }
+
+  /* The tile is the container, and a container can't restyle itself, so the layout lives on this
+   * frame inside it. */
+  .frame {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  /* Words first; the pictures take the rest, so they never run under the text. */
+  .copy {
+    position: relative;
+    z-index: 2;
+    padding: clamp(24px, 7cqw, 48px);
+    padding-bottom: 0;
+  }
+
+  .overline {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--text-caption);
+    letter-spacing: 0.02em;
+    color: rgb(255 255 255 / 0.74);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 7.5cqw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: #fff;
+    text-wrap: balance;
+  }
+
+  .text {
+    margin: var(--sp-3) 0 0;
+    max-width: 36ch;
+    font-size: clamp(1rem, 2.6cqw, 1.2rem);
+    line-height: 1.45;
+    color: rgb(255 255 255 / 0.88);
+    text-wrap: pretty;
+  }
+
+  .note {
+    display: inline-block;
+    margin: var(--sp-4) 0 0;
+    padding: 2px var(--sp-3);
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 0.16);
+    font-size: var(--text-caption);
+    color: #fff;
+  }
+
+  /* Figures only when the tile is wide enough to give them room. */
+  .metrics {
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-5) var(--sp-6);
+    margin: var(--sp-6) 0 0;
+    padding-top: var(--sp-5);
+    border-top: 1px solid rgb(255 255 255 / 0.24);
+  }
+
+  .metrics dt {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 2.6cqw, 2.5rem);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metrics dd {
+    margin: var(--sp-1) 0 0;
+    font-size: var(--text-body-sm);
+    color: rgb(255 255 255 / 0.8);
+  }
+
+  /* Pictures, running off the bottom and right edge. Their height follows the tile's width. */
+  .art {
+    position: relative;
+    z-index: 1;
+    flex: 1 0 auto;
+    min-height: 56cqw;
+    margin-top: var(--sp-6);
+    pointer-events: none;
+  }
+
+  .screen {
+    position: absolute;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.2),
+      0 30px 60px -16px rgb(0 0 0 / 0.5);
+    transition:
+      transform 600ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      translate 900ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity 700ms ease-out;
+  }
+
+  .screen :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .s0 { z-index: 3; }
+  .s1 { z-index: 2; transition-delay: 0ms, 90ms, 90ms; }
+  .s2 { z-index: 1; transition-delay: 0ms, 180ms, 180ms; }
+
+  .phone .screen {
+    border-radius: 11% / 5%;
+    box-shadow:
+      0 0 0 3px rgb(18 18 20),
+      0 30px 50px -14px rgb(0 0 0 / 0.55);
+  }
+
+  /* Half, and any tile under 760px. */
+  .laptop .screen { width: 84%; }
+  .laptop .s0 { left: 6%;  top: 22%; }
+  .laptop .s1 { left: 13%; top: 11%; }
+  .laptop .s2 { left: 20%; top: 0; }
+  .phone .screen { width: 28%; }
+  .phone .s0 { left: 12%; top: 18%; }
+  .phone .s1 { left: 36%; top: 10%; }
+  .phone .s2 { left: 60%; top: 2%; }
+  .has-image .picture { left: 7%; top: 0; width: 100%; border-radius: 10px 0 0 0; }
+
+  /* Wide, from 760px of tile: words and figures left, pictures right. */
+  @container (min-width: 760px) {
+    .wide .frame {
+      flex-direction: row;
+    }
+    .wide .copy {
+      flex: 0 0 46%;
+      padding: clamp(32px, 4.5cqw, 56px);
+      padding-right: 0;
+    }
+    .wide .metrics { display: grid; }
+    .wide .title { font-size: clamp(2.25rem, 4.6cqw, 3.75rem); }
+    .wide .text { font-size: clamp(1rem, 1.5cqw, 1.25rem); }
+    .wide .art {
+      flex: 1 1 auto;
+      min-height: 38cqw;
+      margin-top: 0;
+    }
+    .wide.laptop .screen { width: 88%; }
+    .wide.laptop .s0 { left: 6%;  top: 30%; }
+    .wide.laptop .s1 { left: 14%; top: 17%; }
+    .wide.laptop .s2 { left: 22%; top: 4%; }
+    .wide.phone .screen { width: 28%; }
+    .wide.phone .s0 { left: 10%; top: 16%; }
+    .wide.phone .s1 { left: 35%; top: 9%; }
+    .wide.phone .s2 { left: 60%; top: 2%; }
+    .wide.has-image .picture { left: 8%; top: 10%; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .armed .screen {
+      opacity: 0;
+      translate: 0 48px;
+    }
+
+    @media (hover: hover) {
+      .case-tile:hover {
+        translate: 0 -3px;
+        box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.6);
+      }
+    }
+    .case-tile:is(:hover, :focus-visible) .s0 { transform: translate(-1.5%, -2%); }
+    .case-tile:is(:hover, :focus-visible) .s1 { transform: translate(1%, -4%); }
+    .case-tile:is(:hover, :focus-visible) .s2 { transform: translate(3.5%, -6%); }
+    .case-tile.phone:is(:hover, :focus-visible) .s0 { transform: translate(-6%, -2%) rotate(-2deg); }
+    .case-tile.phone:is(:hover, :focus-visible) .s2 { transform: translate(6%, -5%) rotate(2deg); }
+  }
+
+  @media (max-width: 640px) {
+    .case-tile { border-radius: 18px; }
+  }
+</style>
