@@ -1,0 +1,239 @@
+---
+/**
+ * Two or three screens overlapping on a tinted panel: a case cover, or the same picture small on
+ * an index card. Built in code rather than flattened into one image, so each screen stays sharp,
+ * goes through astro:assets, and can move on its own.
+ *
+ * The first screen sits in front, low and left; the others step up and right behind it.
+ *
+ * Motion, all of it off under reduced motion:
+ * - The screens play in once, front first, rising a little as they fade in.
+ * - `size="cover"`: under a real pointer, the screens follow it a few pixels, the front one most,
+ *   so the stack reads as layers. Leaves no listener behind when there is no fine pointer.
+ * - `size="card"`: when the link around it is hovered or focused (a LinkCard), the screens fan
+ *   out a little, as if the stack were picked up.
+ *
+ * A picture is an imported image (it goes through astro:assets, sized and converted to webp) or a
+ * plain URL. `note` labels the panel, such as "Concepts, made-up data", for screens that are not
+ * shipped work: keep it short on a card.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Screen {
+  image: ImageMetadata | string;
+  alt: string;
+}
+
+interface Props {
+  /** Two or three; any more are left out. The first sits in front. */
+  screens: Screen[];
+  /** The panel colour: a CSS colour, deep enough for white text, such as a client's brand blue. */
+  tone?: string;
+  note?: string;
+  /** `cover` is a 20:9 header band; `card` a 16:9 picture for a LinkCard's media slot. */
+  size?: 'cover' | 'card';
+  /** A view-transition-name, so a card's stack can grow into the cover on the page it opens. */
+  transition?: string;
+  /** Load the front screen first, for a cover above the fold. */
+  eager?: boolean;
+  /** Follow the pointer. On by default for a cover; a card fans out on hover instead. */
+  parallax?: boolean;
+  class?: string;
+}
+
+const { screens, tone = 'var(--c-accent)', note, size = 'cover', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
+const shots = screens.slice(0, 3);
+// Back to front, so the first screen paints last and sits on top.
+const order = [...shots.keys()].reverse();
+const widths = size === 'cover' ? [480, 900, 1400] : [400, 800];
+const sizes = size === 'cover' ? '(max-width: 900px) 80vw, 760px' : '(max-width: 640px) 70vw, 220px';
+const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.width))];
+---
+
+<div
+  class:list={['screen-stack', size, `n${shots.length}`, className]}
+  style={`--stack-tone: ${tone};${transition ? ` view-transition-name: ${transition}; view-transition-class: media;` : ''}`}
+  data-screen-stack-parallax={parallax ? '' : undefined}
+>
+  {note && <p class="note">{note}</p>}
+  {
+    order.map((i) => {
+      const s = shots[i];
+      const first = i === 0;
+      return (
+        <div class={`screen s${i}`}>
+          {typeof s.image === 'string' ? (
+            <img src={s.image} alt={s.alt} loading={eager && first ? 'eager' : 'lazy'} />
+          ) : (
+            <Image
+              src={s.image}
+              alt={s.alt}
+              widths={fit(s.image).length ? fit(s.image) : [s.image.width]}
+              sizes={sizes}
+              format="webp"
+              quality={82}
+              loading={eager && first ? 'eager' : 'lazy'}
+              fetchpriority={eager && first ? 'high' : 'auto'}
+            />
+          )}
+        </div>
+      );
+    })
+  }
+</div>
+
+<script>
+  // The cover's layers follow the pointer: a fraction of the way, eased by a CSS transition, the
+  // front screen most. Only where there is a fine pointer and motion is welcome.
+  const fine = matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+  const stacks = document.querySelectorAll<HTMLElement>('[data-screen-stack-parallax]');
+  if (fine.matches) {
+    for (const el of stacks) {
+      let frame = 0;
+      el.addEventListener('pointermove', (e) => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const r = el.getBoundingClientRect();
+          el.style.setProperty('--px', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3));
+          el.style.setProperty('--py', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3));
+        });
+      });
+      el.addEventListener('pointerleave', () => {
+        cancelAnimationFrame(frame);
+        el.style.setProperty('--px', '0');
+        el.style.setProperty('--py', '0');
+      });
+    }
+  }
+</script>
+
+<style>
+  .screen-stack {
+    --px: 0;
+    --py: 0;
+    position: relative;
+    overflow: hidden;
+    container-type: inline-size;
+    aspect-ratio: 20 / 9;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.14) 1px, transparent 0) 0 0 / 22px 22px,
+      linear-gradient(
+        140deg,
+        color-mix(in oklab, var(--stack-tone), white 12%),
+        var(--stack-tone) 55%,
+        color-mix(in oklab, var(--stack-tone), black 28%)
+      );
+  }
+
+  .card {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-sm);
+    background-size: 14px 14px, auto;
+  }
+
+  .note {
+    position: absolute;
+    top: var(--sp-5);
+    left: var(--sp-6);
+    z-index: 4;
+    margin: 0;
+    padding: 4px var(--sp-3);
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 0.16);
+    color: #fff;
+    font-size: var(--text-caption);
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+
+  .card .note {
+    top: var(--sp-2);
+    left: var(--sp-2);
+    padding: 1px var(--sp-2);
+    font-size: 11px;
+  }
+
+  .screen {
+    position: absolute;
+    width: 58%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.18),
+      0 24px 60px -12px rgb(0 0 0 / 0.45);
+    transition: transform 700ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  .screen :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Front screen low and left, the others stepping up and right behind it. */
+  .s0 { left: 8%;  top: 30%; z-index: 3; }
+  .s1 { left: 25%; top: 18%; z-index: 2; }
+  .s2 { left: 42%; top: 8%;  z-index: 1; }
+  .n2 .s0 { left: 12%; }
+  .n2 .s1 { left: 36%; top: 12%; }
+
+  .card .screen {
+    width: 66%;
+    border-radius: 4px;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.2),
+      0 10px 24px -8px rgb(0 0 0 / 0.5);
+  }
+  .card .s0 { left: 6%;  top: 34%; }
+  .card .s1 { left: 18%; top: 21%; }
+  .card .s2 { left: 30%; top: 8%; }
+  .card.n2 .s0 { left: 8%; top: 30%; }
+  .card.n2 .s1 { left: 28%; top: 12%; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .screen {
+      animation: stack-in var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)) both;
+    }
+    .s1 { animation-delay: 90ms; }
+    .s2 { animation-delay: 180ms; }
+
+    /* The cover's layers follow the pointer, the front one most. */
+    [data-screen-stack-parallax] .s0 { transform: translate(calc(var(--px) * 10px), calc(var(--py) * 8px)); }
+    [data-screen-stack-parallax] .s1 { transform: translate(calc(var(--px) * 6px), calc(var(--py) * 5px)); }
+    [data-screen-stack-parallax] .s2 { transform: translate(calc(var(--px) * 3px), calc(var(--py) * 2px)); }
+
+    /* A card's stack fans out when the link around it is hovered or focused. */
+    :global(a:is(:hover, :focus-visible)) .card .s0 { transform: translate(-4%, 3%) rotate(-1deg); }
+    :global(a:is(:hover, :focus-visible)) .card .s1 { transform: translate(0, -2%); }
+    :global(a:is(:hover, :focus-visible)) .card .s2 { transform: translate(5%, -6%) rotate(1deg); }
+  }
+
+  @keyframes stack-in {
+    from {
+      opacity: 0;
+      translate: 0 24px;
+    }
+  }
+
+  /* A cover in a narrow column: taller, two screens, larger. */
+  @container (max-width: 560px) {
+    .cover .note {
+      top: var(--sp-3);
+      left: var(--sp-3);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .cover {
+      aspect-ratio: 4 / 3;
+    }
+    .cover .screen {
+      width: 78%;
+    }
+    .cover .s0 { left: 6%;  top: 34%; }
+    .cover .s1 { left: 16%; top: 20%; }
+    .cover .s2 { display: none; }
+  }
+</style>

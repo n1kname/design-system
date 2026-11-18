@@ -1,0 +1,114 @@
+---
+title: "Screen stack"
+description: "Two or three screens overlapping on a tinted panel: a case cover, or the same picture small on an index card."
+---
+
+import ScreenStack from '@n1kname/components/ScreenStack.astro';
+import LinkCard from '@n1kname/components/LinkCard.astro';
+import Tag from '@n1kname/components/Tag.astro';
+
+export const screens = [
+  { image: '/demo/stack-overview.svg', alt: 'A fictional overview screen with four figure tiles, a line chart and a donut.' },
+  { image: '/demo/stack-detail.svg', alt: 'A fictional detail screen with figure tiles and a bar chart.' },
+  { image: '/demo/stack-analytics.svg', alt: 'A fictional analytics screen with a heatmap by hour.' },
+];
+
+<div class="not-content demo-stack">
+  <ScreenStack screens={screens} tone="#2f5bd8" note="Concepts, made-up data" />
+</div>
+
+## What it's for
+
+A header for a case study that shows the work in its first screen: a few real screens of a product, in the client's colour, overlapping so they read as one piece of work rather than a gallery. On an index, the same stack small in a [link card](/components/link-card/), so the card and the page it opens look like each other.
+
+<div class="not-content demo-stack">
+  <LinkCard href="#variants">
+    <ScreenStack slot="media" size="card" screens={screens.map((s) => ({ ...s, alt: '' }))} tone="#2f5bd8" note="Concepts" />
+    <p class="t-meta">Project · Organisation · 2025 — now</p>
+    <h3>A headline that says what was decided</h3>
+    <p>Hover the card: the stack fans out.</p>
+    <p><Tag tone="cool" small>What it was about</Tag></p>
+  </LinkCard>
+</div>
+
+## When not to use it
+
+- **One screen says it.** Use a single picture; a stack of one is a picture with a shadow.
+- **The screens need reading.** In a stack they are partly covered and small. Show the one that matters full width, with a caption.
+- **Screens from different products.** The stack says "one piece of work".
+
+## Anatomy
+
+- **Panel:** the `tone` colour as a soft diagonal gradient, with a faint dot grid. 20:9 as a cover, 16:9 on a card; 4:3 on a phone, where the back screen drops out and the other two grow.
+- **Screens:** the first in front, low and left; the others step up and right behind it, each with a deep shadow. An imported image goes through `astro:assets`, sized and converted to webp; an address is used as it is.
+- **Note:** optional, top left, white on a translucent pill. For screens that are concepts or use made-up data.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `size="cover"` | A header band. Follows the pointer. |
+| `size="card"` | The `media` slot of a link card. Fans out when the card is hovered or focused. |
+| `tone` | The panel colour, deep enough for white text. Defaults to the accent. |
+| `note` | A label on the panel. Keep it to a word or two on a card. |
+| `transition` | A view-transition name, so the card's stack grows into the cover on the page it opens. |
+| `parallax` | Turn the pointer-following on or off; on by default for a cover only. |
+| `eager` | Load the front screen first; on by default for a cover. |
+
+## States
+
+- **Arrival:** the screens play in once, front first, 90ms apart, rising 24px as they fade in.
+- **Pointer over a cover:** each screen follows the pointer a few pixels, the front one most (10px), the back one least (3px), eased, so the stack reads as layers. Back to rest when the pointer leaves.
+- **Hover or focus on the card around it:** the front screen tips left, the back one up and right.
+- **Reduced motion:** nothing moves. The screens are simply there.
+
+## Tokens
+
+`--c-accent` (the default tone), `--radius-lg`, `--radius-sm`, `--radius-full`, `--text-caption`, `--motion-reveal`, `--ease-soft`, `--sp-*`
+
+## Keyboard and screen reader
+
+- **As a cover, each screen needs alt text** that says what it shows. The note is read as plain text.
+- **On a card, give the screens empty alt** when the heading already says it: the whole card is one link, and its name is everything inside it.
+- **The motion is decoration.** Nothing is hidden behind a hover, and keyboard focus on a card fans it out too.
+
+## Content
+
+- **Pick screens that look alike,** from one product and one brand, with the best one in front.
+- **Label concepts as concepts.** A stack looks finished; `note` says when it isn't.
+- **Use made-up data** in screens you didn't ship, and say so.
+
+## Status
+
+New. Used by the portfolio's case header and index cards.
+
+## Code
+
+```astro wrap
+---
+import ScreenStack from '@n1kname/components/ScreenStack.astro';
+import LinkCard from '@n1kname/components/LinkCard.astro';
+import overview from '../assets/overview.png';
+import station from '../assets/station.png';
+import analytics from '../assets/analytics.png';
+
+const screens = [
+  { image: overview, alt: 'The overview dashboard.' },
+  { image: station, alt: 'A station page.' },
+  { image: analytics, alt: 'Use by hour.' },
+];
+---
+
+<!-- On the case page -->
+<ScreenStack screens={screens} tone="#1c3fa8" note="Concepts, made-up data" transition="case-a" />
+
+<!-- On the index -->
+<LinkCard href="/work/a" transition="case-a">
+  <ScreenStack slot="media" size="card" screens={screens.map((s) => ({ ...s, alt: '' }))} tone="#1c3fa8" note="Concepts" />
+  <h2>A headline that says what was decided</h2>
+</LinkCard>
+```
+
+## Keep in mind
+
+- **Give the stack the transition name, not the card's media slot as well:** one element per name on a page. On a card, pass `transition` to the link card, which names the media frame around the stack.

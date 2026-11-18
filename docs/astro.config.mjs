@@ -97,6 +97,7 @@ export default defineConfig({
             { label: 'Theme toggle', link: '/components/theme-toggle/' },
             { label: 'Sign in', link: '/components/sign-in/' },
             { label: 'Link card', link: '/components/link-card/' },
+            { label: 'Screen stack', link: '/components/screen-stack/' },
             { label: 'Copy tag', link: '/components/copy-tag/' },
             { label: 'Highlight', link: '/components/highlight/' },
             { label: 'Reveal', link: '/components/reveal/' },
