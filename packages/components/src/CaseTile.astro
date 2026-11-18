@@ -22,6 +22,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
+import { patternStyle, type Pattern } from './patterns';
 
 interface Metric {
   value: string;
@@ -64,6 +65,10 @@ interface Props {
   stage?: number;
   /** Dark words for a light tone. */
   ink?: 'light' | 'dark';
+  /** The panel's texture: dots (default), grid, lines, plus, waves or none. */
+  pattern?: Pattern;
+  /** Fade the pattern out toward the bottom left, so it reads as texture. On by default. */
+  patternFade?: boolean;
   device?: 'laptop' | 'phone';
   layout?: 'wide' | 'half';
   /** The tile colour, deep enough for white text. */
@@ -88,6 +93,8 @@ const {
   layers = [],
   stage = 4 / 3,
   ink = 'light',
+  pattern = 'dots',
+  patternFade = true,
   device = 'laptop',
   layout = 'half',
   tone = 'var(--c-accent)',
@@ -114,9 +121,9 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
 ---
 
 <a
-  class:list={['case-tile', layout, device, `ink-${ink}`, { 'has-image': !shots.length && !layers.length && image, 'has-layers': layers.length }, className]}
+  class:list={['case-tile', layout, device, `ink-${ink}`, { 'pattern-fade': patternFade, 'has-image': !shots.length && !layers.length && image, 'has-layers': layers.length }, className]}
   href={href}
-  style={`--tile-tone: ${tone}`}
+  style={`--tile-tone: ${tone}; ${patternStyle(pattern, ink)}`}
   data-case-tile
 >
   <div class="frame">
@@ -220,7 +227,6 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
     color: #fff;
     text-decoration: none;
     background:
-      radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.13) 1px, transparent 0) 0 0 / 22px 22px,
       linear-gradient(
         150deg,
         color-mix(in oklab, var(--tile-tone), white 10%),
@@ -230,6 +236,19 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
     transition:
       translate var(--motion-spring, 500ms) var(--ease-spring, ease-out),
       box-shadow var(--motion-hover, 160ms) var(--ease-hover, ease-out);
+  }
+
+  /* The pattern, on a layer of its own so it can fade out toward the bottom left. */
+  .case-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: var(--pattern-image) 0 0 / var(--pattern-size);
+  }
+  .pattern-fade::before {
+    mask-image: radial-gradient(130% 110% at 100% 0%, #000 25%, transparent 80%);
   }
 
   .case-tile:focus-visible {
@@ -372,7 +391,6 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
   .ink-dark {
     color: #17181a;
     background:
-      radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.1) 1px, transparent 0) 0 0 / 22px 22px,
       linear-gradient(
         150deg,
         color-mix(in oklab, var(--tile-tone), white 14%),

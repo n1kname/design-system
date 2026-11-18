@@ -26,6 +26,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
+import { patternStyle, type Pattern } from './patterns';
 
 interface Screen {
   image: ImageMetadata | string;
@@ -52,6 +53,10 @@ interface Props {
   stage?: number;
   /** Dark ink on the note, for a light tone. */
   ink?: 'light' | 'dark';
+  /** The panel's texture: dots (default), grid, lines, plus, waves or none. */
+  pattern?: Pattern;
+  /** Fade the pattern out toward the bottom left, so it reads as texture. On by default. */
+  patternFade?: boolean;
   /** The panel colour: a CSS colour, deep enough for white text, such as a client's brand blue. */
   tone?: string;
   note?: string;
@@ -68,7 +73,7 @@ interface Props {
   class?: string;
 }
 
-const { screens = [], layers = [], stage = 4 / 3, ink = 'light', tone = 'var(--c-accent)', note, size = 'cover', device = 'laptop', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
+const { screens = [], layers = [], stage = 4 / 3, ink = 'light', pattern = 'dots', patternFade = true, tone = 'var(--c-accent)', note, size = 'cover', device = 'laptop', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
 const shots = screens.slice(0, 3);
 // Back to front, so the first screen paints last and sits on top.
 const order = [...shots.keys()].reverse();
@@ -85,8 +90,8 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
 ---
 
 <div
-  class:list={['screen-stack', size, device, `n${shots.length}`, `ink-${ink}`, { 'has-layers': layers.length }, className]}
-  style={`--stack-tone: ${tone};${transition ? ` view-transition-name: ${transition}; view-transition-class: media;` : ''}`}
+  class:list={['screen-stack', size, device, `n${shots.length}`, `ink-${ink}`, { 'has-layers': layers.length, 'pattern-fade': patternFade }, className]}
+  style={`--stack-tone: ${tone}; ${patternStyle(pattern, ink)}${transition ? ` view-transition-name: ${transition}; view-transition-class: media;` : ''}`}
   data-screen-stack-parallax={parallax ? '' : undefined}
 >
   {note && <p class="note">{note}</p>}
@@ -174,7 +179,6 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     aspect-ratio: 20 / 9;
     border-radius: var(--radius-lg);
     background:
-      radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.14) 1px, transparent 0) 0 0 / 22px 22px,
       linear-gradient(
         140deg,
         color-mix(in oklab, var(--stack-tone), white 12%),
@@ -183,10 +187,22 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
       );
   }
 
+  /* The pattern, on a layer of its own so it can fade out toward the bottom left. */
+  .screen-stack::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: var(--pattern-image) 0 0 / var(--pattern-size);
+  }
+  .pattern-fade::before {
+    mask-image: radial-gradient(130% 110% at 100% 0%, #000 25%, transparent 80%);
+  }
+
   .card {
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-sm);
-    background-size: 14px 14px, auto;
   }
 
   .note {
@@ -246,7 +262,6 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
 
   .ink-dark {
     background:
-      radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.1) 1px, transparent 0) 0 0 / 22px 22px,
       linear-gradient(
         140deg,
         color-mix(in oklab, var(--stack-tone), white 14%),

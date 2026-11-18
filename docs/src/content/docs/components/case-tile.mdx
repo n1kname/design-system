@@ -44,6 +44,19 @@ The cases on a portfolio index, when the work is worth looking at before it's wo
   <CaseTile href="#variants" tone="#9c2a1f" overline="Organisation · 2018 — 2024 · Shipped" title="Fleet console" text="From a driver portal to a platform for enterprise clients." screens={laptops} />
 </div>
 
+## Patterns
+
+The panel carries a texture under the screens, on a layer of its own that fades out toward the bottom left. `pattern` picks it; `patternFade={false}` keeps it even. The same option sits on [screen stack](/components/screen-stack/). Dark ink draws it in black.
+
+<div class="not-content demo-stack" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px">
+  <CaseTile href="#patterns" tone="#2f5bd8" title="dots" text="The default." pattern="dots" screens={laptops} />
+  <CaseTile href="#patterns" tone="#0b6f7a" title="grid" text="A hairline grid." pattern="grid" screens={laptops} />
+  <CaseTile href="#patterns" tone="#9c2a1f" title="lines" text="Diagonal hairlines." pattern="lines" screens={laptops} />
+  <CaseTile href="#patterns" tone="#1f7a68" title="plus" text="Registration marks." pattern="plus" device="phone" screens={phones} />
+  <CaseTile href="#patterns" tone="#f6c400" ink="dark" title="waves" text="Soft waves, dark ink." pattern="waves" device="phone" screens={phones} />
+  <CaseTile href="#patterns" tone="#8a3b12" title="none" text="The gradient alone." pattern="none" screens={laptops} />
+</div>
+
 ## When not to use it
 
 - **A list someone scans or searches.** A text list reads faster than a wall of colour.
@@ -66,7 +79,8 @@ The cases on a portfolio index, when the work is worth looking at before it's wo
 | `device="phone"` | Tall phone screens in a thin bezel. |
 | `image` | One picture, such as a photo, for a case without screens. |
 | `layers` | Separate pictures on a stage, each placed in percent and given a `depth`: on hover the deeper ones float up further, so a card lifts off the page it came from. `stage` sets the stage's ratio. |
-| `ink="dark"` | Dark words and dots for a light tone, such as a yellow. |
+| `ink="dark"` | Dark words and pattern for a light tone, such as a yellow. |
+| `pattern` | The texture: `dots` (default), `grid`, `lines`, `plus`, `waves` or `none`. `patternFade={false}` keeps it even across the tile. |
 | `note` | A label under the words, such as "Concepts" or "Shipped". |
 | `transition` | A view-transition name on the pictures, so they grow into the cover on the page the tile opens. |
 
