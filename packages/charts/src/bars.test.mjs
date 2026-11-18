@@ -52,8 +52,8 @@ const opacity = [...svg.matchAll(/fill="var\(--c-chart-2\)"[^>]*>((?:<(?:path|re
   .flatMap((m) => [...m[1].matchAll(/fill-opacity="([\d.]+)"/g)].map((o) => Number(o[1])));
 assert.deepEqual(opacity, [1, 1, 1, 0.5, 0.22], 'settled rows are solid, an estimate fainter, a projection fainter again');
 
-// The domain holds the highest stack and the lowest negative.
-assert.deepEqual(options.y.domain, [-3, 25], 'the y domain runs from the lowest piece to the highest stack');
+// The domain holds the highest stack and the lowest negative, rounded out the way Plot would.
+assert.deepEqual(options.y.domain, [-4, 26], 'the y domain runs from the lowest piece to the highest stack, rounded out');
 
 // The tooltip: each series from the top, a missing one left out.
 const tip = options.marks.at(-1);
@@ -113,6 +113,47 @@ assert.equal(gTip.channels.title.value(pairs[2]), 'M3\nunits', 'an empty step sa
 assert.ok(!renderPlot(bars({ ...spec, grouped: false }, 600)).includes('left out'), 'no shade unless asked');
 
 console.log('bars: all assertions pass');
+
+// Callouts: a figure over each bar picked, always on, centred on its own bar.
+{
+  const c = bars({ rows: pairs, x: 'm', series: two, unit: 'units', grouped: true, callout: (r, s) => r.m === 'M1' || (r.m === 'M5' && s.key === 'old') }, 500);
+  const cSvg = renderPlot(c);
+  const figures = [...cSvg.matchAll(/font-weight="600"[^>]*>((?:<text[^>]*>[^<]*<\/text>)+)/g)]
+    .flatMap((m) => [...m[1].matchAll(/>([^<]+)<\/text>/g)].map((t) => t[1]));
+  assert.deepEqual(figures.sort(), ['20', '30', '5'], 'each picked bar says its own figure, and only those');
+  const stacked = renderPlot(bars({ ...spec, callout: (r) => r.month === 'M4' }, 600));
+  assert.ok(/font-weight="600"[^>]*><text[^>]*>23\.0<\/text>/.test(stacked), 'stacked, a callout is the total over the whole bar');
+  assert.ok(!/font-weight="600"/.test(svg), 'no callouts unless asked');
+}
+
+// The shade spans the frame and no further: from the bottom of the scale to its rounded top.
+{
+  const block = g.marks.find((m) => m.data?.[0]?.m === 'M3' && m.data.length === 2);
+  assert.ok(block, 'the shaded block is a mark of its own');
+  assert.equal(block.insetTop, 0, 'the block reaches the top of the frame, no further');
+  assert.equal(block.insetBottom, 0, 'and stops at the bottom of the scale, not below the axis');
+}
+
+// A tag sits on the first bar with a value, above any taller bar it runs over.
+{
+  const climb = [
+    { m: 'A', a: null, b: 0 },
+    { m: 'B', a: null, b: 2 },
+    { m: 'C', a: 40, b: 9 },
+    { m: 'D', a: 30, b: 3 },
+  ];
+  // The second series' tag grows rightward, over the steps after its bar.
+  const t = bars({ rows: climb, x: 'm', series: [{ key: 'a', label: 'A', color: 'var(--c-chart-2)' }, { key: 'b', label: 'B', color: 'var(--c-chart-1)', tag: 'Prototype' }], grouped: true }, 160);
+  const tag = t.marks.find((m) => m.constructor.name === 'Text' && m.data?.[0]?.m && m.channels?.text?.value?.() === 'Prototype');
+  assert.equal(tag.data[0].m, 'B', 'a first bar of zero carries no tag; the first with a value does');
+  assert.equal(tag.channels.y.value(), 40, 'the tag clears the taller bar beside it');
+}
+
+// Labels in the system sans with tabular figures, not monospace.
+assert.ok(!/monospace/.test(svg), 'no monospace in a chart');
+assert.ok(/system-ui/.test(svg), 'the system sans');
+
+console.log('bars: callouts, shade and tags pass');
 
 // pointer: false leaves out Plot's tooltip and hover band, for a page that draws its own.
 {

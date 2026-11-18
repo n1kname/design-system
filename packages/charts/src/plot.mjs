@@ -4,7 +4,7 @@
 
 import * as Plot from '@observablehq/plot';
 import { parseHTML } from 'linkedom';
-import { chrome } from './theme.mjs';
+import { chrome, SYSTEM_SANS } from './theme.mjs';
 
 export { Plot };
 
@@ -20,8 +20,10 @@ export const renderPlot = (options) => {
       color: chrome.textMuted,
       // A system font on purpose. Safari lays out SVG text with the fallback font's
       // widths and then paints the web font, which shifts anything centred or
-      // right-aligned. A font that never swaps has nothing to shift.
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+      // right-aligned. A font that never swaps has nothing to shift. A sans, not mono, so
+      // labels read as words; tabular figures keep the numbers lined up all the same.
+      fontFamily: SYSTEM_SANS,
+      fontVariantNumeric: 'tabular-nums',
       fontSize: '13px',
       overflow: 'visible',
     },

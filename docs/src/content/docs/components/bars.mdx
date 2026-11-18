@@ -25,10 +25,12 @@ For a value per step, such as a month or a year, when the size of each matters. 
 ## Anatomy
 
 - **Bars:** one per row, its parts stacked in the order of `series`, bottom to top. Square on the baseline, rounded at the top. Grouped, one bar per series in each step, up to 14px wide and 2px apart, each from zero.
-- **Tags:** a series' `tag`, such as a year, written over its first bar. Grouped, the first grows left from its bar and the second right, so the two never touch.
-- **Shade:** a run of steps set apart as one block, with a word in the middle on why.
+- **Tags:** a series' `tag`, such as a year, written over its first bar with a value, and above any taller bar it runs over. Grouped, the first grows left from its bar and the second right, so the two never touch. For more than a pair of short words, use a [legend](/components/legend/) under the chart instead.
+- **Callouts:** with `callout`, the figure over each bar you pick, always on and centred on its bar, with a halo in the surface colour so it reads where it crosses a taller bar beside it.
+- **Shade:** a run of steps set apart as one block, from the zero line to the top of the frame and no further, with a word at the top on why.
 - **Zero line:** positive parts stack up from it and negative ones down, so a part can be below zero.
 - **Values:** with `values`, each bar's total on top.
+- **Labels:** in the system's own sans, with tabular figures so numbers still line up.
 - **Axis:** y with five gridlines and no tick marks; x prints only the labels you choose.
 - **Pointer:** the bar under it lit, and a tooltip with every part, from the top. Grouped, every step has a tooltip, even one with no bars, so it can say why.
 
@@ -37,6 +39,7 @@ For a value per step, such as a month or a year, when the size of each matters. 
 | Option | For |
 |---|---|
 | `values` | One series, where each bar's figure is what to read. |
+| `callout` | `(row, series) => boolean`: the few bars the story turns on say their figure without a pointer, so a phone reader gets them too. Stacked, the figure is the bar's total. |
 | `grouped` | Two series side by side in each step, instead of stacked. |
 | `shade` | `{ from, to, text }`: a run of steps that can't be compared, set apart with a word on why. |
 | `fade` | An opacity per row, for figures not settled yet. Say what each means in a [legend](/components/legend/). |
@@ -64,7 +67,8 @@ For a value per step, such as a month or a year, when the size of each matters. 
 
 - **Put the part that holds still at the bottom,** so the others sit on a flat floor.
 - **Never tell a fade apart by fade alone** when it matters: add the dashed edge, and say both in the legend.
-- **Never tell two grouped series apart by colour alone:** tag the first pair, and name both in a legend.
+- **Never tell two grouped series apart by colour alone:** tag the first pair, or name both in a legend.
+- **Call out three or four bars at most:** the ones the caption talks about. Every bar is what `values` is for.
 - **A step with nothing to compare still says so:** shade it, or give it a tooltip that says why.
 
 ## Status
@@ -96,4 +100,4 @@ const options = bars(
 ## Keep in mind
 
 - **It returns options, not a chart,** so the same bars draw at build time or in the browser, at the width the box has.
-- **Plot text needs a system font** in the style you give it. Safari lays out SVG text with the fallback font's widths.
+- **Plot text needs a system font** in the style you give it. Safari lays out SVG text with the fallback font's widths. `renderPlot` uses the system sans (`SYSTEM_SANS` from the theme) with tabular figures; in the browser, pass the same.

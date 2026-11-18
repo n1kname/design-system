@@ -19,13 +19,16 @@ export const chrome = {
   textMuted: v('text-muted'),
 };
 
+// The system's own sans: it never swaps, so Safari has nothing to misplace (see ./plot.mjs).
+export const SYSTEM_SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
 // Plot's own tooltip, for charts drawn at build time: in a system font, because Safari misplaces
 // centred SVG text in a web font. A chart drawn in the page can say it better with `pointer`
 // (./pointer.mjs): an HTML card in the page's type that glides. Every value also needs a table.
 export const tipStyle = {
   fill: 'var(--c-surface)',
   stroke: 'var(--c-border-strong)',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  fontFamily: SYSTEM_SANS,
   fontSize: 12,
   textPadding: 8,
 };

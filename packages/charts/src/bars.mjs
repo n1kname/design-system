@@ -7,12 +7,34 @@
 // bought still reads. A row can be drawn fainter (`fade`) and with a dashed edge (`dashed`),
 // for figures that are not settled yet; say what each means in a Legend. A run of steps can be
 // set apart as one shaded block with a word on why (`shade`), and a series can carry a short
-// `tag` over its first bar, so two series are not told apart by colour alone.
+// `tag` over its first bar, so two series are not told apart by colour alone. The bars that
+// carry the story can say their figure all the time (`callout`), so a reader on a phone, with no
+// pointer, still gets the numbers that matter.
 
 import * as Plot from '@observablehq/plot';
 import { chrome, tipStyle } from './theme.mjs';
 
 const plain = (v, digits) => v.toFixed(digits);
+
+// d3's nice(), with the count Plot uses, so the shade can reach the top of the frame exactly.
+const increment = (start, stop, count) => {
+  const step = (stop - start) / count;
+  const power = Math.floor(Math.log10(step));
+  const error = step / 10 ** power;
+  const factor = error >= Math.sqrt(50) ? 10 : error >= Math.sqrt(10) ? 5 : error >= Math.sqrt(2) ? 2 : 1;
+  return power >= 0 ? factor * 10 ** power : -(10 ** -power) / factor;
+};
+export const niceDomain = ([start, stop], count = 10) => {
+  let previous;
+  for (let i = 0; i < 10 && stop > start; i++) {
+    const step = increment(start, stop, count);
+    if (step === previous || !Number.isFinite(step) || step === 0) break;
+    if (step > 0) [start, stop] = [Math.floor(start / step) * step, Math.ceil(stop / step) * step];
+    else [start, stop] = [Math.ceil(start * step) / step, Math.floor(stop * step) / step];
+    previous = step;
+  }
+  return [start, stop];
+};
 
 export const bars = (
   {
@@ -29,6 +51,10 @@ export const bars = (
     y = ['auto', 'auto'],
     // The total written on top of each bar.
     values = false,
+    // A figure written over a bar that matters, without the pointer: gets (row, series) and
+    // returns true to write that series' value over its bar in that row. Stacked, the series
+    // is the top one and the figure is the total. Pick a few: every bar is what `values` is for.
+    callout = null,
     // Opacity per row, 1 for a settled figure.
     fade = () => 1,
     // A dashed edge per row, in the series' colour.
@@ -78,10 +104,11 @@ export const bars = (
   const bottom = (r) => (grouped ? Math.min(0, ...valuesOf(r)) : sum(valuesOf(r).filter((v) => v < 0)));
   const total = (r) => series.reduce((sum, s) => sum + (has(r, s.key) ? r[s.key] : 0), 0);
   const drawn = rows.filter((r) => series.some((s) => has(r, s.key)));
-  const domain = [
+  // Rounded out to round numbers here rather than by Plot, so the shade knows where the frame ends.
+  const domain = niceDomain([
     y[0] === 'auto' ? Math.min(0, ...drawn.map(bottom)) : y[0],
     y[1] === 'auto' ? Math.max(0, ...drawn.map(top)) : y[1],
-  ];
+  ]);
   // Stacked, the tooltip lists the parts from the top, as they are drawn; grouped, in order.
   const listed = grouped ? series : [...series].reverse();
   const says = title ?? ((r) => [r[x], ...listed.filter((s) => has(r, s.key)).map((s) => `${s.label}  ${format(r[s.key], digits)}`), unit].join('\n'));
@@ -122,10 +149,13 @@ export const bars = (
   const shaded = shade ? rows.slice(rows.findIndex((r) => r[x] === shade.from), rows.findIndex((r) => r[x] === shade.to) + 1) : [];
   const shading = shaded.length
     ? [
-        Plot.barY(shaded, { x, y1: () => domain[0], y2: () => domain[1], fill: chrome.neutral, fillOpacity: 0.16, inset: -(step - band) / 2, className: 'enter-fade' }),
+        Plot.barY(shaded, { x, y1: () => domain[0], y2: () => domain[1], fill: chrome.neutral, fillOpacity: 0.16, insetLeft: -(step - band) / 2, insetRight: -(step - band) / 2, className: 'enter-fade' }),
+        // The word at the top of the block, where bars are least likely to be.
         Plot.text([shaded[0]], {
           x,
-          frameAnchor: 'middle',
+          frameAnchor: 'top',
+          dy: 10,
+          lineAnchor: 'top',
           dx: ((shaded.length - 1) * step) / 2,
           text: () => shade.text,
           fill: 'var(--c-text-secondary)',
@@ -135,21 +165,28 @@ export const bars = (
       ]
     : [];
 
-  // A series' tag over its first bar. The first grows leftward from its bar's right edge and
-  // the rest rightward from their left edge, so two tags never touch.
+  // A series' tag over its first bar with a value. The first grows leftward from its bar's right
+  // edge and the rest rightward from their left edge, so two tags never touch. A tag runs over
+  // the steps beside its bar, so it sits above the tallest bar it crosses, not on top of it.
+  const TAG_EM = 6;
   const tags = series.flatMap((s, i) => {
-    const first = rows.find((r) => has(r, s.key));
+    const at = rows.findIndex((r) => has(r, s.key) && r[s.key] !== 0);
+    const first = rows[at];
     if (!s.tag || !first) return [];
-    const edge = grouped ? (i === 0 ? left(i) + barWidth : left(i)) - band / 2 : 0;
+    const leftward = grouped && i === 0;
+    const edge = grouped ? (leftward ? left(i) + barWidth : left(i)) - band / 2 : 0;
+    const reach = Math.ceil((s.tag.length * TAG_EM) / step);
+    const crossed = leftward ? rows.slice(Math.max(0, at - reach), at + 1) : rows.slice(at, at + reach + 1);
+    const lift = Math.max(...crossed.map(top));
     return [
       Plot.text([first], {
         x,
-        y: (r) => (grouped ? Math.max(0, r[s.key]) : top(r)),
+        y: () => lift,
         text: () => s.tag,
         dx: edge,
         dy: -6,
         lineAnchor: 'bottom',
-        textAnchor: grouped && i === 0 ? 'end' : 'start',
+        textAnchor: leftward ? 'end' : 'start',
         fill: 'var(--c-text-secondary)',
         fontSize: 10,
         className: 'enter-fade',
@@ -157,16 +194,44 @@ export const bars = (
     ];
   });
 
+  // Callouts: the figure over each bar picked, centred on it. Stacked, over the whole bar.
+  const callouts = callout
+    ? series.flatMap((s, i) => {
+        if (!grouped && i !== series.length - 1) return [];
+        const picked = rows.filter((r) => (grouped ? has(r, s.key) : series.some((t) => has(r, t.key))) && callout(r, s));
+        if (!picked.length) return [];
+        return [
+          Plot.text(picked, {
+            x,
+            y: (r) => (grouped ? Math.max(0, r[s.key]) : top(r)),
+            text: (r) => format(grouped ? r[s.key] : total(r), digits),
+            dx: grouped ? left(i) + barWidth / 2 - band / 2 : 0,
+            dy: -6,
+            lineAnchor: 'bottom',
+            fill: chrome.text,
+            // A halo in the surface colour, so a figure that crosses a taller bar beside it
+            // still reads.
+            stroke: 'var(--c-surface)',
+            strokeWidth: 3,
+            paintOrder: 'stroke',
+            fontSize: 12,
+            fontWeight: 600,
+            className: 'enter-fade',
+          }),
+        ];
+      })
+    : [];
+
   const labels = (v, i) => tick(v, i, width);
   return {
     width,
     height,
-    marginTop: values || series.some((s) => s.tag) ? 24 : 10,
+    marginTop: values || callout || series.some((s) => s.tag) ? 24 : 10,
     marginLeft,
     marginRight,
     marginBottom,
     x: { type: 'band', domain: rows.map((r) => r[x]), padding, ...(grouped ? { round: false } : {}), label: null, tickSize: 0, tickFormat: labels, axis: null },
-    y: { domain, nice: true, label: yLabel, tickSize: 0, ticks: 5, tickFormat: (v) => format(v, yDigits) },
+    y: { domain, label: yLabel, tickSize: 0, ticks: 5, tickFormat: (v) => format(v, yDigits) },
     opacity: { type: 'identity' },
     marks: [
       Plot.axisX({ tickSize: 0, tickFormat: labels, lineWidth: wrap(width) }),
@@ -182,6 +247,7 @@ export const bars = (
         ? [Plot.text(drawn, { x, y: total, text: (r) => format(total(r), digits), dy: -8, lineAnchor: 'bottom', fill: chrome.text, fontSize: 12, className: 'enter-fade' })]
         : []),
       ...tags,
+      ...callouts,
       Plot.ruleY([0], { stroke: chrome.axis, className: 'enter-zero' }),
       ...(pointer ? [Plot.tip(tipped, Plot.pointerX({ x, y: top, title: says, ...tipStyle }))] : []),
     ],
