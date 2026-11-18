@@ -457,7 +457,7 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .armed :is(.screen, .layer) {
+    .armed:not(.in) :is(.screen, .layer) {
       opacity: 0;
       translate: 0 48px;
     }
