@@ -215,6 +215,13 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
   .phone.n2 .s0 { left: 34%; }
   .phone.n2 .s1 { left: 48%; top: 6%; }
 
+  /* The phones leave the left quarter free, so a note wraps there instead of running under them. */
+  .cover.phone .note {
+    max-width: 21%;
+    border-radius: 10px;
+    padding-block: var(--sp-1);
+  }
+
   .card.phone .screen {
     width: 22%;
     box-shadow:
@@ -273,8 +280,11 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     .cover.phone .screen {
       width: 30%;
     }
-    .cover.phone .s0 { left: 12%; top: 14%; }
-    .cover.phone .s1 { left: 35%; top: 9%; }
-    .cover.phone .s2 { left: 58%; top: 4%; }
+    .cover.phone .s0 { left: 12%; top: 24%; }
+    .cover.phone .s1 { left: 35%; top: 19%; }
+    .cover.phone .s2 { left: 58%; top: 14%; }
+    .cover.phone .note {
+      max-width: calc(100% - 2 * var(--sp-3));
+    }
   }
 </style>

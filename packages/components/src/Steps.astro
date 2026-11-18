@@ -25,13 +25,16 @@ interface Step {
 interface Props {
   steps: Step[];
   caption?: string;
+  /** Phone screens: each picture held to 220px wide, centred on its plate, so a row of tall
+   *  screens stays a sensible height instead of growing with its column. */
+  phone?: boolean;
   class?: string;
 }
 
-const { steps, caption, class: className } = Astro.props;
+const { steps, caption, phone = false, class: className } = Astro.props;
 ---
 
-<figure class:list={['steps', className]}>
+<figure class:list={['steps', { phone }, className]}>
   <ol>
     {
       steps.map((s, i) => (
@@ -137,6 +140,16 @@ const { steps, caption, class: className } = Astro.props;
     width: 100%;
     height: auto;
     border-radius: 2px;
+  }
+
+  .phone .shot :global(img),
+  .phone .placeholder {
+    max-width: 220px;
+    margin-inline: auto;
+  }
+
+  .phone .shot :global(img) {
+    border-radius: 6% / 3%;
   }
 
   .placeholder {
