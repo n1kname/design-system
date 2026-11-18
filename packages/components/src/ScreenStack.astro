@@ -87,9 +87,15 @@ const sizes = phone
   ? size === 'cover' ? '(max-width: 640px) 30vw, 230px' : '(max-width: 640px) 22vw, 70px'
   : size === 'cover' ? '(max-width: 900px) 80vw, 760px' : '(max-width: 640px) 70vw, 220px';
 const layerWidths = (img: ImageMetadata) => {
-  const w = [800, 1600, 2400].filter((x) => x <= img.width);
+  const w = [400, 800, 1200, 1600, 2400].filter((x) => x <= img.width);
   return w.length ? w : [img.width];
 };
+// A layer is shown at its share of the stage: on a cover about 56% of a panel up to some 1240px wide
+// (76% on a phone), on a card about the card's width. Saying so lets a small card load a small file.
+const layerSizes = (width: number) =>
+  size === 'cover'
+    ? `(max-width: 640px) ${Math.round(width * 0.7)}vw, ${Math.round(width * 7)}px`
+    : `(max-width: 640px) ${Math.round(width * 0.9)}vw, ${Math.round(width * 3.6)}px`;
 const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.width))];
 ---
 
@@ -111,7 +117,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
                 src={l.image}
                 alt={l.alt ?? ''}
                 widths={layerWidths(l.image)}
-                sizes="(max-width: 900px) 90vw, 1000px"
+                sizes={layerSizes(l.width)}
                 format="webp"
                 quality={80}
                 loading={eager ? 'eager' : 'lazy'}
@@ -217,7 +223,11 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     margin: 0;
     padding: 4px var(--sp-3);
     border-radius: var(--radius-full);
-    background: rgb(255 255 255 / 0.16);
+    /* Tinted from the panel and blurred, so it reads even where a picture runs under it. */
+    background: color-mix(in oklab, var(--stack-tone), black 30%);
+    background: color-mix(in oklab, color-mix(in oklab, var(--stack-tone), black 35%) 72%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: #fff;
     font-size: var(--text-caption);
     line-height: 1.4;
@@ -274,7 +284,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
       );
   }
   .ink-dark .note {
-    background: rgb(0 0 0 / 0.1);
+    background: color-mix(in oklab, color-mix(in oklab, var(--stack-tone), white 45%) 78%, transparent);
     color: #17181a;
   }
 
@@ -392,17 +402,24 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     .cover.laptop .screen {
       width: 78%;
     }
-    .cover.laptop .s0 { left: 6%;  top: 34%; }
-    .cover.laptop .s1 { left: 16%; top: 20%; }
+    /* On a phone the note takes the top, so the pictures start under it rather than behind it. */
+    .cover.laptop .s0 { left: 6%;  top: 44%; }
+    .cover.laptop .s1 { left: 16%; top: 30%; }
     .cover.laptop .s2 { display: none; }
 
     /* Phones keep all three, larger, overlapping more. */
     .cover.phone .screen {
       width: 30%;
     }
-    .cover.phone .s0 { left: 12%; top: 24%; }
-    .cover.phone .s1 { left: 35%; top: 19%; }
-    .cover.phone .s2 { left: 58%; top: 14%; }
+    .cover.phone .s0 { left: 12%; top: 36%; }
+    .cover.phone .s1 { left: 35%; top: 31%; }
+    .cover.phone .s2 { left: 58%; top: 26%; }
+
+    .cover .stage {
+      right: -4%;
+      top: 28%;
+      width: 76%;
+    }
     .cover.phone .note {
       max-width: calc(100% - 2 * var(--sp-3));
     }

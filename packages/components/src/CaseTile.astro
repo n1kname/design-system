@@ -116,10 +116,19 @@ const fit = (img: ImageMetadata) => {
   return w.length ? w : [img.width];
 };
 const layerWidths = (img: ImageMetadata) => {
-  const w = [800, 1600].filter((x) => x <= img.width);
+  const w = [400, 800, 1200, 1600].filter((x) => x <= img.width);
   return w.length ? w : [img.width];
 };
+// A layer is shown at its share of the stage, and the stage is the picture area: about the tile's
+// width on a phone, and at most some 600px (half) or 700px (wide) beside it. Saying so lets a small
+// card cut out of a page load a small file.
+const layerSizes = (width: number) =>
+  `(max-width: 760px) ${Math.round(width * 0.85)}vw, ${Math.round(width * (layout === 'wide' ? 7 : 6))}px`;
 const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
+// The link is named title first, then the line, the overline and the note, so a screen reader
+// hears the case before its dates. Ids from the href, so the build stays the same each run.
+const uid = `case-tile-${href.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}`;
+const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-over`, note && `${uid}-note`].filter(Boolean).join(' ');
 ---
 
 <a
@@ -127,13 +136,14 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
   href={href}
   style={`--tile-tone: ${tone}; ${patternStyle(pattern, ink)}`}
   data-case-tile
+  aria-labelledby={labelledby}
 >
   <div class="frame">
   <div class="copy">
-    {overline && <p class="overline">{overline}</p>}
-    <Heading class="title">{title}</Heading>
-    {text && <p class="text">{text}</p>}
-    {note && <p class="note">{note}</p>}
+    {overline && <p class="overline" id={`${uid}-over`}>{overline}</p>}
+    <Heading class="title" id={`${uid}-title`}>{title}</Heading>
+    {text && <p class="text" id={`${uid}-text`}>{text}</p>}
+    {note && <p class="note" id={`${uid}-note`}>{note}</p>}
     {
       figures.length > 0 && (
         <dl class="metrics">
@@ -157,7 +167,7 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
               {typeof l.image === 'string' ? (
                 <img src={l.image} alt={l.alt ?? ''} loading="lazy" />
               ) : (
-                <Image src={l.image} alt={l.alt ?? ''} widths={layerWidths(l.image)} sizes="(max-width: 760px) 90vw, 700px" format="webp" quality={80} loading="lazy" />
+                <Image src={l.image} alt={l.alt ?? ''} widths={layerWidths(l.image)} sizes={layerSizes(l.width)} format="webp" quality={80} loading="lazy" />
               )}
             </div>
           ))}
