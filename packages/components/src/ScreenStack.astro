@@ -16,6 +16,10 @@
  * `device="phone"` lays tall phone screens side by side instead, stepping up and right, each in a
  * thin dark bezel with rounded corners. Give it the screen alone, without a device frame.
  *
+ * `layers` places separate pictures on a stage instead, such as an isometric page and a card cut
+ * out of it, each with a `depth`: deeper layers follow the pointer further and lift on hover, so the
+ * card floats off its page. `ink="dark"` darkens the note for a light tone.
+ *
  * A picture is an imported image (it goes through astro:assets, sized and converted to webp) or a
  * plain URL. `note` labels the panel, such as "Concepts, made-up data", for screens that are not
  * shipped work: keep it short on a card.
@@ -28,9 +32,26 @@ interface Screen {
   alt: string;
 }
 
+interface Layer {
+  image: ImageMetadata | string;
+  /** Position and width on the stage, in percent of its width (x, width) and height (y). */
+  x: number;
+  y: number;
+  width: number;
+  /** 0 stays put; 1 follows the pointer and lifts the most. */
+  depth?: number;
+  alt?: string;
+}
+
 interface Props {
   /** Two or three; any more are left out. The first sits in front. */
-  screens: Screen[];
+  screens?: Screen[];
+  /** Separate pictures on a stage, in place of screens. */
+  layers?: Layer[];
+  /** The stage's width over its height. */
+  stage?: number;
+  /** Dark ink on the note, for a light tone. */
+  ink?: 'light' | 'dark';
   /** The panel colour: a CSS colour, deep enough for white text, such as a client's brand blue. */
   tone?: string;
   note?: string;
@@ -47,7 +68,7 @@ interface Props {
   class?: string;
 }
 
-const { screens, tone = 'var(--c-accent)', note, size = 'cover', device = 'laptop', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
+const { screens = [], layers = [], stage = 4 / 3, ink = 'light', tone = 'var(--c-accent)', note, size = 'cover', device = 'laptop', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
 const shots = screens.slice(0, 3);
 // Back to front, so the first screen paints last and sits on top.
 const order = [...shots.keys()].reverse();
@@ -56,17 +77,44 @@ const widths = phone ? (size === 'cover' ? [240, 480, 720] : [160, 320]) : size 
 const sizes = phone
   ? size === 'cover' ? '(max-width: 640px) 30vw, 230px' : '(max-width: 640px) 22vw, 70px'
   : size === 'cover' ? '(max-width: 900px) 80vw, 760px' : '(max-width: 640px) 70vw, 220px';
+const layerWidths = (img: ImageMetadata) => {
+  const w = [800, 1600, 2400].filter((x) => x <= img.width);
+  return w.length ? w : [img.width];
+};
 const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.width))];
 ---
 
 <div
-  class:list={['screen-stack', size, device, `n${shots.length}`, className]}
+  class:list={['screen-stack', size, device, `n${shots.length}`, `ink-${ink}`, { 'has-layers': layers.length }, className]}
   style={`--stack-tone: ${tone};${transition ? ` view-transition-name: ${transition}; view-transition-class: media;` : ''}`}
   data-screen-stack-parallax={parallax ? '' : undefined}
 >
   {note && <p class="note">{note}</p>}
   {
-    order.map((i) => {
+    layers.length > 0 && (
+      <div class="stage" style={`aspect-ratio: ${stage}`}>
+        {layers.map((l, i) => (
+          <div class="layer" style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
+            {typeof l.image === 'string' ? (
+              <img src={l.image} alt={l.alt ?? ''} loading={eager ? 'eager' : 'lazy'} />
+            ) : (
+              <Image
+                src={l.image}
+                alt={l.alt ?? ''}
+                widths={layerWidths(l.image)}
+                sizes="(max-width: 900px) 90vw, 1000px"
+                format="webp"
+                quality={80}
+                loading={eager ? 'eager' : 'lazy'}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+  {
+    layers.length > 0 ? null : order.map((i) => {
       const s = shots[i];
       const first = i === 0;
       return (
@@ -163,6 +211,54 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     font-size: 11px;
   }
 
+  /* Layers on a stage over the right of the panel; they carry their own shadows. */
+  .stage {
+    position: absolute;
+    right: 4%;
+    top: 6%;
+    width: 56%;
+  }
+
+  .layer {
+    position: absolute;
+    --lift: 0px;
+    transform: translate(calc(var(--px) * var(--depth) * 16px), calc(var(--py) * var(--depth) * 12px + var(--lift)));
+    transition: transform 700ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  .layer :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .screen-stack:hover .layer {
+      --lift: calc(var(--depth) * -14px);
+    }
+  }
+
+  .card .stage {
+    right: -10%;
+    top: -8%;
+    width: 100%;
+  }
+
+  .ink-dark {
+    background:
+      radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.1) 1px, transparent 0) 0 0 / 22px 22px,
+      linear-gradient(
+        140deg,
+        color-mix(in oklab, var(--stack-tone), white 14%),
+        var(--stack-tone) 55%,
+        color-mix(in oklab, var(--stack-tone), black 10%)
+      );
+  }
+  .ink-dark .note {
+    background: rgb(0 0 0 / 0.1);
+    color: #17181a;
+  }
+
   .screen {
     position: absolute;
     width: 58%;
@@ -233,6 +329,10 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
   .card.phone .s2 { left: 55%; top: 2%; }
 
   @media (prefers-reduced-motion: no-preference) {
+    .layer {
+      animation: stack-in var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)) both;
+      animation-delay: calc(var(--i) * 90ms);
+    }
     .screen {
       animation: stack-in var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)) both;
     }

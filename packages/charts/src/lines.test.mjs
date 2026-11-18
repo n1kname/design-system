@@ -94,3 +94,20 @@ console.log('lines: all assertions pass');
   assert.ok(!names(own).includes('Tip') && !names(own).includes('RuleX'), 'no tip or crosshair with pointer: false');
   assert.ok(!own.marks.flat().some((m) => m?.r === 4), 'no pointer dot with pointer: false');
 }
+
+// Bands: a range shaded behind the lines, in the domain, in the tooltip, with an end label.
+{
+  const rows = [
+    { year: '2012', top: 100, lo: 100, hi: 100 },
+    { year: '2013', top: 121, lo: 112, hi: 116 },
+    { year: '2014', top: 146, lo: 125, hi: 135 },
+  ];
+  const o = lines({ rows, x: 'year', unit: 'index', series: [{ key: 'top', label: 'Top quartile', color: 'var(--c-chart-2)', endLabel: '21%' }], bands: [{ low: 'lo', high: 'hi', label: 'Benchmarks', endLabel: '12–16%' }] }, 500);
+  const svg = renderPlot(o);
+  assert.ok(o.marks.some((m) => m.constructor.name === 'Area'), 'the band is an area');
+  assert.ok(svg.includes('>12–16%<'), 'the band ends in its label');
+  assert.ok(o.y.domain[1] >= 146 && o.y.domain[0] <= 100, 'the domain takes in the band and the lines');
+  const tip = o.marks.at(-1);
+  assert.equal(tip.channels.title.value(rows[1]), '2013\nTop quartile  121\nBenchmarks  112–116\nindex', 'the tooltip gives the band as a range');
+  console.log('lines: bands pass');
+}

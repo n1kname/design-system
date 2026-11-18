@@ -10,7 +10,11 @@
  * narrower than 760px, and the figures drop out there.
  *
  * Screens are laptop (wide) or phone (tall) screenshots, or one picture (`image`), such as a photo,
- * for a case without screens. The first screen sits in front.
+ * for a case without screens. The first screen sits in front. Or `layers`: separate pictures, such
+ * as an isometric page and a card cut out of it, placed on a stage by percentage, each with a
+ * `depth`. On hover a deeper layer floats up further, so a card lifts off the page it came from.
+ *
+ * `ink="dark"` sets the words in dark ink, for a light tone such as a yellow.
  *
  * Motion, all of it off under reduced motion: the screens rise in once as the tile scrolls into view,
  * front first. Under a real pointer the tile lifts and the screens fan out a little; focus does the
@@ -30,6 +34,17 @@ interface Screen {
   alt?: string;
 }
 
+interface Layer {
+  image: ImageMetadata | string;
+  /** Position and width on the stage, in percent of its width (x, width) and height (y). */
+  x: number;
+  y: number;
+  width: number;
+  /** How far it floats on hover: 0 stays put, 1 lifts the most. */
+  depth?: number;
+  alt?: string;
+}
+
 interface Props {
   href: string;
   /** The project's name, set large. */
@@ -43,6 +58,12 @@ interface Props {
   screens?: Screen[];
   /** One picture instead of screens, such as a photo. */
   image?: ImageMetadata | string;
+  /** Separate pictures on a stage, in place of screens. */
+  layers?: Layer[];
+  /** The stage's width over its height. */
+  stage?: number;
+  /** Dark words for a light tone. */
+  ink?: 'light' | 'dark';
   device?: 'laptop' | 'phone';
   layout?: 'wide' | 'half';
   /** The tile colour, deep enough for white text. */
@@ -64,6 +85,9 @@ const {
   metrics = [],
   screens = [],
   image,
+  layers = [],
+  stage = 4 / 3,
+  ink = 'light',
   device = 'laptop',
   layout = 'half',
   tone = 'var(--c-accent)',
@@ -82,11 +106,15 @@ const fit = (img: ImageMetadata) => {
   const w = widths.filter((x) => x <= img.width);
   return w.length ? w : [img.width];
 };
+const layerWidths = (img: ImageMetadata) => {
+  const w = [800, 1600].filter((x) => x <= img.width);
+  return w.length ? w : [img.width];
+};
 const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
 ---
 
 <a
-  class:list={['case-tile', layout, device, { 'has-image': !shots.length && image }, className]}
+  class:list={['case-tile', layout, device, `ink-${ink}`, { 'has-image': !shots.length && !layers.length && image, 'has-layers': layers.length }, className]}
   href={href}
   style={`--tile-tone: ${tone}`}
   data-case-tile
@@ -113,7 +141,24 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
 
   <div class="art" style={transition ? `view-transition-name: ${transition}; view-transition-class: media` : undefined}>
     {
-      shots.length > 0
+      layers.length > 0 && (
+        <div class="stage" style={`aspect-ratio: ${stage}`}>
+          {layers.map((l, i) => (
+            <div class="layer" style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
+              {typeof l.image === 'string' ? (
+                <img src={l.image} alt={l.alt ?? ''} loading="lazy" />
+              ) : (
+                <Image src={l.image} alt={l.alt ?? ''} widths={layerWidths(l.image)} sizes="(max-width: 760px) 90vw, 700px" format="webp" quality={80} loading="lazy" />
+              )}
+            </div>
+          ))}
+        </div>
+      )
+    }
+    {
+      layers.length > 0
+        ? null
+        : shots.length > 0
         ? order.map((i) => {
             const s = shots[i];
             return (
@@ -298,6 +343,50 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
     height: auto;
   }
 
+  /* Layers: pictures that carry their own shadows, on a stage the size of the picture area's width. */
+  .stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .layer {
+    position: absolute;
+    --lift: 0px;
+    transform: translateY(var(--lift));
+    transition:
+      transform 700ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      translate 900ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity 700ms ease-out;
+    transition-delay: 0ms, calc(var(--i) * 90ms), calc(var(--i) * 90ms);
+  }
+
+  .layer :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Dark ink, for a light tone. */
+  .ink-dark {
+    color: #17181a;
+    background:
+      radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.1) 1px, transparent 0) 0 0 / 22px 22px,
+      linear-gradient(
+        150deg,
+        color-mix(in oklab, var(--tile-tone), white 14%),
+        var(--tile-tone) 50%,
+        color-mix(in oklab, var(--tile-tone), black 10%)
+      );
+  }
+  .ink-dark .title { color: #17181a; }
+  .ink-dark .overline { color: rgb(0 0 0 / 0.66); }
+  .ink-dark .text { color: rgb(0 0 0 / 0.8); }
+  .ink-dark .note { background: rgb(0 0 0 / 0.1); color: #17181a; }
+  .ink-dark .metrics { border-top-color: rgb(0 0 0 / 0.2); }
+  .ink-dark .metrics dd { color: rgb(0 0 0 / 0.7); }
+
   .s0 { z-index: 3; }
   .s1 { z-index: 2; transition-delay: 0ms, 90ms, 90ms; }
   .s2 { z-index: 1; transition-delay: 0ms, 180ms, 180ms; }
@@ -350,10 +439,11 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .armed .screen {
+    .armed :is(.screen, .layer) {
       opacity: 0;
       translate: 0 48px;
     }
+    .case-tile:is(:hover, :focus-visible) .layer { --lift: calc(var(--depth) * -20px); }
 
     @media (hover: hover) {
       .case-tile:hover {

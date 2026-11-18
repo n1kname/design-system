@@ -6,6 +6,9 @@
 // Rows are wide: one object per x, a number (or null for no value) per series key. A null
 // breaks the line rather than joining across it. With `time`, x is a Date per row and the
 // steps need not be even, such as weeks with one missing.
+//
+// A band shades the range between two keys, such as a benchmark envelope from its lowest to its
+// highest value, behind the lines, and ends in its own label.
 
 import * as Plot from '@observablehq/plot';
 import { chrome, tipStyle } from './theme.mjs';
@@ -45,11 +48,14 @@ export const lines = (
     marginTop = 10,
     // Room on the right: by default for the end labels, or a little for the last x label with a legend.
     marginRight = legend ? 8 : 58,
+    // Ranges shaded behind the lines: { low, high, label, color }, two keys per row.
+    bands = [],
   },
   width,
 ) => {
   const has = (r, key) => typeof r[key] === 'number';
-  const values = rows.flatMap((r) => series.filter((s) => has(r, s.key)).map((s) => r[s.key]));
+  const keys = [...series.map((s) => s.key), ...bands.flatMap((b) => [b.low, b.high])];
+  const values = rows.flatMap((r) => keys.filter((k) => has(r, k)).map((k) => r[k]));
   const domain = [y[0] === 'auto' ? Math.min(...values) : y[0], y[1] === 'auto' ? Math.max(...values) : y[1]];
 
   // The tooltip names every series with a value at that x. A silent one, such as the
@@ -60,7 +66,8 @@ export const lines = (
     ...series.filter((s) => s.silent && s.continues && has(r, s.key) && !has(r, s.continues)),
   ];
   const tipped = rows.filter((r) => told(r).length);
-  const title = says ?? ((r) => [r[x], ...told(r).map((s) => `${s.label}  ${format(r[s.key], digits)}`), unit].join('\n'));
+  const ranged = (r) => bands.filter((b) => has(r, b.low) && has(r, b.high)).map((b) => `${b.label}  ${format(r[b.low], digits)}–${format(r[b.high], digits)}`);
+  const title = says ?? ((r) => [r[x], ...told(r).map((s) => `${s.label}  ${format(r[s.key], digits)}`), ...ranged(r), unit].join('\n'));
 
   const named = series
     .map((s) => ({ s, name: s.endLabel ?? (s.silent ? false : s.label) }))
@@ -80,6 +87,27 @@ export const lines = (
     marks: [
       Plot.gridY({ stroke: chrome.grid, strokeOpacity: 1, ticks: 5 }),
       ...(zero ? [Plot.ruleY([0], { stroke: chrome.axis })] : []),
+      ...bands.flatMap((b) => {
+        const inside = rows.filter((r) => has(r, b.low) && has(r, b.high));
+        const last = inside.at(-1);
+        return [
+          Plot.areaY(inside, { x, y1: b.low, y2: b.high, fill: b.color ?? chrome.neutral, fillOpacity: b.opacity ?? 0.38, className: 'enter-fade' }),
+          ...(legend || !b.label
+            ? []
+            : [
+                Plot.text(last ? [last] : [], {
+                  x,
+                  y: (r) => (r[b.low] + r[b.high]) / 2,
+                  text: () => b.endLabel ?? b.label,
+                  dx: 7,
+                  textAnchor: 'start',
+                  fill: chrome.textMuted,
+                  fontSize: 11,
+                  className: 'enter-fade',
+                }),
+              ]),
+        ];
+      }),
       ...series.map((s) =>
         Plot.line(rows, {
           x,
