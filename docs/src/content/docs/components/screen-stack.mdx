@@ -17,6 +17,12 @@ export const screens = [
   <ScreenStack screens={screens} tone="#2f5bd8" note="Concepts, made-up data" />
 </div>
 
+export const phones = [
+  { image: '/demo/phone-home.svg', alt: 'A fictional phone screen with a home charger and its price.' },
+  { image: '/demo/phone-prices.svg', alt: 'A fictional phone screen with prices by hour as coloured blocks.' },
+  { image: '/demo/phone-paid.svg', alt: 'A fictional phone screen listing amounts paid back per month.' },
+];
+
 ## What it's for
 
 A header for a case study that shows the work in its first screen: a few real screens of a product, in the client's colour, overlapping so they read as one piece of work rather than a gallery. On an index, the same stack small in a [link card](/components/link-card/), so the card and the page it opens look like each other.
@@ -31,6 +37,12 @@ A header for a case study that shows the work in its first screen: a few real sc
   </LinkCard>
 </div>
 
+Phone screens step up and right across the panel instead, each in a thin bezel:
+
+<div class="not-content demo-stack">
+  <ScreenStack screens={phones} device="phone" tone="#1f7a68" note="Prototype, made-up data" parallax={false} />
+</div>
+
 ## When not to use it
 
 - **One screen says it.** Use a single picture; a stack of one is a picture with a shadow.
@@ -40,7 +52,7 @@ A header for a case study that shows the work in its first screen: a few real sc
 ## Anatomy
 
 - **Panel:** the `tone` colour as a soft diagonal gradient, with a faint dot grid. 20:9 as a cover, 16:9 on a card; 4:3 on a phone, where the back screen drops out and the other two grow.
-- **Screens:** the first in front, low and left; the others step up and right behind it, each with a deep shadow. An imported image goes through `astro:assets`, sized and converted to webp; an address is used as it is.
+- **Screens:** the first in front, low and left (phones: left, stepping right); the others step up and right behind it, each with a deep shadow. An imported image goes through `astro:assets`, sized and converted to webp; an address is used as it is.
 - **Note:** optional, top left, white on a translucent pill. For screens that are concepts or use made-up data.
 
 ## Variants
@@ -48,6 +60,7 @@ A header for a case study that shows the work in its first screen: a few real sc
 | Option | For |
 |---|---|
 | `size="cover"` | A header band. Follows the pointer. |
+| `device="phone"` | Tall phone screens, side by side in a bezel. Pass the screen alone, without a device frame. |
 | `size="card"` | The `media` slot of a link card. Fans out when the card is hovered or focused. |
 | `tone` | The panel colour, deep enough for white text. Defaults to the accent. |
 | `note` | A label on the panel. Keep it to a word or two on a card. |

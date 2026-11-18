@@ -13,6 +13,9 @@
  * - `size="card"`: when the link around it is hovered or focused (a LinkCard), the screens fan
  *   out a little, as if the stack were picked up.
  *
+ * `device="phone"` lays tall phone screens side by side instead, stepping up and right, each in a
+ * thin dark bezel with rounded corners. Give it the screen alone, without a device frame.
+ *
  * A picture is an imported image (it goes through astro:assets, sized and converted to webp) or a
  * plain URL. `note` labels the panel, such as "Concepts, made-up data", for screens that are not
  * shipped work: keep it short on a card.
@@ -33,6 +36,8 @@ interface Props {
   note?: string;
   /** `cover` is a 20:9 header band; `card` a 16:9 picture for a LinkCard's media slot. */
   size?: 'cover' | 'card';
+  /** `laptop` for wide screens (the default), `phone` for tall ones. */
+  device?: 'laptop' | 'phone';
   /** A view-transition-name, so a card's stack can grow into the cover on the page it opens. */
   transition?: string;
   /** Load the front screen first, for a cover above the fold. */
@@ -42,17 +47,20 @@ interface Props {
   class?: string;
 }
 
-const { screens, tone = 'var(--c-accent)', note, size = 'cover', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
+const { screens, tone = 'var(--c-accent)', note, size = 'cover', device = 'laptop', transition, eager = size === 'cover', parallax = size === 'cover', class: className } = Astro.props;
 const shots = screens.slice(0, 3);
 // Back to front, so the first screen paints last and sits on top.
 const order = [...shots.keys()].reverse();
-const widths = size === 'cover' ? [480, 900, 1400] : [400, 800];
-const sizes = size === 'cover' ? '(max-width: 900px) 80vw, 760px' : '(max-width: 640px) 70vw, 220px';
+const phone = device === 'phone';
+const widths = phone ? (size === 'cover' ? [240, 480, 720] : [160, 320]) : size === 'cover' ? [480, 900, 1400] : [400, 800];
+const sizes = phone
+  ? size === 'cover' ? '(max-width: 640px) 30vw, 230px' : '(max-width: 640px) 22vw, 70px'
+  : size === 'cover' ? '(max-width: 900px) 80vw, 760px' : '(max-width: 640px) 70vw, 220px';
 const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.width))];
 ---
 
 <div
-  class:list={['screen-stack', size, `n${shots.length}`, className]}
+  class:list={['screen-stack', size, device, `n${shots.length}`, className]}
   style={`--stack-tone: ${tone};${transition ? ` view-transition-name: ${transition}; view-transition-class: media;` : ''}`}
   data-screen-stack-parallax={parallax ? '' : undefined}
 >
@@ -192,6 +200,31 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
   .card.n2 .s0 { left: 8%; top: 30%; }
   .card.n2 .s1 { left: 28%; top: 12%; }
 
+  /* Phones: tall screens stepping up and right, in a thin bezel. */
+  .phone .screen {
+    width: 19%;
+    border-radius: 11% / 5%;
+    box-shadow:
+      0 0 0 3px rgb(18 18 20),
+      0 1px 2px rgb(0 0 0 / 0.2),
+      0 24px 50px -10px rgb(0 0 0 / 0.5);
+  }
+  .phone .s0 { left: 27%; top: 14%; }
+  .phone .s1 { left: 41%; top: 8%; }
+  .phone .s2 { left: 55%; top: 2%; }
+  .phone.n2 .s0 { left: 34%; }
+  .phone.n2 .s1 { left: 48%; top: 6%; }
+
+  .card.phone .screen {
+    width: 22%;
+    box-shadow:
+      0 0 0 2px rgb(18 18 20),
+      0 8px 18px -6px rgb(0 0 0 / 0.5);
+  }
+  .card.phone .s0 { left: 23%; top: 18%; }
+  .card.phone .s1 { left: 39%; top: 10%; }
+  .card.phone .s2 { left: 55%; top: 2%; }
+
   @media (prefers-reduced-motion: no-preference) {
     .screen {
       animation: stack-in var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)) both;
@@ -229,11 +262,19 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     .cover {
       aspect-ratio: 4 / 3;
     }
-    .cover .screen {
+    .cover.laptop .screen {
       width: 78%;
     }
-    .cover .s0 { left: 6%;  top: 34%; }
-    .cover .s1 { left: 16%; top: 20%; }
-    .cover .s2 { display: none; }
+    .cover.laptop .s0 { left: 6%;  top: 34%; }
+    .cover.laptop .s1 { left: 16%; top: 20%; }
+    .cover.laptop .s2 { display: none; }
+
+    /* Phones keep all three, larger, overlapping more. */
+    .cover.phone .screen {
+      width: 30%;
+    }
+    .cover.phone .s0 { left: 12%; top: 14%; }
+    .cover.phone .s1 { left: 35%; top: 9%; }
+    .cover.phone .s2 { left: 58%; top: 4%; }
   }
 </style>
