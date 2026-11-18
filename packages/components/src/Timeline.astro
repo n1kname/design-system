@@ -14,9 +14,10 @@
  * Once, as each entry comes into view, its marker settles in, its text rises and its line draws on
  * to the next. Nothing moves under reduced motion, and without script everything is simply there.
  *
- * `fill` is the other motion, for a long history that is read rather than glanced at: a faint rail
- * that fills as the reader goes down it, to a line 60% down the window, in the accent through the
- * step into now and the chart teal for the rest. Each marker it passes turns teal. The entries
+ * `fill` is the other motion, for a long history that is read rather than glanced at: the same
+ * gapped, rounded segments, each filling as the reading line (60% down the window) passes it, in
+ * the accent for the step into now and the chart teal for the rest. Each marker it reaches lights
+ * up in full teal. The entries
  * don't arrive: the fill is the one moment. Under reduced motion, or without script, the rail is
  * drawn in full.
  *
@@ -120,30 +121,27 @@ const extras = await Promise.all(
     list.querySelectorAll('li').forEach((li) => seen.observe(li));
   });
 
-  // The fill: from the first marker down to the line being read, 60% down the window, never past
-  // the last marker. The step between now and the entry before it in time is in the accent.
+  // The fill: each segment, from below one marker to above the next, fills as the line being read
+  // (60% down the window) passes it, and a marker counts as reached once the line is level with it.
   document.querySelectorAll<HTMLElement>('[data-timeline].filling').forEach((list) => {
     const items = [...list.querySelectorAll<HTMLElement>(':scope > li')];
     if (items.length < 2) return;
-    const now = list.dataset.current === undefined ? -1 : Number(list.dataset.current);
-    const before = list.dataset.order === 'newest-first' ? now + 1 : now - 1;
+    const GAP = 6;
     let queued = false;
     const draw = () => {
       queued = false;
-      const box = list.getBoundingClientRect();
-      const centre = (li: HTMLElement) => {
-        const m = li.querySelector('.marker')!.getBoundingClientRect();
-        return m.top + m.height / 2 - box.top;
-      };
-      const at = items.map(centre);
-      const first = at[0];
-      const end = Math.max(first, Math.min(at[at.length - 1], innerHeight * 0.6 - box.top));
-      const lit = now >= 0 && at[before] !== undefined ? [Math.min(at[now], at[before]), Math.max(at[now], at[before])] : [0, 0];
-      list.style.setProperty('--fill-top', `${first}px`);
-      list.style.setProperty('--fill-h', `${end - first}px`);
-      list.style.setProperty('--lit-from', `${lit[0] - first}px`);
-      list.style.setProperty('--lit-to', `${lit[1] - first}px`);
-      items.forEach((li, i) => li.classList.toggle('reached', at[i] <= end + 1));
+      const line = innerHeight * 0.6;
+      const marks = items.map((li) => li.querySelector('.marker')!.getBoundingClientRect());
+      items.forEach((li, i) => {
+        const m = marks[i];
+        li.classList.toggle('reached', m.top + m.height / 2 <= line + 1);
+        const next = marks[i + 1];
+        if (!next) return;
+        const top = m.bottom + GAP;
+        const bottom = next.top - GAP;
+        const p = Math.min(1, Math.max(0, (line - top) / Math.max(1, bottom - top)));
+        li.style.setProperty('--p', p.toFixed(3));
+      });
     };
     const queue = () => {
       if (!queued) {
@@ -380,9 +378,11 @@ const extras = await Promise.all(
   }
 
   /* ── Fill ───────────────────────────────────────────────────────────────────
-     The rail runs from marker centre to marker centre under the markers, which sit on discs of the
-     page colour so it seems to pass behind them. Faint teal, and the fill over it. Without the
-     script (or with reduced motion) nothing is held back: the rail and the markers are teal. */
+     The same line as without the fill: a segment between each pair of markers, a small gap clear
+     of each and rounded at both ends. Each segment fills from the top as the reading line passes
+     it (--p, from 0 to 1, set by the script), teal for the history and the accent for the step into
+     now. A marker turns full teal as the fill reaches it, with a small spring. Without the script
+     (or with reduced motion) nothing is held back: every segment and marker is drawn in full. */
   [data-fill] {
     --m: 12px;
     --mt: 6px;
@@ -390,7 +390,6 @@ const extras = await Promise.all(
     --gap: var(--sp-8);
     --rail: var(--c-chart-2);
     --rail-faint: color-mix(in oklab, var(--c-chart-2) 22%, transparent);
-    position: relative;
   }
 
   /* With icons, the same discs as without the fill. */
@@ -402,51 +401,32 @@ const extras = await Promise.all(
 
   [data-fill] li {
     column-gap: var(--sp-5);
+    --seg: var(--rail);
+    --seg-faint: var(--rail-faint);
+  }
+
+  /* The step into now is the accent, before the fill reaches it as well as after. */
+  [data-fill][data-order='newest-first'] li[data-state='current'],
+  [data-fill][data-order='oldest-first'] li:has(+ li[data-state='current']) {
+    --seg: var(--c-accent);
+    --seg-faint: color-mix(in oklab, var(--c-accent) 28%, transparent);
   }
 
   [data-fill] li:not(:last-child)::before {
-    top: calc(var(--mt) + var(--m) / 2);
-    bottom: calc(-1 * (var(--mt) + var(--m) / 2));
-    background: var(--rail);
+    background: var(--seg);
     opacity: 1;
   }
 
   [data-fill].filling li:not(:last-child)::before {
-    background: var(--rail-faint);
-  }
-
-  /* The step into now waits in a faint accent rather than faint teal, so it reads orange before
-     the fill reaches it as well as after. */
-  [data-fill][data-order='newest-first'].filling li[data-state='current']:not(:last-child)::before,
-  [data-fill][data-order='oldest-first'].filling li:has(+ li[data-state='current'])::before {
-    background: color-mix(in oklab, var(--c-accent) 28%, transparent);
-  }
-
-  /* Drawn in full (no script, reduced motion): the step into now is still the accent. */
-  [data-fill][data-order='newest-first']:not(.filling) li[data-state='current']:not(:last-child)::before,
-  [data-fill][data-order='oldest-first']:not(.filling) li:has(+ li[data-state='current'])::before {
-    background: var(--c-accent);
-  }
-
-  [data-fill].filling::after {
-    content: '';
-    position: absolute;
-    inset-inline-start: calc(var(--col) / 2 - 1px);
-    top: var(--fill-top, 0px);
-    width: 2px;
-    height: var(--fill-h, 0px);
-    border-radius: 1px;
     background: linear-gradient(to bottom,
-        var(--rail) 0 var(--lit-from, 0px),
-        var(--c-accent) var(--lit-from, 0px) var(--lit-to, 0px),
-        var(--rail) var(--lit-to, 0px));
+        var(--seg) 0 calc(var(--p, 0) * 100%),
+        var(--seg-faint) calc(var(--p, 0) * 100%));
   }
 
   [data-fill] .marker {
     z-index: 1;
     background: var(--rail);
-    box-shadow: 0 0 0 4px var(--c-bg);
-    color: var(--rail);
+    color: var(--c-bg);
     transition:
       background-color var(--motion-base) var(--ease-out),
       color var(--motion-base) var(--ease-out);
@@ -456,28 +436,21 @@ const extras = await Promise.all(
     background: color-mix(in oklab, var(--c-chart-2) 40%, var(--c-bg));
   }
 
-  [data-fill] [data-state='current'] .marker,
-  [data-fill] [data-state='next'] .marker {
-    box-shadow: 0 0 0 4px var(--c-bg);
-  }
-
   [data-fill] [data-state='current'] .marker {
     background: var(--c-accent);
+    color: var(--c-on-accent);
   }
 
-  /* With icons: each icon in a disc, as on a timeline without the fill. The discs are opaque, so
-     the rail seems to pass behind them. A disc the fill has passed is a soft teal; one it has yet
-     to reach is fainter; now is the accent itself, with its halo. */
-  [data-fill][data-icons] .marker,
+  /* With icons: a disc the fill has reached is full teal; one it has yet to reach is a quiet tint;
+     now is the accent itself, with its halo. */
   [data-fill][data-icons] [data-state] .marker {
-    background: color-mix(in oklab, var(--rail) 26%, var(--c-bg));
-    box-shadow: none;
-    color: var(--rail);
+    background: var(--rail);
+    color: var(--c-bg);
   }
 
   [data-fill][data-icons].filling li:not(.reached) .marker {
-    background: color-mix(in oklab, var(--rail) 14%, var(--c-bg));
-    color: color-mix(in oklab, var(--c-chart-2) 55%, var(--c-bg));
+    background: color-mix(in oklab, var(--rail) 16%, var(--c-bg));
+    color: color-mix(in oklab, var(--c-chart-2) 60%, var(--c-bg));
   }
 
   [data-fill][data-icons] [data-state='current'] .marker,
@@ -485,6 +458,17 @@ const extras = await Promise.all(
     background: var(--c-accent);
     color: var(--c-on-accent);
     box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-accent) 28%, var(--c-bg));
+  }
+
+  /* Lighting up: the marker swells a little and settles, on the spring. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-fill].filling li.reached .marker {
+      animation: marker-lit var(--motion-spring, 340ms) var(--ease-spring, ease-out);
+    }
+  }
+
+  @keyframes marker-lit {
+    from { transform: scale(0.82); }
   }
 
   @media (max-width: 560px) {
