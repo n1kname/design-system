@@ -66,6 +66,7 @@ interface Props {
   rings?: Ring[];
   /** A short legend in the corner: lines of text, the first one bold. */
   note?: { x: number; y: number; lines: { text: string; tone?: Tone }[] };
+  /** The caption as text. For a caption with a link in it, use the `caption` slot instead. */
   caption?: string;
   /**
    * Narrowest the drawing reads well at. Narrower, it still fits the width, smaller, and an
@@ -301,7 +302,13 @@ const lines = (label: string) => {
     {kind === 'wide' && <DiagramZoom title={title} min={minWidth} id={uid} />}
   </div>
   ))}
-  {caption && <figcaption>{caption}</figcaption>}
+  {
+    Astro.slots.has('caption') ? (
+      <figcaption><slot name="caption" /></figcaption>
+    ) : (
+      caption && <figcaption>{caption}</figcaption>
+    )
+  }
 </figure>
 
 <script>
