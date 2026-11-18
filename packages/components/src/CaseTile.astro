@@ -43,6 +43,8 @@ interface Layer {
   width: number;
   /** How far it floats on hover: 0 stays put, 1 lifts the most. */
   depth?: number;
+  /** Bobs slowly on its own, down and back, so a card cut out of a page floats above it. */
+  float?: boolean;
   alt?: string;
 }
 
@@ -151,7 +153,7 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
       layers.length > 0 && (
         <div class="stage" style={`aspect-ratio: ${stage}`}>
           {layers.map((l, i) => (
-            <div class="layer" style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
+            <div class:list={['layer', { float: l.float }]} style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
               {typeof l.image === 'string' ? (
                 <img src={l.image} alt={l.alt ?? ''} loading="lazy" />
               ) : (
@@ -478,5 +480,18 @@ const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
 
   @media (max-width: 640px) {
     .case-tile { border-radius: 18px; }
+  }
+
+  /* A floating layer bobs on its picture, not the layer, so it adds to the pointer, the hover lift
+   * and the arrival instead of replacing them. */
+  @media (prefers-reduced-motion: no-preference) {
+    .layer.float :global(img) {
+      animation: layer-float 6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes layer-float {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 var(--float-range, 16px); }
   }
 </style>

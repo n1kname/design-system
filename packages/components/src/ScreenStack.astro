@@ -7,7 +7,9 @@
  * The first screen sits in front, low and left; the others step up and right behind it.
  *
  * Motion, all of it off under reduced motion:
- * - The screens play in once, front first, rising a little as they fade in.
+ * - The screens play in once, front first, rising a little as they fade in; layers play in back
+ *   to front. This is the page's entrance: no picture morphs in from the page before.
+ * - A layer with `float` bobs slowly on its own, down and back, whatever the others do.
  * - `size="cover"`: under a real pointer, the screens follow it a few pixels, the front one most,
  *   so the stack reads as layers. Leaves no listener behind when there is no fine pointer.
  * - `size="card"`: when the link around it is hovered or focused (a LinkCard), the screens fan
@@ -41,6 +43,8 @@ interface Layer {
   width: number;
   /** 0 stays put; 1 follows the pointer and lifts the most. */
   depth?: number;
+  /** Bobs slowly on its own, down and back, so a card cut out of a page floats above it. */
+  float?: boolean;
   alt?: string;
 }
 
@@ -99,7 +103,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     layers.length > 0 && (
       <div class="stage" style={`aspect-ratio: ${stage}`}>
         {layers.map((l, i) => (
-          <div class="layer" style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
+          <div class:list={['layer', { float: l.float }]} style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
             {typeof l.image === 'string' ? (
               <img src={l.image} alt={l.alt ?? ''} loading={eager ? 'eager' : 'lazy'} />
             ) : (
@@ -344,9 +348,10 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
   .card.phone .s2 { left: 55%; top: 2%; }
 
   @media (prefers-reduced-motion: no-preference) {
+    /* Layers play in back to front, the way they are stacked, so a floating card lands last. */
     .layer {
       animation: stack-in var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)) both;
-      animation-delay: calc(var(--i) * 90ms);
+      animation-delay: calc(var(--i) * 140ms);
     }
     .screen {
       animation: stack-in var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)) both;
@@ -401,5 +406,18 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     .cover.phone .note {
       max-width: calc(100% - 2 * var(--sp-3));
     }
+  }
+
+  /* A floating layer bobs on its picture, not the layer, so it adds to the pointer, the hover lift
+   * and the arrival instead of replacing them. */
+  @media (prefers-reduced-motion: no-preference) {
+    .layer.float :global(img) {
+      animation: layer-float 6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes layer-float {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 var(--float-range, 16px); }
   }
 </style>

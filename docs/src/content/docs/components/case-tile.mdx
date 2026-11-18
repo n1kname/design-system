@@ -78,15 +78,16 @@ The panel carries a texture under the screens, on a layer of its own that fades 
 | `layout="half"` | Two to a row: words on top, screens underneath. Any tile under 760px wide uses this layout. |
 | `device="phone"` | Tall phone screens in a thin bezel. |
 | `image` | One picture, such as a photo, for a case without screens. |
-| `layers` | Separate pictures on a stage, each placed in percent and given a `depth`: on hover the deeper ones float up further, so a card lifts off the page it came from. `stage` sets the stage's ratio. |
+| `layers` | Separate pictures on a stage, each placed in percent and given a `depth`: on hover the deeper ones float up further, so a card lifts off the page it came from. Give a layer `float: true` and it bobs 16px down and back on its own, every 6 seconds, whatever the others do. `stage` sets the stage's ratio. |
 | `ink="dark"` | Dark words and pattern for a light tone, such as a yellow. |
 | `pattern` | The texture: `dots` (default), `grid`, `lines`, `plus`, `waves` or `none`. `patternFade={false}` keeps it even across the tile. |
 | `note` | A label under the words, such as "Concepts" or "Shipped". |
-| `transition` | A view-transition name on the pictures, so they grow into the cover on the page the tile opens. |
+| `transition` | A view-transition name on the pictures, so they grow into the cover on the page the tile opens. Only when the two share a shape: a wide tile's art morphing into a 20:9 cover looks warped, so let the cover play its own entrance instead. |
 
 ## States
 
 - **Arrival:** tiles below the fold arm on load; as each scrolls into view its screens rise 48px and fade in, front first, 90ms apart. Tiles already in view are simply there.
+- **Float:** a layer with `float` bobs slowly on its own, down and back, adding to the hover lift.
 - **Hover:** the tile lifts 3px with a soft shadow, and the screens fan out a little (phones also tip).
 - **Focus:** the same as hover, plus a ring round the tile.
 - **Reduced motion:** nothing moves.
@@ -129,7 +130,6 @@ import station from '../assets/station.png';
   text="What it achieved, in one line."
   metrics={[{ value: '40,000+', label: 'searches a week' }]}
   screens={[{ image: dashboard }, { image: station }]}
-  transition="case-a"
 />
 ```
 
