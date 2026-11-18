@@ -435,6 +435,13 @@
         "unit": "ms"
       }
     },
+    "float": {
+      "$type": "duration",
+      "$value": {
+        "value": 6000,
+        "unit": "ms"
+      }
+    },
     "spring": {
       "$type": "duration",
       "$value": {

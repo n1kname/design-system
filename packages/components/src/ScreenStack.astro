@@ -253,7 +253,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     position: absolute;
     --lift: 0px;
     transform: translate(calc(var(--px) * var(--depth) * 16px), calc(var(--py) * var(--depth) * 12px + var(--lift)));
-    transition: transform 700ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1));
+    transition: transform var(--motion-grow, 700ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   .layer :global(img) {
@@ -296,7 +296,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
     box-shadow:
       0 1px 2px rgb(0 0 0 / 0.18),
       0 24px 60px -12px rgb(0 0 0 / 0.45);
-    transition: transform 700ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1));
+    transition: transform var(--motion-grow, 700ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   .screen :global(img) {
@@ -429,7 +429,9 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
    * and the arrival instead of replacing them. */
   @media (prefers-reduced-motion: no-preference) {
     .layer.float :global(img) {
-      animation: layer-float 6s ease-in-out infinite;
+      /* Three slow breaths, then still: anything moving on its own for more than five seconds
+       * next to other content needs to stop (WCAG 2.2.2). */
+      animation: layer-float var(--motion-float, 6s) ease-in-out 3;
     }
   }
 

@@ -74,7 +74,7 @@ Phone screens step up and right across the panel instead, each in a thin bezel:
 ## States
 
 - **Arrival:** the screens play in once, front first, 90ms apart, rising 24px as they fade in. Layers play in back to front, 140ms apart, so a floating card lands last.
-- **Float:** a layer with `float` bobs 16px down and back every 6 seconds, on its picture, so it adds to the pointer and the hover lift.
+- **Float:** a layer with `float` drifts 16px down and back over `--motion-float` (6 seconds), three times, then holds still (WCAG 2.2.2). It moves on its picture, so it adds to the pointer and the hover lift.
 - **Pointer over a cover:** each screen follows the pointer a few pixels, the front one most (10px), the back one least (3px), eased, so the stack reads as layers. Back to rest when the pointer leaves.
 - **Hover or focus on the card around it:** the front screen tips left, the back one up and right.
 - **Reduced motion:** nothing moves. The screens are simply there.

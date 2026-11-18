@@ -363,9 +363,9 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
       0 1px 2px rgb(0 0 0 / 0.2),
       0 30px 60px -16px rgb(0 0 0 / 0.5);
     transition:
-      transform 600ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
-      translate 900ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
-      opacity 700ms ease-out;
+      transform var(--motion-grow, 700ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      translate var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity var(--motion-grow, 700ms) var(--ease-out, ease-out);
   }
 
   .screen :global(img) {
@@ -387,9 +387,9 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
     --lift: 0px;
     transform: translateY(var(--lift));
     transition:
-      transform 700ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
-      translate 900ms var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
-      opacity 700ms ease-out;
+      transform var(--motion-grow, 700ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      translate var(--motion-reveal, 900ms) var(--ease-soft, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity var(--motion-grow, 700ms) var(--ease-out, ease-out);
     transition-delay: 0ms, calc(var(--i) * 90ms), calc(var(--i) * 90ms);
   }
 
@@ -496,7 +496,9 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
    * and the arrival instead of replacing them. */
   @media (prefers-reduced-motion: no-preference) {
     .layer.float :global(img) {
-      animation: layer-float 6s ease-in-out infinite;
+      /* Three slow breaths, then still: anything moving on its own for more than five seconds
+       * next to other content needs to stop (WCAG 2.2.2). */
+      animation: layer-float var(--motion-float, 6s) ease-in-out 3;
     }
   }
 
