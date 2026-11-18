@@ -1,0 +1,74 @@
+---
+title: "Screenshot"
+description: "A product screenshot on a sunken plate, with a caption, served sharp and never upscaled, and a labelled placeholder until the shot exists."
+---
+
+import Screenshot from '@n1kname/components/Screenshot.astro';
+
+<div class="not-content">
+  <Screenshot image="/demo/stack-overview.svg" alt="A fictional overview screen with totals, a chart of sessions by week and a status donut." caption="A caption says why the shot matters, not what it shows." maxWidth={900} />
+</div>
+
+## What it's for
+
+Showing the product inside a long read, such as a case study. The plate gives a light-UI capture a frame of its own, so it doesn't float on a dark page, and the caption carries the point.
+
+<div class="not-content">
+  <Screenshot alt="The transactions list filtered to one charge card, with the export button in view." caption="Without an image yet, the placeholder holds the place at the shot's size, with the brief written as its alt." width={1600} height={900} maxWidth={720} />
+</div>
+
+## When not to use it
+
+- **A chart or a table.** Use a [figure](/components/figure/), or a [chart figure](/components/chart-figure/) for a chart drawn at build time.
+- **Several screens that belong together.** Use a [screen stack](/components/screen-stack/), or [steps](/components/steps/) for a sequence.
+- **Movement.** Use a [clip](/components/clip/).
+
+## Anatomy
+
+- **Plate:** the sunken surface with a hairline border, centring the shot up to `maxWidth`.
+- **Shot:** the picture with a hairline border and small corners. Kept as it is in dark mode, not inverted or dimmed.
+- **Placeholder:** without `image`, a dashed box at the shot's size, with its label, its size and the alt text as the brief.
+- **Caption:** optional, under the plate, to a reading measure.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `maxWidth` | The widest it is drawn, 680px by default. The shot is served at that width and twice it. |
+| `lightPlate` | Transparent artwork with dark labels: keeps the light plate in dark mode. |
+| `placeholder` | The placeholder's label, "Screenshot to add" by default. |
+
+## States
+
+- **Loading:** lazy, so a shot far down the page waits until it's near.
+- **No image:** the placeholder, named by its alt text for a screen reader.
+
+## Tokens
+
+`--c-surface-sunken`, `--c-surface`, `--c-border`, `--c-border-strong`, `--c-text`, `--c-text-muted`, `--font-body`, `--font-mono`, `--text-body-sm`, `--text-caption`, `--radius-lg`, `--radius-sm`, `--layout-measure`, `--sp-*`
+
+## Keyboard and screen reader
+
+- **The shot is named by `alt`,** and so is the placeholder ("Placeholder." first, so nobody mistakes it for the real thing).
+- **The caption is a figcaption,** read with the figure.
+
+## Content
+
+- **Alt:** what the screen shows that matters, in a sentence or two. Not "screenshot of".
+- **Caption:** why it matters.
+- **Export big.** Drop the largest export in; the build sizes it.
+
+## Status
+
+New. Taken from a portfolio's case studies.
+
+## Code
+
+```astro wrap
+---
+import Screenshot from '@n1kname/components/Screenshot.astro';
+import details from '../assets/details.png';
+---
+
+<Screenshot image={details} alt="A charge point's details: address, connection and access." caption="The bottom of the hierarchy carries what every tier above cares about." maxWidth={1240} />
+```

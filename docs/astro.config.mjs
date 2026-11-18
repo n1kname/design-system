@@ -42,6 +42,8 @@ export default defineConfig({
             { label: 'App shell', link: '/components/app-shell/' },
             { label: 'Side nav', link: '/components/side-nav/' },
             { label: 'Figure', link: '/components/figure/' },
+            { label: 'Chart figure', link: '/components/chart-figure/' },
+            { label: 'Screenshot', link: '/components/screenshot/' },
             { label: 'Map stage', link: '/components/map-stage/' },
             { label: 'Floating panel', link: '/components/float-panel/' },
           ],

@@ -1,0 +1,83 @@
+---
+title: "Chart figure"
+description: "A chart drawn at build time two or three times, on a panel that shows whichever drawing fits its width, so the text stays one size from a phone to a wide screen."
+---
+
+import ChartFigure from '@n1kname/components/ChartFigure.astro';
+import Legend from '@n1kname/components/Legend.astro';
+import { barsChart, groupedChart } from '../../../lib/examples.mjs';
+
+<div class="not-content">
+  <ChartFigure chart={barsChart} alt="Twelve fictional months, each a stack of base, heat and power. Base stays at 40; heat is high in winter and gone in summer." caption="A caption says what the chart counts and anything a reader has to know to trust it." />
+</div>
+
+## What it's for
+
+A chart in a long read, drawn once per width at build time rather than scaled. A scaled SVG has tiny text on a phone and huge text on a wide screen; three drawings keep the text one size and let the chart use the room it has.
+
+## When not to use it
+
+- **A chart that changes on the page.** Draw it in the browser.
+- **A picture.** Use a [screenshot](/components/screenshot/).
+- **A dashboard tile with actions.** Use a [figure](/components/figure/) around the chart.
+
+## Anatomy
+
+- **Panel:** the surface with a hairline border and large corners. It is its own container, so it picks a drawing by its own width, not the window's.
+- **Title:** optional, small and semibold at the top.
+- **Drawings:** `narrow` (320), `wide` (about 720) and an optional `full` (960). Never scaled up, centred when the panel is wider.
+- **Legend:** the `legend` slot, under the chart, inside the panel.
+- **Caption:** optional, under the panel.
+
+## Variants
+
+| Option | For |
+|---|---|
+| `full` drawing | A chart worth the width of a wide screen, from a 960px panel up. |
+| `narrowBelow={420}` | A half-width panel, whose wide drawing still fits down to 420px. 560 by default. |
+| `as="div"` | One panel of a larger figure, such as two charts side by side under one legend and caption: no margin and no caption of its own. |
+
+<div class="not-content" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+  <ChartFigure as="div" title="Year one and two" narrowBelow={420} chart={groupedChart} alt="Eight fictional months, two bars each, both years falling from winter into spring." />
+  <ChartFigure as="div" title="Base, heat and power" narrowBelow={420} chart={barsChart} alt="Twelve fictional months, each a stack of base, heat and power." />
+</div>
+
+## States
+
+- **Arrival:** the chart plays in once when it scrolls into view, through the charts' `enter`. Under reduced motion it is simply there.
+
+## Tokens
+
+`--c-surface`, `--c-border`, `--c-text`, `--c-text-muted`, `--text-body-sm`, `--radius-lg`, `--layout-measure`, `--sp-*`
+
+## Keyboard and screen reader
+
+- **One image, named by `alt`.** Only one drawing shows at a time, and the alt speaks for all of them.
+- **Write the alt as the finding:** what goes up, what goes down, and the figures that matter.
+
+## Content
+
+- **The caption counts:** what is measured, over what period, and what's still running.
+- **Draw the narrow one for a phone,** with fewer ticks and shorter words, not the wide one squeezed.
+
+## Status
+
+New. Taken from a portfolio's case charts.
+
+## Code
+
+```astro wrap
+---
+import ChartFigure from '@n1kname/components/ChartFigure.astro';
+import { bars, renderPlot, NARROW, WIDE } from '@n1kname/charts';
+
+const spec = (width) => bars({ rows, x: 'month', series }, width);
+const chart = {
+  narrow: renderPlot({ width: NARROW, ...spec(NARROW) }),
+  wide: renderPlot({ width: WIDE, ...spec(WIDE) }),
+  full: renderPlot({ width: 960, ...spec(960) }),
+};
+---
+
+<ChartFigure chart={chart} alt="What the chart shows, as a finding." caption="What it counts." />
+```

@@ -1,0 +1,108 @@
+---
+/**
+ * A chart drawn at build time, two or three times, on a panel that shows whichever drawing fits
+ * its width: the narrow one on a phone, the wide one in a column, and an optional full one from
+ * 960px. Each is drawn for its width and never scaled up, so the text stays one size and the chart
+ * still fills a wide screen. No script draws it; the charts' `enter` plays it in once when it comes
+ * into view.
+ *
+ * Draw the three with `renderPlot` and pass the SVG strings. `alt` speaks for the chart. A
+ * `legend` slot sits under it, inside the panel.
+ *
+ * `as="div"` makes it one panel of a larger figure, such as two charts side by side under one
+ * legend and caption: no outer margin and no caption of its own.
+ */
+interface Props {
+  /** The drawings, as SVG strings: `narrow` (320), `wide` (about 720) and optionally `full` (960). */
+  chart: { narrow: string; wide: string; full?: string };
+  alt: string;
+  /** A small title at the top of the panel. */
+  title?: string;
+  caption?: string;
+  /** The panel width under which the narrow drawing shows. 560 by default; 420 for a half-width panel. */
+  narrowBelow?: 420 | 560;
+  as?: 'figure' | 'div';
+  class?: string;
+}
+
+const { chart, alt, title, caption, narrowBelow = 560, as = 'figure', class: className } = Astro.props;
+const Tag = as;
+---
+
+<Tag class:list={['chart-figure', { panel: as === 'div' }, className]}>
+  <div class:list={['frame', `nb-${narrowBelow}`, { 'has-full': chart.full }]} data-chart-figure>
+    {title && <p class="title">{title}</p>}
+    <div role="img" aria-label={alt}>
+      <div class="narrow" set:html={chart.narrow} />
+      <div class="wide" set:html={chart.wide} />
+      {chart.full && <div class="full" set:html={chart.full} />}
+    </div>
+    <slot name="legend" />
+  </div>
+  {as === 'figure' && caption && <figcaption>{caption}</figcaption>}
+</Tag>
+
+<script>
+  import { enterAll } from '@n1kname/charts/enter';
+  enterAll('[data-chart-figure]');
+</script>
+
+<style>
+  .chart-figure {
+    margin-block: var(--sp-6) var(--sp-7);
+  }
+  .chart-figure.panel {
+    margin: 0;
+  }
+
+  .frame {
+    container-type: inline-size;
+    height: 100%;
+    padding: var(--sp-5);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .title {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  .narrow,
+  .full {
+    display: none;
+  }
+
+  @container (max-width: 560px) {
+    .nb-560 .wide { display: none; }
+    .nb-560 .narrow { display: block; }
+  }
+
+  @container (max-width: 420px) {
+    .nb-420 .wide { display: none; }
+    .nb-420 .narrow { display: block; }
+  }
+
+  @container (min-width: 960px) {
+    .has-full .wide { display: none; }
+    .has-full .full { display: block; }
+  }
+
+  /* Never scaled up, so the text stays its size; centred when the panel is wider. */
+  .frame :global(svg) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  figcaption {
+    max-width: var(--layout-measure);
+    margin-top: var(--sp-4);
+    font-size: var(--text-body-sm);
+    color: var(--c-text-muted);
+  }
+</style>
