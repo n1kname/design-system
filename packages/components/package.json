@@ -55,6 +55,6 @@
     "THIRD_PARTY.md"
   ],
   "devDependencies": {
-    "linkedom": "0.18.12"
+    "linkedom": "0.18.15"
   }
 }
