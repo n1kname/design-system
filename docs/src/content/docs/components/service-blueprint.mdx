@@ -1,0 +1,149 @@
+---
+title: "Service blueprint"
+description: "A journey's stages left to right, with lanes for what the customer does and sees, what happens behind the scenes, where it breaks and what support hears."
+---
+
+import ServiceBlueprint from '@n1kname/components/ServiceBlueprint.astro';
+
+<div class="not-content">
+  <ServiceBlueprint
+    title="Getting a library card, as it works today"
+    lanes={[
+      { key: 'doing', label: 'Doing', hint: 'what the member does' },
+      { key: 'feeling', label: 'Thinking and feeling' },
+      { key: 'front', label: 'Front stage', hint: 'what they see' },
+      { key: 'back', label: 'Back stage', hint: 'systems and staff' },
+      { key: 'pain', label: 'Pain points' },
+      { key: 'signal', label: 'Support signal', hint: 'questions at the desk' },
+    ]}
+    lines={[{ before: 'back', label: 'Line of visibility' }]}
+    stages={[
+      {
+        label: 'Find out how to join',
+        cells: {
+          doing: 'Searches the library’s site for how to get a card.',
+          feeling: 'Hopes it takes five minutes.',
+          front: 'A page with opening hours and a form to download.',
+          back: 'The page is kept by the comms team, not the desk.',
+          pain: 'The form asks for proof of address, but the page never says so.',
+        },
+      },
+      {
+        label: 'Fill in the form',
+        cells: {
+          doing: 'Prints the form, fills it in and brings it to the desk.',
+          feeling: '“Why can’t I do this online?”',
+          front: 'The desk, a queue, a member of staff.',
+          back: 'Staff type the form into the catalogue system by hand.',
+          pain: 'Handwriting is misread, so names and addresses get typed wrong.',
+          signal: { figure: '30 a week', text: 'about a card that never arrived.' },
+        },
+      },
+      {
+        label: 'Get the card',
+        cells: {
+          doing: 'Waits for the card in the post.',
+          feeling: 'Forgets about it after a week.',
+          front: 'A letter with the card and a PIN.',
+          back: 'Cards are printed in a batch every Friday.',
+          pain: 'Up to a week of waiting, with no way to check where it is.',
+        },
+      },
+      {
+        label: 'Borrow a first book',
+        cells: {
+          doing: 'Scans the card at a self-service machine.',
+          feeling: 'Pleased when it works first time.',
+          front: 'The machine, and a receipt with the return date.',
+          back: 'The loan is booked against the member’s record.',
+          signal: { figure: '12 a week', text: 'about a PIN that doesn’t work.' },
+        },
+      },
+    ]}
+    caption="A made-up example. Swipe or scroll sideways for every stage."
+  />
+</div>
+
+## What it's for
+
+A service journey from the customer's side and from behind the scenes at once: the stages in order across the top, and a lane under them for each layer, from what the customer does and feels, through what they see, to the systems and people they don't see, where it goes wrong, and what support hears about it. A line across, usually the line of visibility, separates what the customer sees from what they don't.
+
+## When not to use it
+
+- **A process with no customer in it.** Use [Phases](/components/phases/) or [Steps](/components/steps/).
+- **Who works with whom, not in what order.** That's a [Flow diagram](/components/flow-diagram/).
+- **Numbers to compare.** A blueprint carries a figure in a cell, not a chart. Use [Ranked bars](/components/bars/) or a [Data table](/components/data-table/).
+
+## Anatomy
+
+- **Stages:** across the top, numbered, each a name of a few words, with a heavier rule under it.
+- **Lane names:** on the left, each with a small swatch in the lane's colour and an optional hint under it ("what they see"). They stay pinned while the stages scroll past.
+- **Cells:** a short note per lane per stage, on the lane's tint with a hairline edge. A cell can lead with a figure in bold ("716 tickets"). A lane can be empty for a stage.
+- **Lines across:** a dashed line above a lane, its name pinned on the left: the line of visibility, or a line of interaction.
+- **Caption:** optional, under the plate.
+
+## Variants
+
+| Lane kind | Tint | For |
+|---|---|---|
+| `doing` | accent, mixed into the surface | What the customer does |
+| `feeling` | lavender (chart 6), italic | What they think and feel |
+| `front` | cool | What they see: screens, emails, people |
+| `back` | none, an edge only | Systems and staff behind the scenes |
+| `pain` | critical, with a heavier left edge | Where it goes wrong |
+| `signal` | warning, with a heavier left edge | What support hears, with figures |
+| `plain` | surface | Anything else |
+
+A lane takes its kind from its key when the key names one, so `{ key: 'pain', label: 'Pain points' }` needs nothing else. Set `kind` to give another key a colour.
+
+## States
+
+- **Wide:** one grid, so a lane lines up across every stage however much a cell holds. It scrolls sideways, with the lane names and the lines' names pinned on the left.
+- **Narrow:** below 640px wide, each stage is a card in a row you swipe through, snapping to each card. The lanes are named inside each card, and a line across shows as a dashed rule with its name above the first cell under it.
+- **Focus:** the scroll area takes focus, with the focus ring inside the plate, so the arrow keys scroll it.
+- **Forced colours:** cells, swatches and lines are drawn in the system's text colour.
+
+## Tokens
+
+`--c-surface-sunken`, `--c-surface`, `--c-border`, `--c-border-strong`, `--c-diagram-line` and `--c-diagram-edge` for the plate, rules and lines. Lanes: `--c-accent` and `--c-accent-edge` (doing), `--c-chart-6` (feeling), `--c-tag-cool-bg` and `--c-tag-cool-text` (front), `--c-status-critical` (pain) and `--c-status-warning` (signal), with `--c-text` on all of them. Also `--c-text-secondary`, `--c-text-muted`, `--c-focus`, `--font-display`, `--font-body`, `--text-body`, `--text-body-sm`, `--text-caption`, `--radius-md`, `--radius-lg`, `--radius-full`.
+
+## Keyboard and screen reader
+
+- **The scroll area is a named region** (by `title`) that takes focus, so a keyboard can scroll it with the arrow keys.
+- **It reads stage by stage:** a list of stages, each a description list of its lanes, the lane's name before each note. A screen reader hears the journey in order, not lane by lane.
+- **The pinned lane names and the lines are hidden** from screen readers, since each cell carries its own lane name. Put what a line means in the lanes' hints if it matters ("what they see", "systems and staff").
+
+## Content
+
+- **Stages:** a few words each, in the customer's terms: "Get the card", not "Card fulfilment".
+- **Cells:** one or two short sentences. Say what happens, not what should.
+- **Feelings:** in the customer's voice where you have it, in quotation marks.
+- **Support signal:** lead with the figure, and say what it counts and over what period in the caption.
+- **As-is or to-be:** say which in the title.
+
+## Status
+
+New. Used by a portfolio, to digitise as-is onboarding blueprints that had lived on a whiteboard.
+
+## Code
+
+```astro wrap
+---
+import ServiceBlueprint from '@n1kname/components/ServiceBlueprint.astro';
+---
+
+<ServiceBlueprint
+  title="Getting a library card, as it works today"
+  lanes={[
+    { key: 'doing', label: 'Doing' },
+    { key: 'front', label: 'Front stage', hint: 'what they see' },
+    { key: 'back', label: 'Back stage', hint: 'systems and staff' },
+    { key: 'pain', label: 'Pain points' },
+  ]}
+  lines={[{ before: 'back', label: 'Line of visibility' }]}
+  stages={[
+    { label: 'Fill in the form', cells: { doing: 'Brings the form to the desk.', back: 'Staff type it in by hand.' } },
+    { label: 'Get the card', cells: { doing: 'Waits for the post.', pain: 'No way to check where it is.' } },
+  ]}
+/>
+```

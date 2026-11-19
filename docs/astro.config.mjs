@@ -108,6 +108,7 @@ export default defineConfig({
             { label: 'Flow diagram', link: '/components/flow-diagram/' },
             { label: 'Diamonds', link: '/components/diamonds/' },
             { label: 'Phases', link: '/components/phases/' },
+            { label: 'Service blueprint', link: '/components/service-blueprint/' },
             { label: 'Section nav', link: '/components/section-nav/' },
             { label: 'Career map', link: '/components/career-map/' },
             { label: 'Tiers', link: '/components/tiers/' },

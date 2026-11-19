@@ -1,0 +1,459 @@
+---
+/**
+ * A service blueprint: the stages of a journey left to right, and lanes under them for what the
+ * customer does, thinks and sees, what happens behind the scenes, where it goes wrong, and what
+ * support hears about it. Lines across, such as the line of visibility, split what the customer
+ * sees from what they don't.
+ *
+ * HTML, so every word is text: a list of stages, each a list of its lanes, read in journey order.
+ * Wide, it is a grid that scrolls sideways with the lane names pinned on the left. Below 640px wide
+ * each stage becomes a card in a row you swipe through, with its lanes named inside it.
+ *
+ * Nothing moves.
+ */
+type Kind = 'doing' | 'feeling' | 'front' | 'back' | 'pain' | 'signal' | 'plain';
+
+interface Lane {
+  /** The key stages use for this lane's cells, such as "doing". */
+  key: string;
+  /** "Doing", "Front stage". */
+  label: string;
+  /** Under the label, such as "what they see". */
+  hint?: string;
+  /** Sets the lane's colour. Defaults to the key when it names a kind, plain otherwise. */
+  kind?: Kind;
+}
+
+/** A cell: plain text, or a figure (such as "716 tickets") in bold ahead of the text. */
+type Cell = string | { figure: string; text?: string };
+
+interface Stage {
+  /** "Employer sets up the driver". */
+  label: string;
+  /** One cell per lane, by the lane's key. A lane left out stays empty for this stage. */
+  cells: Record<string, Cell | undefined>;
+}
+
+interface Props {
+  /** What the blueprint shows, for a screen reader and the scroll area's name. */
+  title: string;
+  lanes: Lane[];
+  stages: Stage[];
+  /** Lines across, drawn above the lane they name: { before: 'back', label: 'Line of visibility' }. */
+  lines?: { before: string; label: string }[];
+  caption?: string;
+  class?: string;
+}
+
+const { title, lanes, stages, lines = [], caption, class: className } = Astro.props;
+const kinds: Kind[] = ['doing', 'feeling', 'front', 'back', 'pain', 'signal', 'plain'];
+const kindOf = (l: Lane): Kind => l.kind ?? (kinds.includes(l.key as Kind) ? (l.key as Kind) : 'plain');
+
+// Grid rows: the stage names first, then each lane, with a row of its own for a line above it.
+let row = 2;
+const laneRow: Record<string, number> = {};
+const lineRows: { row: number; label: string }[] = [];
+for (const lane of lanes) {
+  const line = lines.find((l) => l.before === lane.key);
+  if (line) lineRows.push({ row: row++, label: line.label });
+  laneRow[lane.key] = row++;
+}
+const rows = row - 1;
+
+// On a card, a line shows above the first filled cell at or below it.
+const lineAbove = (stage: Stage, laneIndex: number) => {
+  for (const line of lines) {
+    const start = lanes.findIndex((l) => l.key === line.before);
+    if (start < 0 || laneIndex < start) continue;
+    const first = lanes.findIndex((l, i) => i >= start && stage.cells[l.key] !== undefined);
+    if (first === laneIndex) return line.label;
+  }
+  return undefined;
+};
+---
+
+<figure class:list={['service-blueprint', className]} data-service-blueprint>
+  <div class="plate">
+    <div class="scroller" tabindex="0" role="region" aria-label={title}>
+      <div class="grid" style={`--stages: ${stages.length}; --rows: ${rows}`}>
+        <div class="rail" aria-hidden="true">
+          {
+            lanes.map((lane) => (
+              <div class="lane-name" data-kind={kindOf(lane)} style={`--r: ${laneRow[lane.key]}`}>
+                <span class="swatch" />
+                <span>
+                  {lane.label}
+                  {lane.hint && <span class="hint">{lane.hint}</span>}
+                </span>
+              </div>
+            ))
+          }
+          {
+            lineRows.map((l) => (
+              <div class="line" style={`--r: ${l.row}`}>
+                <span>{l.label}</span>
+              </div>
+            ))
+          }
+        </div>
+        <ol class="stages" role="list">
+          {
+            stages.map((stage, s) => (
+              <li class="stage" role="listitem" style={`--c: ${s + 2}`}>
+                <div class="stage-name">
+                  <span class="num" aria-hidden="true">
+                    {s + 1}
+                  </span>
+                  <span>{stage.label}</span>
+                </div>
+                <dl>
+                  {lanes.map((lane, i) => {
+                    const cell = stage.cells[lane.key];
+                    if (cell === undefined) return null;
+                    const line = lineAbove(stage, i);
+                    return (
+                      <div class="cell" data-kind={kindOf(lane)} data-line={line} style={`--r: ${laneRow[lane.key]}`}>
+                        <dt>{lane.label}</dt>
+                        <dd>
+                          {typeof cell === 'string' ? (
+                            cell
+                          ) : (
+                            <>
+                              <strong class="figure">{cell.figure}</strong>
+                              {cell.text && <> {cell.text}</>}
+                            </>
+                          )}
+                        </dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .service-blueprint {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .plate {
+    container-type: inline-size;
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .scroller {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: var(--sp-5) var(--sp-5) var(--sp-5) 0;
+    scrollbar-width: thin;
+  }
+
+  .scroller:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: -2px;
+    border-radius: var(--radius-lg);
+  }
+
+  /* The lanes' colours: a tint mixed into the surface and an edge, so text on them keeps its
+   * contrast in either theme. Customer lanes in the accent, a lavender and the cool teal; pain and
+   * support signal in the status colours, with a heavier left edge so they read as warnings. */
+  [data-kind='doing'] {
+    --edge: var(--c-accent-edge);
+    --soft: color-mix(in oklab, var(--c-accent) 14%, var(--c-surface));
+    --mark: var(--c-accent);
+  }
+
+  [data-kind='feeling'] {
+    --edge: color-mix(in oklab, var(--c-chart-6) 50%, transparent);
+    --soft: color-mix(in oklab, var(--c-chart-6) 14%, var(--c-surface));
+    --mark: var(--c-chart-6);
+  }
+
+  [data-kind='front'] {
+    --edge: color-mix(in oklab, var(--c-tag-cool-text) 50%, transparent);
+    --soft: var(--c-tag-cool-bg);
+    --mark: var(--c-tag-cool-text);
+  }
+
+  [data-kind='back'],
+  [data-kind='plain'] {
+    --edge: var(--c-diagram-edge);
+    --soft: var(--c-surface);
+    --mark: var(--c-diagram-edge);
+  }
+
+  [data-kind='pain'] {
+    --edge: color-mix(in oklab, var(--c-status-critical) 55%, transparent);
+    --soft: color-mix(in oklab, var(--c-status-critical) 13%, var(--c-surface));
+    --mark: var(--c-status-critical);
+  }
+
+  [data-kind='signal'] {
+    --edge: color-mix(in oklab, var(--c-status-warning) 60%, transparent);
+    --soft: color-mix(in oklab, var(--c-status-warning) 14%, var(--c-surface));
+    --mark: var(--c-status-warning);
+  }
+
+  /* Wide: one grid for the rail, the stage names and every cell, so a lane lines up across all
+   * stages however much text a cell holds. The rail and the stage lists step aside (contents)
+   * and their items take their place in it. */
+  .grid {
+    display: grid;
+    grid-template-columns: 9.5rem repeat(var(--stages), minmax(12rem, 1fr));
+    grid-template-rows: auto;
+    gap: var(--sp-2);
+    /* Each stage at least 12rem, so long notes wrap instead of widening their stage. */
+    width: max(100%, calc(9.5rem + var(--stages) * (12rem + var(--sp-2))));
+  }
+
+  .rail,
+  .stages,
+  .stage,
+  dl {
+    display: contents;
+  }
+
+  .stages {
+    list-style: none;
+  }
+
+  .lane-name {
+    grid-column: 1;
+    grid-row: var(--r);
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    gap: var(--sp-2);
+    align-items: flex-start;
+    margin: 0;
+    padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-5);
+    background: var(--c-surface-sunken);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--c-text);
+  }
+
+  .swatch {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    margin-top: 0.25em;
+    border-radius: 3px;
+    background: var(--soft);
+    border: 1.5px solid var(--mark);
+  }
+
+  .hint {
+    display: block;
+    font-weight: 400;
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  /* A line across every stage, its name pinned on the left with the lane names. */
+  .line {
+    grid-column: 1 / -1;
+    grid-row: var(--r);
+    position: relative;
+    margin: var(--sp-1) 0;
+    height: 0;
+    border-top: 1.5px dashed var(--c-diagram-line);
+  }
+
+  .line span {
+    position: sticky;
+    left: 0;
+    display: inline-block;
+    translate: 0 -50%;
+    padding: 0 var(--sp-2) 0 var(--sp-5);
+    background: var(--c-surface-sunken);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--c-text-muted);
+  }
+
+  .stage-name {
+    grid-column: var(--c);
+    grid-row: 1;
+    display: flex;
+    gap: var(--sp-2);
+    align-items: flex-start;
+    margin: 0 0 var(--sp-1);
+    padding-bottom: var(--sp-2);
+    border-bottom: 2px solid var(--c-border-strong);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-body);
+    line-height: 1.25;
+    color: var(--c-text);
+  }
+
+  .num {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    color: var(--c-text-secondary);
+  }
+
+  .cell {
+    grid-column: var(--c);
+    grid-row: var(--r);
+    min-width: 0;
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--soft);
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-md);
+  }
+
+  .cell[data-kind='back'] {
+    background: transparent;
+  }
+
+  .cell:is([data-kind='pain'], [data-kind='signal']) {
+    border-left: 3px solid var(--mark);
+  }
+
+  dt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  .figure {
+    font-weight: 600;
+  }
+
+  [data-kind='feeling'] dd {
+    font-style: italic;
+  }
+
+  /* Narrow: each stage is a card in a row you swipe through, its lanes named inside it, and a
+   * line shown above the first cell under it. */
+  @container (max-width: 640px) {
+    .scroller {
+      padding: var(--sp-4);
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--sp-4);
+    }
+
+    .grid {
+      display: block;
+      width: auto;
+    }
+
+    .rail {
+      display: none;
+    }
+
+    .stages {
+      display: flex;
+      gap: var(--sp-3);
+      margin: 0;
+      padding: 0;
+    }
+
+    .stage {
+      display: block;
+      flex: 0 0 min(85%, 20rem);
+      scroll-snap-align: start;
+      padding: var(--sp-4);
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+    }
+
+    .stage-name {
+      margin-bottom: var(--sp-3);
+    }
+
+    dl {
+      display: grid;
+      gap: var(--sp-2);
+      margin: 0;
+    }
+
+    dt {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      margin-bottom: 2px;
+      font-size: var(--text-caption);
+      font-weight: 600;
+      color: var(--c-text-secondary);
+      white-space: normal;
+    }
+
+    .cell[data-line] {
+      position: relative;
+      margin-top: var(--sp-5);
+    }
+
+    .cell[data-line]::before {
+      content: attr(data-line);
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(-1 * var(--sp-4));
+      border-top: 1.5px dashed var(--c-diagram-line);
+      padding-top: 2px;
+      font-size: var(--text-caption);
+      font-weight: 600;
+      color: var(--c-text-muted);
+      line-height: 1;
+      translate: 0 -2px;
+    }
+  }
+
+  figcaption {
+    margin-top: var(--sp-3);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  @media (forced-colors: active) {
+    .cell,
+    .swatch,
+    .num {
+      border-color: CanvasText;
+    }
+
+    .line,
+    .cell[data-line]::before {
+      border-color: CanvasText;
+    }
+  }
+</style>
