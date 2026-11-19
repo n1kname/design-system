@@ -104,6 +104,12 @@ const size = (n: Node) => {
 const anchor = (n: Node, side: Side, shift = 0): [number, number] => {
   const { w, h } = size(n);
   if (side === 'top') return [n.x + shift, n.y - h / 2];
+  // An icon node carries its name and line under the disc, so an edge out of its bottom starts
+  // below that text instead of running through it.
+  if (side === 'bottom' && n.shape === 'icon') {
+    const lines = n.sub ? n.sub.split('\n').length : 0;
+    return [n.x + shift, n.y + h / 2 + (lines ? 44 + (lines - 1) * 18 : 24) + 12];
+  }
   if (side === 'bottom') return [n.x + shift, n.y + h / 2];
   if (side === 'left') return [n.x - w / 2, n.y + shift];
   return [n.x + w / 2, n.y + shift];

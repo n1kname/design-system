@@ -118,3 +118,7 @@ import FlowDiagram from '@n1kname/components/FlowDiagram.astro';
   ]}
 />
 ```
+
+## Keep in mind
+
+- **An edge out of an icon node's bottom starts below its name and line,** so it never runs through the text. Leave room for that when you set the next node's height, and use `labelAt` when two labels would meet.

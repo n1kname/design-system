@@ -80,7 +80,7 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
               const obj = c !== null && typeof c === 'object' ? c : null;
               const sort = obj ? obj.sort : c;
               return (
-                <td class:list={{ left: columns[i]?.align === 'left', wrap: columns[i]?.wrap }} data-sort={sort ?? undefined}>
+                <td class:list={{ left: columns[i]?.align === 'left', wrap: columns[i]?.wrap }} data-sort={sort ?? undefined} data-label={columns[i]?.label}>
                   {obj ? <Fragment set:html={obj.html} /> : show(c)}
                 </td>
               );
@@ -391,6 +391,28 @@ const show = (c: Cell) => (c === null ? '–' : typeof c === 'number' ? num(c) :
   
     .data-table-wrap.stacked .data-table tbody td.wrap {
       min-width: 0;
+    }
+
+    /* A row of words (a wrapping cell after the first) stacks one cell to a line instead: the first
+     * cell as the card's heading, then each wrapping cell under its column's name, so a long last
+     * cell can't squeeze the first. A row of figures keeps the first cell beside the last. */
+    .data-table-wrap.stacked .data-table tbody tr:has(td.wrap:not(:first-child)) td:first-child {
+      flex-basis: 100%;
+      font-weight: 600;
+      color: var(--c-text);
+    }
+
+    .data-table-wrap.stacked .data-table tbody td.wrap:not(:first-child) {
+      order: 3;
+      flex: 1 1 100%;
+    }
+
+    .data-table-wrap.stacked .data-table tbody td.wrap:not(:first-child)[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 2px;
+      font-size: var(--text-caption);
+      color: var(--c-text-muted);
     }
   
     .data-table-wrap.stacked .data-table tbody td:empty {

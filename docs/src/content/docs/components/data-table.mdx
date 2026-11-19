@@ -45,7 +45,7 @@ For looking up an exact figure, and for reading every value in a chart without a
 | Prop | Does |
 |---|---|
 | `density` | `default`, `compact` (32px), or `comfortable` (56px with more air, for a list read row by row). |
-| `stack` | Below 640px each row becomes a card instead of scrolling sideways. A cell's `.stack-label` shows only then; class `stack-hide` hides a cell then. |
+| `stack` | Below 640px each row becomes a card instead of scrolling sideways. A row of figures puts its first cell beside its last; a row of words (a `wrap` column after the first) stacks one cell to a line, the first as the card's heading and each wrapping cell under its column's name. A cell's `.stack-label` shows only then; class `stack-hide` hides a cell then. |
 | `loading` | Starts with placeholder rows in the table's shape. |
 | `empty`, `failed` slots | Shown instead of the body when there's nothing, or it failed: an [empty state](/components/empty-state/) or [Load failed](/components/load-failed/). |
 | `align`, per column | `right` by default, for numbers. `left` for words. |

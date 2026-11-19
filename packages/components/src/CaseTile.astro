@@ -45,7 +45,7 @@ interface Layer {
   width: number;
   /** How far it floats on hover: 0 stays put, 1 lifts the most. */
   depth?: number;
-  /** Bobs slowly on its own, down and back, so a card cut out of a page floats above it. */
+  /** Drifts once, down and back, as it arrives, so a card cut out of a page floats above it. */
   float?: boolean;
   alt?: string;
   /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
@@ -502,15 +502,16 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
   /* A floating layer bobs on its picture, not the layer, so it adds to the pointer, the hover lift
    * and the arrival instead of replacing them. */
   @media (prefers-reduced-motion: no-preference) {
-    .layer.float :global(img) {
-      /* Three slow breaths, then still: anything moving on its own for more than five seconds
-       * next to other content needs to stop (WCAG 2.2.2). */
-      animation: layer-float var(--motion-float, 6s) ease-in-out 3;
+    /* A tile below the fold drifts when it arrives, not unseen at page load. */
+    .case-tile:is(:not(.armed), .in) .layer.float :global(img) {
+      /* One slow breath as the page arrives, then still; hover lifts it again. The drift scales
+       * with the panel, so a phone's small cover moves a few pixels, not a desktop's sixteen. */
+      animation: layer-float var(--motion-float, 6s) ease-in-out 1;
     }
   }
 
   @keyframes layer-float {
     0%, 100% { translate: 0 0; }
-    50% { translate: 0 var(--float-range, 16px); }
+    50% { translate: 0 var(--float-range, 2.4cqw); }
   }
 </style>

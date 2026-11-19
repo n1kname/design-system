@@ -9,7 +9,7 @@
  * Motion, all of it off under reduced motion:
  * - The screens play in once, front first, rising a little as they fade in; layers play in back
  *   to front. This is the page's entrance: no picture morphs in from the page before.
- * - A layer with `float` bobs slowly on its own, down and back, whatever the others do.
+ * - A layer with `float` drifts once, down and back, as it arrives; hover lifts it again.
  * - `size="cover"`: under a real pointer, the screens follow it a few pixels, the front one most,
  *   so the stack reads as layers. Leaves no listener behind when there is no fine pointer.
  * - `size="card"`: when the link around it is hovered or focused (a LinkCard), the screens fan
@@ -45,7 +45,7 @@ interface Layer {
   width: number;
   /** 0 stays put; 1 follows the pointer and lifts the most. */
   depth?: number;
-  /** Bobs slowly on its own, down and back, so a card cut out of a page floats above it. */
+  /** Drifts once, down and back, as it arrives, so a card cut out of a page floats above it. */
   float?: boolean;
   alt?: string;
   /** A plain URL's own size in px, so the space is kept while it loads. An import knows its own. */
@@ -433,14 +433,14 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
    * and the arrival instead of replacing them. */
   @media (prefers-reduced-motion: no-preference) {
     .layer.float :global(img) {
-      /* Three slow breaths, then still: anything moving on its own for more than five seconds
-       * next to other content needs to stop (WCAG 2.2.2). */
-      animation: layer-float var(--motion-float, 6s) ease-in-out 3;
+      /* One slow breath as the page arrives, then still; hover lifts it again. The drift scales
+       * with the panel, so a phone's small cover moves a few pixels, not a desktop's sixteen. */
+      animation: layer-float var(--motion-float, 6s) ease-in-out 1;
     }
   }
 
   @keyframes layer-float {
     0%, 100% { translate: 0 0; }
-    50% { translate: 0 var(--float-range, 16px); }
+    50% { translate: 0 var(--float-range, 1.3cqw); }
   }
 </style>

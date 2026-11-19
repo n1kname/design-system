@@ -462,6 +462,52 @@ const columns = items.map((it) => (it.kind === 'moment' ? 'minmax(4.5rem, auto)'
       justify-self: center;
     }
 
+    /* The flow, top to bottom: a line comes into each moment from the phase above, and an arrow
+     * leaves it into the phase below, so the stack still reads as one process. */
+    .row > .moment {
+      position: relative;
+      padding-block: var(--sp-5) var(--sp-6);
+    }
+
+    .row > .moment:first-child {
+      padding-top: 0;
+    }
+
+    .row > .moment:not(:first-child)::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: calc(50% - 0.75px);
+      width: 1.5px;
+      height: var(--sp-4);
+      background: var(--c-diagram-line);
+    }
+
+    .row > .moment::after {
+      content: '';
+      position: absolute;
+      bottom: var(--sp-1);
+      left: 50%;
+      width: 1.5px;
+      height: var(--sp-4);
+      background: var(--c-diagram-line);
+      translate: -50% 0;
+    }
+
+    .row > .moment .stop-cell {
+      position: relative;
+    }
+
+    /* The arrowhead at the foot of the line out. */
+    .row > .moment .stop-cell::after {
+      display: block;
+      top: auto;
+      right: auto;
+      bottom: calc(-1 * var(--sp-6) + var(--sp-1));
+      left: 50%;
+      translate: -50% 0;
+      rotate: 135deg;
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {

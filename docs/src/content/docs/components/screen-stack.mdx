@@ -61,7 +61,7 @@ Phone screens step up and right across the panel instead, each in a thin bezel:
 |---|---|
 | `size="cover"` | A header band. Follows the pointer. |
 | `device="phone"` | Tall phone screens, side by side in a bezel. Pass the screen alone, without a device frame. |
-| `layers` | Separate pictures on a stage over the right of the panel, each with a `depth`: deeper layers follow the pointer further and lift on hover. `float: true` makes a layer bob 16px down and back on its own. |
+| `layers` | Separate pictures on a stage over the right of the panel, each with a `depth`: deeper layers follow the pointer further and lift on hover. `float: true` makes a layer drift down and back once as it arrives. |
 | `size` | On a screen or layer given as a plain URL: its own size in px, `{ width, height }`, so the space is kept while it loads. An import knows its own. |
 | `ink="dark"` | A dark note and pattern for a light tone. |
 | `pattern` | The texture: `dots` (default), `grid`, `lines`, `plus`, `waves` or `none`, fading toward the bottom left unless `patternFade={false}`. |
@@ -75,7 +75,7 @@ Phone screens step up and right across the panel instead, each in a thin bezel:
 ## States
 
 - **Arrival:** the screens play in once, front first, 90ms apart, rising 24px as they fade in. Layers play in back to front, 140ms apart, so a floating card lands last.
-- **Float:** a layer with `float` drifts 16px down and back over `--motion-float` (6 seconds), three times, then holds still (WCAG 2.2.2). It moves on its picture, so it adds to the pointer and the hover lift.
+- **Float:** a layer with `float` drifts down and back once over `--motion-float` (6 seconds) as the cover arrives, by about 1.3% of the cover’s width, then holds still. It moves on its picture, so it adds to the pointer and the hover lift.
 - **Pointer over a cover:** each screen follows the pointer a few pixels, the front one most (10px), the back one least (3px), eased, so the stack reads as layers. Back to rest when the pointer leaves.
 - **Hover or focus on the card around it:** the front screen tips left, the back one up and right.
 - **Reduced motion:** nothing moves. The screens are simply there.
