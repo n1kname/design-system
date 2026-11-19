@@ -251,7 +251,7 @@ const markIcon: Partial<Record<Mark, IconName>> = { gain: 'circle-check', gap: '
     color: var(--c-text-secondary);
   }
 
-  /* A before and an after: two tinted boxes with an arrow down between them. */
+  /* A before and an after: two tinted boxes with an arrow down between them, centred. */
   .before,
   .after {
     padding: var(--sp-2) var(--sp-3);
@@ -275,7 +275,7 @@ const markIcon: Partial<Record<Mark, IconName>> = { gain: 'circle-check', gap: '
   .turn::before {
     content: '';
     position: absolute;
-    left: var(--sp-4);
+    left: calc(50% - 0.75px);
     top: calc(-1 * var(--sp-3) - var(--sp-3));
     width: 1.5px;
     height: calc(var(--sp-3) * 2);
@@ -285,7 +285,7 @@ const markIcon: Partial<Record<Mark, IconName>> = { gain: 'circle-check', gap: '
   .turn::after {
     content: '';
     position: absolute;
-    left: calc(var(--sp-4) - 3.25px);
+    left: calc(50% - 3.5px);
     top: -10px;
     width: 7px;
     height: 7px;
