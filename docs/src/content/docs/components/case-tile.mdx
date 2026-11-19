@@ -87,7 +87,7 @@ The panel carries a texture under the screens, on a layer of its own that fades 
 
 ## States
 
-- **Arrival:** tiles below the fold arm on load; as each scrolls into view its screens rise 48px and fade in, front first, 90ms apart. Tiles already in view are simply there.
+- **Arrival:** tiles below the fold arm on load; as each scrolls into view its pictures slide up from below the tile's bottom edge, front first, 90ms apart. They never fade, so a picture is never half see-through. Tiles already in view are simply there.
 - **Float:** a layer with `float` drifts down and back once as the tile arrives, then holds still. The drift scales with the tile. It adds to the hover lift.
 - **Hover:** the tile lifts 3px with a soft shadow, and the screens fan out a little (phones also tip).
 - **Focus:** the same as hover, plus a ring round the tile.

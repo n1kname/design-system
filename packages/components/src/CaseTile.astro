@@ -476,9 +476,11 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    /* Arriving, the pictures slide up from below the tile's bottom edge, which clips them, rather
+     * than fading in: a half-transparent picture can pick up the page behind the tile (Safari on a
+     * phone showed them red-tinted over the page's glow), and a solid one never does. */
     .armed:not(.in) :is(.screen, .layer) {
-      opacity: 0;
-      translate: 0 48px;
+      translate: 0 55%;
     }
     .case-tile:is(:hover, :focus-visible) .layer { --lift: calc(var(--depth) * -20px); }
 
