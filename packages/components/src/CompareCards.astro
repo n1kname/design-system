@@ -1,0 +1,329 @@
+---
+/**
+ * A few things side by side as cards, each with an icon disc and a name, and short labelled notes
+ * under it. A note can say what something gives (a check), what it misses (a crossed-out eye, in a
+ * dashed box), or a before and an after with an arrow between them. For the comparisons a table
+ * would otherwise carry: sources of evidence, a problem and the rule it became, one thing split in
+ * three.
+ *
+ * Drawn in the diagrams' style: tinted icon discs with an edge, as in Flow diagram, on surface
+ * cards. A list of cards, each a description list, so it reads in order. Two columns by default;
+ * below 560px wide the cards stack.
+ *
+ * Once, as it comes into view, the cards rise in one after another. Nothing moves under reduced
+ * motion, and without script it is simply there.
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+type Tone = 'accent' | 'cool' | 'quiet';
+type Mark = 'gain' | 'gap' | 'before' | 'after' | 'plain';
+
+interface Note {
+  /** "What it gave us". */
+  label: string;
+  text: string;
+  /** How the note is drawn. Plain by default. */
+  mark?: Mark;
+}
+
+interface Card {
+  title: string;
+  /** Under the title, a few words. */
+  kicker?: string;
+  icon?: IconName;
+  tone?: Tone;
+  notes: Note[];
+}
+
+interface Props {
+  /** What the cards compare, for a screen reader: the list is named by it. */
+  title: string;
+  cards: Card[];
+  /** Cards per row where there is room: 1 to 4. */
+  columns?: number;
+  caption?: string;
+  class?: string;
+}
+
+const { title, cards, columns = 2, caption, class: className } = Astro.props;
+const tones: Tone[] = ['accent', 'cool'];
+const markIcon: Partial<Record<Mark, IconName>> = { gain: 'circle-check', gap: 'eye-off' };
+---
+
+<figure class:list={['compare-cards', className]} data-compare-cards>
+  <ul class="cards" aria-label={title} style={`--cols: ${Math.min(4, Math.max(1, columns))}`}>
+    {
+      cards.map((card, i) => (
+        <li class="card" data-tone={card.tone ?? tones[i % tones.length]} style={`--i: ${i}`}>
+          <div class="head">
+            <span class="disc" aria-hidden="true">
+              {card.icon ? <Icon name={card.icon} size={22} /> : <span class="num">{i + 1}</span>}
+            </span>
+            <div>
+              <h3 class="title">{card.title}</h3>
+              {card.kicker && <p class="kicker">{card.kicker}</p>}
+            </div>
+          </div>
+          <dl>
+            {card.notes.map((n, k) => {
+              const mark = n.mark ?? 'plain';
+              const icon = markIcon[mark];
+              const turn = mark === 'after' && card.notes[k - 1]?.mark === 'before';
+              return (
+                <div class:list={['note', mark, { turn }]}>
+                  <dt>
+                    {icon && <Icon name={icon} size={15} />}
+                    {n.label}
+                  </dt>
+                  <dd>{n.text}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </li>
+      ))
+    }
+  </ul>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script is:inline>
+  // Before the first paint, so cards waiting to arrive never show and then vanish.
+  (() => {
+    const all = document.querySelectorAll('[data-compare-cards]:not(.arrive)');
+    const fig = all[all.length - 1];
+    if (!fig || !('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    fig.classList.add('arrive');
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      },
+      { rootMargin: '0px 0px -15% 0px' },
+    );
+    io.observe(fig);
+  })();
+</script>
+
+<style>
+  .compare-cards {
+    min-width: 0;
+    margin: var(--sp-7) 0;
+    container-type: inline-size;
+  }
+
+  [data-tone='accent'] {
+    --edge: var(--c-accent-edge);
+    --soft: var(--c-surface-tint);
+    --mark: var(--c-accent);
+  }
+
+  [data-tone='cool'] {
+    --edge: color-mix(in oklab, var(--c-tag-cool-text) 55%, transparent);
+    --soft: var(--c-tag-cool-bg);
+    --mark: var(--c-tag-cool-text);
+  }
+
+  [data-tone='quiet'] {
+    --edge: var(--c-diagram-edge);
+    --soft: var(--c-surface);
+    --mark: var(--c-text-secondary);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    gap: var(--sp-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @container (max-width: 560px) {
+    .cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    min-width: 0;
+    margin: 0;
+    padding: var(--sp-5);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .head {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+  }
+
+  .disc {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--soft);
+    border: 1.5px solid var(--edge);
+    color: var(--mark);
+  }
+
+  .num {
+    font-weight: 600;
+    font-size: var(--text-body);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+  }
+
+  .kicker {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--c-text-muted);
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin: 0;
+  }
+
+  .note {
+    position: relative;
+  }
+
+  dt {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 2px;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  /* What a source gives: a tinted box with a check, against the dashed box of what it misses. */
+  .gain {
+    padding: var(--sp-2) var(--sp-3);
+    background: color-mix(in oklab, var(--soft) 60%, var(--c-surface));
+    border: 1px solid var(--edge);
+    border-radius: var(--radius-md);
+  }
+
+  .gain dt :global(svg) {
+    color: var(--mark);
+  }
+
+  /* What a source can't see: a dashed box, the text a step quieter. */
+  .gap {
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--radius-md);
+  }
+
+  .gap dd {
+    color: var(--c-text-secondary);
+  }
+
+  /* A before and an after: two tinted boxes with an arrow down between them. */
+  .before,
+  .after {
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--radius-md);
+  }
+
+  .before {
+    background: color-mix(in oklab, var(--c-status-critical) 10%, var(--c-surface));
+    border: 1px solid color-mix(in oklab, var(--c-status-critical) 40%, transparent);
+  }
+
+  .after {
+    background: var(--soft);
+    border: 1px solid var(--edge);
+  }
+
+  .turn {
+    margin-top: var(--sp-3);
+  }
+
+  .turn::before {
+    content: '';
+    position: absolute;
+    left: var(--sp-4);
+    top: calc(-1 * var(--sp-3) - var(--sp-3));
+    width: 1.5px;
+    height: calc(var(--sp-3) * 2);
+    background: var(--c-diagram-line);
+  }
+
+  .turn::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--sp-4) - 3.25px);
+    top: -10px;
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid var(--c-diagram-line);
+    border-bottom: 1.5px solid var(--c-diagram-line);
+    rotate: 45deg;
+  }
+
+  figcaption {
+    margin-top: var(--sp-3);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  /* Arriving: the cards rise in, 90ms apart. */
+  .arrive .card {
+    opacity: 0;
+    translate: 0 12px;
+  }
+
+  .arrive.in .card {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--motion-reveal, 500ms) var(--ease-out),
+      translate var(--motion-reveal, 500ms) var(--ease-out);
+    transition-delay: calc(var(--i) * 90ms);
+  }
+
+  @media (forced-colors: active) {
+    .disc,
+    .card,
+    .before,
+    .after,
+    .gain,
+    .gap {
+      border-color: CanvasText;
+    }
+  }
+</style>

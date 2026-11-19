@@ -1,0 +1,137 @@
+---
+title: "Compare cards"
+description: "A few things side by side as cards, with notes that say what each gives, what it misses, or what it was and what it became."
+---
+
+import CompareCards from '@n1kname/components/CompareCards.astro';
+
+<div class="not-content">
+  <CompareCards
+    title="Three ways to hear from customers"
+    columns={3}
+    cards={[
+      {
+        title: 'Interviews',
+        icon: 'users',
+        tone: 'accent',
+        notes: [
+          { label: 'What it gives', mark: 'gain', text: 'Why people do what they do, in their own words.' },
+          { label: 'What it misses', mark: 'gap', text: 'How many people it’s true for.' },
+        ],
+      },
+      {
+        title: 'Usage data',
+        icon: 'activity',
+        tone: 'cool',
+        notes: [
+          { label: 'What it gives', mark: 'gain', text: 'Where time goes, across everyone.' },
+          { label: 'What it misses', mark: 'gap', text: 'Why.' },
+        ],
+      },
+      {
+        title: 'Support questions',
+        icon: 'headphones',
+        tone: 'cool',
+        notes: [
+          { label: 'What it gives', mark: 'gain', text: 'The tasks people can’t finish alone.' },
+          { label: 'What it misses', mark: 'gap', text: 'Everyone who gave up without asking.' },
+        ],
+      },
+    ]}
+    caption="A made-up example."
+  />
+
+  <CompareCards
+    title="Screens that became rules"
+    cards={[
+      {
+        title: 'Empty lists',
+        icon: 'table',
+        notes: [
+          { label: 'The screen', mark: 'before', text: 'A list that said “Nothing here” while it was still loading.' },
+          { label: 'The rule', mark: 'after', text: 'Loading, empty and failed are three different states.' },
+          { label: 'Where it applies', text: 'Every list.' },
+        ],
+      },
+      {
+        title: 'One word per thing',
+        icon: 'file-text',
+        notes: [
+          { label: 'The screen', mark: 'before', text: '“Team”, “group” and “unit”: one thing, three names.' },
+          { label: 'The rule', mark: 'after', text: 'A glossary, one word per thing.' },
+          { label: 'Where it applies', text: 'Every label.' },
+        ],
+      },
+    ]}
+    caption="Before and after, with the arrow between them. A made-up example."
+  />
+</div>
+
+## What it's for
+
+Two to four things compared on the same few points, where each thing deserves its own card: sources of evidence and what each could and couldn't see, a problem and the rule it became, one thing split into parts and where each part went. It says the same as a small table, but you can see the difference before you read it: a check for what something gives, a dashed box for what it misses, an arrow from before to after.
+
+## When not to use it
+
+- **Many rows, or numbers to sort and scan.** Use a [Data table](/components/data-table/).
+- **How the things connect.** That's a [Flow diagram](/components/flow-diagram/).
+- **Outcomes per area, with a status.** Use an [Outcome table](/components/outcome-table/).
+
+## Anatomy
+
+- **Card:** on the surface with a hairline border, an icon disc in the card's tone (or its number, without an icon), a name, and an optional kicker under it.
+- **Notes:** a small label and a sentence or two. A note's `mark` sets how it's drawn.
+- **Caption:** optional, under the cards.
+
+## Variants
+
+| Mark | Drawn as | For |
+|---|---|---|
+| `gain` | A tinted box with a check | What something gives |
+| `gap` | A dashed box with a crossed-out eye, the text a step quieter | What it misses |
+| `before` | A box tinted with the critical colour | What it was |
+| `after` | A box in the card's tone; after a `before`, an arrow points into it | What it became |
+| `plain` | Label and text, no box | Anything else, such as where it applies |
+
+Cards alternate `accent` and `cool` unless a card sets `tone` (`accent`, `cool` or `quiet`). `columns` sets how many sit in a row where there's room, from 1 to 4; 2 by default.
+
+## States
+
+- **Arriving:** once, as it comes into view, the cards rise in, 90ms apart. Nothing moves under reduced motion, and without script it is simply there.
+- **Narrow:** below 560px wide, the cards stack in one column.
+- **Forced colours:** cards, discs and note boxes are drawn in the system's text colour.
+
+## Tokens
+
+`--c-surface`, `--c-border`, `--c-border-strong` and `--c-diagram-line` for cards, dashed boxes and the arrow. Tones as in [Flow diagram](/components/flow-diagram/): `--c-surface-tint`, `--c-accent` and `--c-accent-edge` (accent), `--c-tag-cool-bg` and `--c-tag-cool-text` (cool), `--c-diagram-edge` and `--c-text-secondary` (quiet). `--c-status-critical` for a before. Also `--c-text`, `--c-text-muted`, `--font-display`, `--text-sub`, `--text-body-sm`, `--text-caption`, `--radius-md`, `--radius-lg`, `--motion-reveal`, `--ease-out`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate,** so nothing takes focus.
+- **It is a list named by `title`,** each card a heading and a description list: the note's label, then its text. The marks' icons and the arrow are hidden; the labels say what each note is.
+
+## Content
+
+- **Names:** a word or three: "Usage data", "Filter chips".
+- **Notes:** one short sentence, ending in a full stop. The same labels on every card, so they compare.
+- **Gaps are honest:** a source that can see everything doesn't need this component.
+
+## Status
+
+New. Used by a portfolio, for comparisons that had been plain tables.
+
+## Code
+
+```astro wrap
+---
+import CompareCards from '@n1kname/components/CompareCards.astro';
+---
+
+<CompareCards
+  title="Two sources"
+  cards={[
+    { title: 'Interviews', icon: 'users', notes: [{ label: 'What it gives', mark: 'gain', text: 'The why.' }, { label: 'What it misses', mark: 'gap', text: 'How many.' }] },
+    { title: 'Usage data', icon: 'activity', notes: [{ label: 'What it gives', mark: 'gain', text: 'How many.' }, { label: 'What it misses', mark: 'gap', text: 'The why.' }] },
+  ]}
+/>
+```

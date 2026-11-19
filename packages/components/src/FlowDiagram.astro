@@ -170,7 +170,8 @@ const longest = (pts: [number, number][]): [number, number] => {
     const len = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
     if (len > best) {
       best = len;
-      at = [(pts[i][0] + pts[i - 1][0]) / 2, (pts[i][1] + pts[i - 1][1]) / 2 - 10];
+      // On the line: the label's pill is centred on it (the text's baseline sits 4.5px below).
+      at = [(pts[i][0] + pts[i - 1][0]) / 2, (pts[i][1] + pts[i - 1][1]) / 2 + 4.5];
     }
   }
   return at;
@@ -205,6 +206,10 @@ const views = [
     : []),
 ];
 
+// A label's pill: wide enough for its text at 13px semibold, with room either side. Measured
+// from the font's average glyph, so it never needs the page to lay out first.
+const chipWidth = (label: string) => Math.round(label.length * 7.1 + 20);
+
 // Label lines for a circle: break at the space nearest the middle when it is long.
 const lines = (label: string) => {
   if (label.length <= 10 || !label.includes(' ')) return [label];
@@ -238,11 +243,6 @@ const lines = (label: string) => {
             <g class:list={['edge', e.tone]} data-step={e.step}>
               <path class="line" d={e.d} pathLength="1" />
               <path class="head" d={e.head} />
-              {e.label && (
-                <text class="edge-label" x={e.at[0]} y={e.at[1]}>
-                  {e.label}
-                </text>
-              )}
               {e.flow && (
                 <circle class="pulse" r="3.5">
                   <animateMotion dur="2.8s" begin="indefinite" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.7;1" calcMode="linear" path={e.d} />
@@ -250,6 +250,23 @@ const lines = (label: string) => {
               )}
             </g>
           ))
+        }
+      </g>
+
+      {/* Labels above every line, so no line or pulse crosses a label's pill. */}
+      <g class="labels">
+        {
+          drawn.map(
+            (e) =>
+              e.label && (
+                <g class:list={['edge-label', e.tone]} data-step={e.step}>
+                  <rect class="chip" x={e.at[0] - chipWidth(e.label) / 2} y={e.at[1] - 15.5} width={chipWidth(e.label)} height="22" rx="11" />
+                  <text x={e.at[0]} y={e.at[1]}>
+                    {e.label}
+                  </text>
+                </g>
+              ),
+          )
         }
       </g>
 
@@ -475,18 +492,36 @@ const lines = (label: string) => {
     stroke: var(--c-tag-cool-text);
   }
 
-  .edge-label {
+  /* An edge's label sits in a pill on its line, so the line runs under it, never through the
+   * words. The pill is the page's background with a little of the line's colour in it. */
+  .edge-label text {
     font-size: 13px;
     font-weight: 600;
     fill: var(--c-text-muted);
   }
 
-  .edge.accent .edge-label {
+  .chip {
+    fill: color-mix(in oklab, var(--c-diagram-line) 10%, var(--c-bg));
+    stroke: color-mix(in oklab, var(--c-diagram-line) 45%, transparent);
+    stroke-width: 1;
+  }
+
+  .edge-label.accent text {
     fill: var(--c-text-accent);
   }
 
-  .edge.cool .edge-label {
+  .edge-label.accent .chip {
+    fill: color-mix(in oklab, var(--c-accent) 12%, var(--c-bg));
+    stroke: var(--c-accent-edge);
+  }
+
+  .edge-label.cool text {
     fill: var(--c-tag-cool-text);
+  }
+
+  .edge-label.cool .chip {
+    fill: color-mix(in oklab, var(--c-tag-cool-text) 12%, var(--c-bg));
+    stroke: color-mix(in oklab, var(--c-tag-cool-text) 45%, transparent);
   }
 
   .pulse {
@@ -551,7 +586,7 @@ const lines = (label: string) => {
   }
 
   .in .edge .head,
-  .in .edge .edge-label {
+  .in .edge-label {
     animation: land calc(var(--motion-grow, 700ms) * 0.45) var(--ease-out) calc(var(--d, 0ms) + var(--motion-grow, 700ms) * 0.8) both;
   }
 
@@ -602,5 +637,12 @@ const lines = (label: string) => {
     font-size: var(--text-body-sm);
     color: var(--c-text-muted);
     max-width: var(--layout-measure);
+  }
+
+  @media (forced-colors: active) {
+    .chip {
+      fill: Canvas;
+      stroke: CanvasText;
+    }
   }
 </style>

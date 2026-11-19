@@ -109,6 +109,7 @@ export default defineConfig({
             { label: 'Diamonds', link: '/components/diamonds/' },
             { label: 'Phases', link: '/components/phases/' },
             { label: 'Service blueprint', link: '/components/service-blueprint/' },
+            { label: 'Compare cards', link: '/components/compare-cards/' },
             { label: 'Section nav', link: '/components/section-nav/' },
             { label: 'Career map', link: '/components/career-map/' },
             { label: 'Tiers', link: '/components/tiers/' },

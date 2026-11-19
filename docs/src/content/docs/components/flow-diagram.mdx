@@ -52,7 +52,7 @@ A diagram that makes its point through its shape: a loop that money goes round, 
 ## Anatomy
 
 - **Nodes:** `pill` (a label, an optional icon at the start), `circle` (a label of up to three lines inside) or `icon` (an icon disc with a name and up to two lines below it). Each one is placed by its centre.
-- **Edges:** from one node's side to another's. Two horizontal sides make an elbow at `turn` (default: halfway), two vertical sides the same, one of each an L. `fromShift` and `toShift` move an anchor along its side, which is how two lines between the same pair run in parallel. An edge can carry a label, placed above the middle of its longest run unless `labelAt` says otherwise.
+- **Edges:** from one node's side to another's. Two horizontal sides make an elbow at `turn` (default: halfway), two vertical sides the same, one of each an L. `fromShift` and `toShift` move an anchor along its side, which is how two lines between the same pair run in parallel. An edge can carry a label, in a small pill on the middle of its longest run unless `labelAt` says otherwise. The line runs under the pill, never through the words, and labels sit above every line, so no line or pulse crosses one.
 - **Rings:** a dashed circle behind a group, such as a team.
 - **Note:** a few lines of text in a corner, the first one bold, for what the drawing can't say.
 - **Frame:** the sunken surface around it. Narrower than `minWidth`, the drawing still fits it, smaller, and an **Enlarge** button in its corner opens it full size in a dialog, where it pans. Nothing scrolls on the page.
