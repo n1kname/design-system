@@ -1,0 +1,45 @@
+---
+title: "Filterable list"
+description: "A list someone narrows and works through: search, filters in two ranks, what's on, how it's shown, and item states."
+---
+
+import FilterableListDemo from '../../../components/FilterableListDemo.astro';
+
+<div class="not-content">
+  <FilterableListDemo />
+</div>
+
+## The order, top to bottom
+
+1. **[Search field](/components/search-field/).** The widest control, first, with a `/` shortcut where it helps.
+2. **The main filter,** a [filter chips](/components/filter-chips/) row, always in view. On a phone it stays one row and scrolls sideways rather than wrapping.
+3. **The second rank,** in a [filter sheet](/components/filter-sheet/): a row where there's room, one Filters button and a bottom sheet on a phone.
+4. **[Active filters](/components/active-filters/),** what's set, as pills. Hidden when nothing is.
+5. **The result bar:** the count on the left, a [view menu](/components/view-menu/) for sort and period on the right.
+6. **The [card list](/components/card-list/),** with item states.
+
+What's in the list comes first; how it's shown comes last and stays out of the way.
+
+## One look for every control
+
+- **One height per kind.** Chips 32px, buttons 36px, the search 44px.
+- **One chosen style.** A chosen chip takes a tint of its own colour, never an inverted fill.
+- **Counts only where they help,** on the chips, where they say what pressing one would leave.
+
+## Item states
+
+Hue says what kind of thing an item is; weight says how much it needs the person. Teal is their own process at two weights, action and live. New is the accent. Reviewed and history are neutrals, so they step back. Each state is also a chip in words. See the [card list](/components/card-list/#item-states).
+
+## Motion
+
+Only when something changes, and never in a loop.
+
+| What changes | How it moves |
+|---|---|
+| A filter or the sort | Cards that stay glide to their new place on the spring; new ones fade up. |
+| A count | It rolls in from just above, over `--motion-base`. |
+| A filter set | Its pill pops in; the others stay put. |
+| The sheet opens | It rises from the bottom edge over `--motion-slow`. |
+| The page opens with an action card | That card pulses once. |
+
+Under reduced motion the list just updates.

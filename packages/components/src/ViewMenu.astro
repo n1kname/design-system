@@ -1,0 +1,130 @@
+---
+/**
+ * How the result is shown, behind one button that says what's set: "View: Score · 30 days". Sort
+ * and period live here so the filters above stay about what's in the list, not how it's laid out.
+ * Put the controls in the slot (Segmented, each with its `label`, which becomes its caption). The
+ * panel is a native popover: a click outside or Escape closes it. Keep the button's words current
+ * with setViewMenu() from viewmenu.js.
+ */
+import { ICONS } from './icons';
+
+interface Props {
+  /** The button's lead word, and the panel's name: "View". */
+  label?: string;
+  /** What's set, until setViewMenu() says: "Newest · 30 days". */
+  summary?: string;
+  id?: string;
+}
+const { label = 'View', summary = '', id } = Astro.props;
+const panelId = `${id ?? 'view-menu'}-panel`;
+---
+
+<div class="view-menu" id={id} data-view-menu>
+  <button type="button" class="vm-button" data-vm-button popovertarget={panelId} aria-expanded="false" aria-haspopup="true">
+    <span class="vm-label">{label}:</span>
+    <span class="vm-summary" data-vm-summary>{summary}</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS['chevron-down']} />
+  </button>
+  <div class="vm-panel" id={panelId} popover data-vm-panel role="group" aria-label={label}>
+    <slot />
+  </div>
+</div>
+
+<script>
+  import { wireViewMenu } from './viewmenu.js';
+  document.querySelectorAll<HTMLElement>('[data-view-menu]').forEach(wireViewMenu);
+</script>
+
+<style>
+  .view-menu {
+    display: inline-flex;
+  }
+
+  .vm-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 36px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    cursor: pointer;
+    transition: border-color var(--motion-fast) var(--ease-out);
+  }
+
+  .vm-button:hover,
+  .vm-button[aria-expanded='true'] {
+    border-color: var(--c-border-strong);
+  }
+
+  .vm-button:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .vm-summary {
+    color: var(--c-text);
+    font-weight: 500;
+  }
+
+  .vm-button svg {
+    color: var(--c-text-muted);
+    transition: transform var(--motion-fast) var(--ease-out);
+  }
+
+  .vm-button[aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+
+  /* In the top layer, placed by viewmenu.js. Its layout applies only while open: a display set on
+   * the closed popover would override the browser's own rule that hides it. */
+  .vm-panel {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    width: min(300px, calc(100vw - 16px));
+    gap: var(--sp-2);
+    padding: var(--sp-4);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    color: var(--c-text);
+    box-shadow: 0 12px 32px oklch(0 0 0 / 0.18);
+  }
+
+  .vm-panel:popover-open {
+    display: grid;
+    animation: vm-in var(--motion-fast) var(--ease-out);
+  }
+
+  .vm-panel :global(.vm-caption) {
+    margin: 0;
+    color: var(--c-text-muted);
+    font-size: var(--text-caption);
+    font-weight: 600;
+  }
+
+  .vm-panel :global(.vm-caption:not(:first-child)) {
+    margin-top: var(--sp-2);
+  }
+
+  @keyframes vm-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vm-panel:popover-open,
+    .vm-button,
+    .vm-button svg {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>

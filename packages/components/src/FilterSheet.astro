@@ -1,0 +1,249 @@
+---
+/**
+ * The second rank of filters. Where there's room its groups sit in a row; on a phone they fold
+ * behind one "Filters" button, with a badge for how many are set, that opens them in a bottom
+ * sheet with Clear all and a button that says what closing shows ("Show 12 jobs"). Put
+ * FilterChips (or Segmented) groups in the slot; each needs its `label`, which becomes its caption
+ * in the sheet. The main filter stays outside, always in view. Update it with setFilterSheet() from
+ * filtersheet.js; fires `filters-clear`.
+ */
+import { ICONS } from './icons';
+
+interface Props {
+  /** The button and the sheet's heading: "Filters". */
+  label?: string;
+  /** Clear all, in the sheet. */
+  clear?: string;
+  /** The closing button's words until setFilterSheet() gives a count. */
+  done?: string;
+  id?: string;
+}
+const { label = 'Filters', clear = 'Clear all', done = 'Show results', id } = Astro.props;
+const headingId = `${id ?? 'filter-sheet'}-heading`;
+---
+
+<div class="filter-sheet" id={id} data-filter-sheet data-label={label}>
+  <div class="fs-row" data-fs-home><slot /></div>
+
+  <button type="button" class="fs-open" data-fs-open aria-haspopup="dialog" aria-expanded="false" aria-label={label}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS['sliders-horizontal']} />
+    <span>{label}</span>
+    <span class="fs-count" data-fs-count hidden></span>
+    <svg class="fs-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS['chevron-down']} />
+  </button>
+
+  <dialog class="fs-sheet" data-fs-sheet aria-labelledby={headingId}>
+    <div class="fs-inner">
+      <span class="fs-grabber" aria-hidden="true"></span>
+      <div class="fs-head">
+        <h2 class="fs-title" id={headingId}>{label}</h2>
+        <button type="button" class="fs-clear" data-fs-clear>{clear}</button>
+      </div>
+      <div class="fs-body" data-fs-body></div>
+      <button type="button" class="fs-done" data-fs-done>{done}</button>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  import { wireFilterSheet } from './filtersheet.js';
+  document.querySelectorAll<HTMLElement>('[data-filter-sheet]').forEach(wireFilterSheet);
+</script>
+
+<style>
+  .filter-sheet {
+    display: contents;
+  }
+
+  /* Groups are kept apart by more space between them than inside them, so no divider is needed
+   * and a row that wraps still reads. */
+  .fs-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2) var(--sp-5);
+  }
+
+  .fs-open {
+    display: none;
+    /* The root is display: contents, so in a grid page this button is a grid item: keep it a pill
+     * rather than letting it stretch the full width. */
+    justify-self: start;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 32px;
+    padding: 0 var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+    background: var(--c-surface);
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-caption);
+    cursor: pointer;
+    transition:
+      background var(--motion-base) var(--ease-out),
+      border-color var(--motion-base) var(--ease-out);
+  }
+
+  .fs-open:hover {
+    border-color: var(--c-border-strong);
+    color: var(--c-text);
+  }
+
+  .fs-open:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .fs-count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--c-text);
+    color: var(--c-bg);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  .fs-count[hidden] {
+    display: none;
+  }
+
+  .fs-chevron {
+    color: var(--c-text-muted);
+  }
+
+  @media (max-width: 639px) {
+    .fs-row {
+      display: none;
+    }
+
+    .fs-open {
+      display: inline-flex;
+    }
+  }
+
+  /* ---- The sheet: from the bottom edge, clear of the home indicator ---- */
+  .fs-sheet {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(85dvh, 640px);
+    margin: auto 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    background: var(--c-surface);
+    color: var(--c-text);
+    box-shadow: 0 -12px 40px oklch(0 0 0 / 0.25);
+  }
+
+  .fs-sheet[open] {
+    animation: fs-up var(--motion-slow) var(--ease-out);
+  }
+
+  .fs-sheet::backdrop {
+    background: oklch(0.12 0.02 45 / 0.45);
+    animation: fs-fade var(--motion-slow) var(--ease-out);
+  }
+
+  .fs-inner {
+    display: grid;
+    gap: var(--sp-5);
+    padding: var(--sp-3) max(var(--sp-5), env(safe-area-inset-right, 0px)) calc(var(--sp-5) + env(safe-area-inset-bottom, 0px)) max(var(--sp-5), env(safe-area-inset-left, 0px));
+  }
+
+  .fs-grabber {
+    justify-self: center;
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--c-border);
+  }
+
+  .fs-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+
+  .fs-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+  }
+
+  .fs-clear {
+    border: 0;
+    background: none;
+    color: var(--c-text-accent);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: var(--sp-1);
+  }
+
+  .fs-body {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  .fs-body :global(.fs-section) {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .fs-body :global(.fs-caption) {
+    margin: 0;
+    color: var(--c-text-muted);
+    font-size: var(--text-caption);
+    font-weight: 600;
+  }
+
+  .fs-done {
+    min-height: 44px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--c-text);
+    color: var(--c-bg);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .fs-clear:focus-visible,
+  .fs-done:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  @keyframes fs-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes fs-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fs-sheet[open],
+    .fs-sheet::backdrop {
+      animation: none;
+    }
+
+    .fs-open {
+      transition: none;
+    }
+  }
+</style>

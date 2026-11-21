@@ -3,7 +3,7 @@
 // before shipping. Exits non-zero on any failure.
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { contrast, deltaE, hexToOklch, over } from './color.mjs';
+import { contrast, deltaE, hexToOklch, oklch as oklchToHex, over } from './color.mjs';
 
 const values = JSON.parse(readFileSync(new URL('../dist/values.json', import.meta.url), 'utf8'));
 
@@ -183,6 +183,16 @@ for (const mode of ['light', 'dark']) {
   assert(deltaE(t['state-complete'], t['state-waiting']) >= NORMAL_FLOOR, `state-complete vs state-waiting deltaE ${deltaE(t['state-complete'], t['state-waiting']).toFixed(1)} >= ${NORMAL_FLOOR}`);
   assert(cvd(t['state-complete'], t['state-waiting']) >= CVD_TARGET, `state-complete vs state-waiting colour-blind deltaE ${cvd(t['state-complete'], t['state-waiting']).toFixed(1)} >= ${CVD_TARGET}`);
 
+  // Item states (CardList): the filled action chip carries a label, the live ring, the new dot and
+  // the reviewed spine are meaningful graphics against the card, and a history chip's words are
+  // text. New must not be taken for your process, also for colour-blind readers.
+  heading(`${mode}: item states`);
+  ratio(contrast(t['item-action-ink'], t['item-action']), 4.5, 'label on a filled action chip', t['item-action-ink'], t['item-action']);
+  ratio(contrast(t.text, t['item-live-bg']), 4.5, 'label on a live chip', t.text, t['item-live-bg']);
+  for (const k of ['item-action', 'item-live', 'item-new', 'item-reviewed']) for (const bg of ['bg', 'surface']) ratio(contrast(t[k], t[bg]), 3, `${k} on ${bg}`, t[k], t[bg]);
+  for (const bg of ['bg', 'surface']) ratio(contrast(t['item-history'], t[bg]), 4.5, `item-history words on ${bg}`, t['item-history'], t[bg]);
+  assert(cvd(t['item-new'], t['item-live']) >= CVD_TARGET, `item-new vs item-live colour-blind deltaE ${cvd(t['item-new'], t['item-live']).toFixed(1)} >= ${CVD_TARGET}`);
+
   // Heat: a map's density, cold to warm. It reads by hue, so neighbours must stay apart for
   // colour-blind readers too, and a label inside any step must reach AA with one of the two inks.
   // Lightness is not asserted: it rises to the yellow and falls to the red, both ends near L 0.6.
@@ -206,6 +216,19 @@ for (const mode of ['light', 'dark']) {
     const band = over(t.bg, SCRIM_ALPHA, under);
     for (const fg of ['text', 'text-muted']) ratio(contrast(t[fg], band), 4.5, `${fg} on the title scrim over ${under}`, t[fg], band);
   }
+}
+
+// The stylesheet writes colours as oklch(). Each must be the colour checked above: read it back to
+// sRGB and hold it within a fraction of a just-noticeable difference of the hex in values.json.
+heading('oklch() in tokens.css');
+const css = readFileSync(new URL('../dist/tokens.css', import.meta.url), 'utf8');
+const block = (start) => css.slice(css.indexOf(start), css.indexOf('}', css.indexOf(start)));
+for (const [mode, start] of [['light', ':root {'], ['dark', ':root[data-theme="dark"] {']]) {
+  const written = Object.fromEntries([...block(start).matchAll(/--c-([\w-]+): oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/g)].map((m) => [m[1], m.slice(2).map(Number)]));
+  const keys = Object.keys(values[mode]);
+  assert(keys.every((k) => written[k]), `${mode}: every colour token is written as oklch() (${Object.keys(written).length} of ${keys.length})`);
+  const worst = keys.filter((k) => written[k]).reduce((w, k) => Math.max(w, deltaE(oklchToHex(...written[k]), values[mode][k])), 0);
+  assert(worst < 0.5, `${mode}: oklch() reads back to the checked hex, worst deltaE ${worst.toFixed(3)} < 0.5`);
 }
 
 writeFileSync(new URL('../dist/report.json', import.meta.url), JSON.stringify({ total, failures, results }, null, 2) + '\n');

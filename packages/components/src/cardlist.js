@@ -10,9 +10,20 @@
 //     list.addEventListener('card-open', (e) => open(e.detail.id));
 //     list.addEventListener('card-action', (e) => act(e.detail.id, e.detail.action, e.detail.button));
 //
-// An item: { id, title, subtitle?, href?, score?, scoreText?, chips?: [{ icon?, label, tone? }],
-// actions?: [{ action, icon, label, pressed? }] }. Text is escaped; `href` makes the title a link,
-// otherwise it's a button that fires `card-open`. The page sorts; the list keeps the order given.
+// An item: { id, title, subtitle?, href?, score?, scoreText?, state?, reviewed?, unseen?,
+// chips?: [{ icon?, label, tone? }], actions?: [{ action, icon, label, pressed? }] }. Text is
+// escaped; `href` makes the title a link, otherwise it's a button that fires `card-open`. The page
+// sorts; the list keeps the order given.
+//
+// State follows one rule: hue says what kind of thing it is, weight says how much it needs you.
+//   state: 'action'   your process, needing you soon: a band, a ring, and the page's filled chip
+//   state: 'live'     your process, moving: a ring
+//   unseen: true      new since the person last looked: a dot before the title
+//   reviewed: true    they weighed in themselves: a spine
+//   state: 'history'  closed or set aside: the words step down a level
+// They stack: a live item someone reviewed shows the ring and the spine. Each state also says
+// itself in words, in a chip the page writes (tone 'action', 'live' or 'history'), so colour never
+// carries it alone. An action card pulses once on the first fill, so the eye finds it.
 import { ICONS } from './icons';
 import { snapshot, flip } from './flip.js';
 
@@ -31,16 +42,25 @@ export const dialHTML = (score, opts = {}) => {
   return `<span class="score-dial ${scoreTone(score, opts)}" style="--p:${Math.max(0, Math.min(1, score / max))}" role="img" aria-label="Score ${esc(text)} out of ${max}"><span>${esc(text)}</span></span>`;
 };
 
+const STATES = new Set(['action', 'live', 'history']);
+const TONES = new Set(['good', 'action', 'live', 'history']);
+
 export const cardHTML = (item, opts = {}) => {
+  // "New: " is said with the title, since the dot before it is only drawn.
+  const name = `${item.unseen ? '<span class="card-vh">New: </span>' : ''}${esc(item.title)}`;
   const title = item.href
-    ? `<a class="card-open" href="${esc(item.href)}">${esc(item.title)}</a>`
-    : `<button type="button" class="card-open">${esc(item.title)}</button>`;
-  const chips = (item.chips ?? []).map((c) => `<li class="fact-chip${c.tone === 'good' ? ' good' : ''}">${c.icon ? svg(c.icon) : ''}<span>${esc(c.label)}</span></li>`).join('');
+    ? `<a class="card-open" href="${esc(item.href)}">${name}</a>`
+    : `<button type="button" class="card-open">${name}</button>`;
+  const chips = (item.chips ?? []).map((c) => `<li class="fact-chip${TONES.has(c.tone) ? ` ${c.tone}` : ''}">${c.icon ? svg(c.icon) : ''}<span>${esc(c.label)}</span></li>`).join('');
   const actions = (item.actions ?? [])
     .map((a) => `<button type="button" class="icon-button" data-action="${esc(a.action)}" aria-label="${esc(a.label)}" title="${esc(a.label)}"${a.pressed === undefined ? '' : ` aria-pressed="${a.pressed}"`}>${svg(a.icon, 18, 1.75)}</button>`)
     .join('');
+  const marks =
+    (STATES.has(item.state) ? ` data-state="${item.state}"` : '') +
+    (item.reviewed ? ' data-reviewed' : '') +
+    (item.unseen ? ' data-unseen' : '');
   return (
-    `<li class="card-item" data-key="${esc(item.id)}"><article class="card">` +
+    `<li class="card-item" data-key="${esc(item.id)}"${marks}><article class="card">` +
     `<div class="card-lead">${item.lead ?? dialHTML(item.score, { ...opts, text: item.scoreText })}</div>` +
     `<div class="card-head"><h${opts.level ?? 3} class="card-title">${title}</h${opts.level ?? 3}>${item.subtitle ? `<p class="card-sub">${esc(item.subtitle)}</p>` : ''}</div>` +
     (chips ? `<ul class="card-chips">${chips}</ul>` : '') +
@@ -75,7 +95,11 @@ export const setCards = (root, items) => {
   if (wrap) wrap.dataset.state = items.length === 0 && wrap.querySelector('[data-state-for="empty"]') ? 'empty' : 'ready';
   if (first) {
     root.dataset.filled = '';
-    if (!reduced()) [...root.children].slice(0, 12).forEach((li, i) => { li.style.setProperty('--i', i); li.classList.add('enter'); });
+    if (!reduced()) {
+      [...root.children].slice(0, 12).forEach((li, i) => { li.style.setProperty('--i', i); li.classList.add('enter'); });
+      // Once per page: the action cards pulse as they arrive, so the eye finds what needs it.
+      root.querySelectorAll('.card-item[data-state="action"]').forEach((li) => li.classList.add('pulse'));
+    }
   } else flip(root, before);
 };
 
@@ -100,6 +124,8 @@ export const removeCard = (root, id) =>
   });
 
 export const wireCards = (root) => {
+  // A list filled at build time gets its one pulse when the page wires it.
+  if (root.dataset.filled !== undefined && !reduced()) root.querySelectorAll('.card-item[data-state="action"]').forEach((li) => li.classList.add('pulse'));
   root.addEventListener('click', (e) => {
     const li = e.target.closest('.card-item');
     if (!li || li.classList.contains('placeholder')) return;

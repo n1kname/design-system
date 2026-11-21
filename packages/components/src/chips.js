@@ -11,6 +11,17 @@
 import { ICONS } from './icons';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const token = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+// A count that changes rolls in from just above, so the eye catches which ones moved.
+const tick = (n) => {
+  if (reduced()) return;
+  n.animate([{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], {
+    duration: parseFloat(token('--motion-base', '180ms')) || 180,
+    easing: token('--ease-out', 'ease-out'),
+  });
+};
 
 const button = (o, selected) =>
   `<button type="button" data-value="${esc(o.value)}" aria-pressed="${selected === o.value}"${o.count === 0 && selected !== o.value ? ' disabled' : ''} style="--chip:${o.color ?? 'var(--c-accent)'}">` +
@@ -22,7 +33,8 @@ export const setChips = (root, options, selected = 'all') => {
   const now = [...root.querySelectorAll('button[data-value]')].map((b) => b.dataset.value);
   if (now.join('|') === list.map((o) => o.value).join('|')) {
     // The first counts after a load land without the fade, so chips don't seem to switch on.
-    if (!root.dataset.counted) {
+    const first = !root.dataset.counted;
+    if (first) {
       root.dataset.counted = '';
       root.classList.add('settling');
       requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('settling')));
@@ -30,7 +42,10 @@ export const setChips = (root, options, selected = 'all') => {
     root.querySelectorAll('button[data-value]').forEach((b, i) => {
       const o = list[i];
       const n = b.querySelector('.n');
-      if (n && o.count !== undefined) n.textContent = String(o.count);
+      if (n && o.count !== undefined && n.textContent !== String(o.count)) {
+        n.textContent = String(o.count);
+        if (!first) tick(n);
+      }
       b.disabled = o.count === 0 && selected !== o.value;
       b.setAttribute('aria-pressed', String(o.value === selected));
     });

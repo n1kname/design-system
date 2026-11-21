@@ -1,0 +1,123 @@
+---
+/**
+ * What's narrowing the list, as pills that each take their filter off, and Clear all. Hidden while
+ * nothing is set. Put it under the filters, above the result: when filters fold into a sheet on a
+ * phone, this is where the person still sees what's on. Fill it with setActiveFilters() from
+ * activefilters.js; fires `filter-remove` with the key, and `filters-clear`.
+ */
+interface Props {
+  /** Names the set of pills for a screen reader: "Active filters". */
+  label?: string;
+  /** Said before each pill's label: "Remove filter: Remote". */
+  remove?: string;
+  clear?: string;
+  /** Where focus goes when the last filter is removed from the keyboard: an element id, such as the search field. */
+  returnFocus?: string;
+  id?: string;
+}
+const { label = 'Active filters', remove = 'Remove filter', clear = 'Clear all', returnFocus, id } = Astro.props;
+---
+
+<div class="active-filters" id={id} data-active-filters data-remove={remove} data-return-focus={returnFocus} hidden>
+  <ul class="af-list" data-af-list aria-label={label}></ul>
+  <button type="button" class="af-clear" data-af-clear>{clear}</button>
+</div>
+
+<script>
+  import { wireActiveFilters } from './activefilters.js';
+  document.querySelectorAll<HTMLElement>('[data-active-filters]').forEach(wireActiveFilters);
+</script>
+
+<style>
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  .active-filters[hidden] {
+    display: none;
+  }
+
+  /* A real flex list, not display: contents, which drops the list's semantics in Safari. */
+  .af-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .af-list :global(.af-pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 0 var(--sp-2) 0 var(--sp-3);
+    border: 0;
+    border-radius: 999px;
+    background: var(--c-surface-sunken);
+    color: var(--c-text);
+    font: inherit;
+    font-size: var(--text-caption);
+    cursor: pointer;
+    transition: background var(--motion-fast) var(--ease-out);
+  }
+
+  /* Only a pill that wasn't there before pops in; the rest stay put. */
+  .af-list :global(.af-pill.enter) {
+    animation: af-in var(--motion-base) var(--ease-out);
+  }
+
+  .af-list :global(.af-pill svg) {
+    color: var(--c-text-muted);
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .af-list :global(.af-pill:hover) {
+    background: var(--c-surface-hover);
+  }
+
+  .af-list :global(.af-pill:hover svg) {
+    color: var(--c-text);
+  }
+
+  .af-clear {
+    padding: var(--sp-1);
+    border: 0;
+    background: none;
+    color: var(--c-text-secondary);
+    font: inherit;
+    font-size: var(--text-caption);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .af-clear:hover {
+    color: var(--c-text);
+  }
+
+  .af-list :global(.af-pill:focus-visible),
+  .af-clear:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  @keyframes af-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .af-list :global(.af-pill),
+    .af-list :global(.af-pill.enter) {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>

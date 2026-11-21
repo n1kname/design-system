@@ -1,0 +1,136 @@
+---
+// The filterable list, working: a search, the main filter in view, the second rank in a
+// FilterSheet, what's on in ActiveFilters, how it's shown in a ViewMenu, and a CardList with all
+// five item states. Fictional roles at fictional companies.
+import SearchField from '@n1kname/components/SearchField.astro';
+import FilterChips from '@n1kname/components/FilterChips.astro';
+import FilterSheet from '@n1kname/components/FilterSheet.astro';
+import ActiveFilters from '@n1kname/components/ActiveFilters.astro';
+import ViewMenu from '@n1kname/components/ViewMenu.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+import CardList from '@n1kname/components/CardList.astro';
+import EmptyState from '@n1kname/components/EmptyState.astro';
+---
+
+<div class="fl-demo">
+  <SearchField id="fl-search" label="Search roles" placeholder="Search title or company" describedBy="fl-count" />
+  <FilterChips id="fl-status" label="Status" all="All" selected="all" />
+  <FilterSheet id="fl-sheet" label="Filters">
+    <FilterChips id="fl-where" label="Workplace" all="Any workplace" />
+    <FilterChips id="fl-review" label="Your review" all="Any review" />
+  </FilterSheet>
+  <ActiveFilters id="fl-active" returnFocus="fl-search" />
+  <div class="fl-result">
+    <p id="fl-count" class="fl-count"></p>
+    <ViewMenu id="fl-view" label="View" summary="Score · 30 days">
+      <Segmented id="fl-sort" label="Sort by" value="score" options={[{ value: 'score', label: 'Score' }, { value: 'newest', label: 'Newest' }]} />
+      <Segmented id="fl-period" label="Found in" value="30" options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: 'all', label: 'All time' }]} />
+    </ViewMenu>
+  </div>
+  <CardList id="fl-list" label="Fictional roles" level={3} loading loadingCards={3}>
+    <EmptyState slot="empty" kind="filtered" title="No roles match" text="Take a filter off to see more." />
+  </CardList>
+</div>
+
+<script>
+  import { matchWords, setQuery } from '@n1kname/components/search.js';
+  import { setChips } from '@n1kname/components/chips.js';
+  import { setFilterSheet } from '@n1kname/components/filtersheet.js';
+  import { setActiveFilters } from '@n1kname/components/activefilters.js';
+  import { setViewMenu } from '@n1kname/components/viewmenu.js';
+  import { setCards } from '@n1kname/components/cardlist.js';
+
+  type Role = { id: string; title: string; company: string; work: 'remote' | 'hybrid' | 'on-site'; score: number; days: number; status: 'new' | 'live' | 'interested' | 'closed'; state?: 'action' | 'live' | 'history'; reviewed?: boolean; unseen?: boolean; due?: string; end?: string };
+  const ROLES: Role[] = [
+    { id: 'r1', title: 'Service Designer', company: 'Harbour Labs', work: 'hybrid', score: 9.0, days: 20, status: 'live', state: 'action', due: 'Interview Thu 10:00', reviewed: true },
+    { id: 'r2', title: 'Senior Product Designer', company: 'Northwind Pay', work: 'hybrid', score: 8.2, days: 9, status: 'live', state: 'live' },
+    { id: 'r3', title: 'Principal Product Designer', company: 'Kite Energy', work: 'remote', score: 8.5, days: 1, status: 'new', unseen: true },
+    { id: 'r4', title: 'Lead UX Designer', company: 'Fieldwork', work: 'remote', score: 7.9, days: 6, status: 'interested', reviewed: true },
+    { id: 'r5', title: 'Senior UX Designer', company: 'Brightline', work: 'on-site', score: 6.4, days: 0, status: 'new', unseen: true },
+    { id: 'r6', title: 'Product Designer, Growth', company: 'Atlas Travel', work: 'hybrid', score: 7.2, days: 4, status: 'new' },
+    { id: 'r7', title: 'Senior Product Designer', company: 'Orbit Maps', work: 'hybrid', score: 8.4, days: 27, status: 'closed', state: 'history', end: 'Application closed', reviewed: true },
+    { id: 'r8', title: 'Staff Product Designer', company: 'Lumen Health', work: 'remote', score: 5.6, days: 25, status: 'closed', state: 'history', end: 'Gone quiet' },
+  ];
+  const STATUS = [
+    { value: 'new', label: 'New', color: 'var(--c-item-new)' },
+    { value: 'live', label: 'In process', color: 'var(--c-item-live)', icon: 'activity' },
+    { value: 'interested', label: 'Interested', color: 'var(--c-chart-3)' },
+    { value: 'closed', label: 'Closed', color: 'var(--c-chart-neutral)' },
+  ];
+  const WHERE = [{ value: 'remote', label: 'Remote' }, { value: 'hybrid', label: 'Hybrid' }, { value: 'on-site', label: 'On-site' }];
+  const REVIEW = [{ value: 'yes', label: 'Reviewed' }, { value: 'no', label: 'Not reviewed' }];
+  const S = { q: '', status: 'all', where: 'all', review: 'all', sort: 'score', period: '30' };
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const is = (r: Role, k: 'status' | 'where' | 'review', v: string) =>
+    v === 'all' || (k === 'status' ? r.status === v : k === 'where' ? r.work === v : (v === 'yes') === !!r.reviewed);
+  const card = (r: Role) => {
+    const chips: { icon?: string; label: string; tone?: string }[] = [];
+    if (r.state === 'action') chips.push({ icon: 'calendar', label: r.due!, tone: 'action' });
+    if (r.state === 'action' || r.state === 'live') chips.push({ icon: 'activity', label: 'In process', tone: 'live' });
+    chips.push({ icon: r.work === 'remote' ? 'house-plug' : 'building', label: r.work === 'on-site' ? 'On-site' : r.work[0].toUpperCase() + r.work.slice(1) });
+    if (r.state === 'history') chips.push({ icon: r.end === 'Gone quiet' ? 'clock' : 'x', label: r.end!, tone: 'history' });
+    if (r.reviewed) chips.push({ icon: 'circle-check', label: 'Reviewed' });
+    return { id: r.id, title: r.title, subtitle: r.company, score: r.score, state: r.state, reviewed: r.reviewed, unseen: r.unseen, chips };
+  };
+
+  const render = () => {
+    const base = matchWords(ROLES, ['title', 'company'], S.q).filter((r: Role) => S.period === 'all' || r.state === 'action' || r.state === 'live' || r.days <= Number(S.period));
+    const others = (skip: 'status' | 'where' | 'review') => base.filter((r: Role) => (['status', 'where', 'review'] as const).every((k) => k === skip || is(r, k, S[k])));
+    const count = (k: 'status' | 'where' | 'review', opts: { value: string }[]) => opts.map((o) => ({ ...o, count: others(k).filter((r: Role) => is(r, k, o.value)).length }));
+    setChips($('fl-status'), count('status', STATUS), S.status);
+    setChips($('fl-where'), count('where', WHERE), S.where);
+    setChips($('fl-review'), count('review', REVIEW), S.review);
+    const shown = base
+      .filter((r: Role) => is(r, 'status', S.status) && is(r, 'where', S.where) && is(r, 'review', S.review))
+      .sort((a: Role, b: Role) => (S.sort === 'score' ? b.score - a.score : a.days - b.days));
+    setCards($('fl-list'), shown.map(card));
+    $('fl-count').textContent = `${shown.length} of ${ROLES.length} roles`;
+    const pills = [];
+    if (S.where !== 'all') pills.push({ key: 'where', label: WHERE.find((o) => o.value === S.where)!.label });
+    if (S.review !== 'all') pills.push({ key: 'review', label: REVIEW.find((o) => o.value === S.review)!.label });
+    if (S.q) pills.push({ key: 'q', label: `"${S.q}"` });
+    setActiveFilters($('fl-active'), pills);
+    setFilterSheet($('fl-sheet'), { active: (S.where !== 'all' ? 1 : 0) + (S.review !== 'all' ? 1 : 0), done: `Show ${shown.length} ${shown.length === 1 ? 'role' : 'roles'}` });
+    setViewMenu($('fl-view'), `${S.sort === 'score' ? 'Score' : 'Newest'} · ${{ '7': '7 days', '30': '30 days', all: 'All time' }[S.period]}`);
+  };
+
+  $('fl-search').addEventListener('search-change', (e) => { S.q = (e as CustomEvent).detail.query; render(); });
+  for (const [id, k] of [['fl-status', 'status'], ['fl-where', 'where'], ['fl-review', 'review']] as const)
+    $(id).addEventListener('chips-change', (e) => { S[k] = (e as CustomEvent).detail.value; render(); });
+  $('fl-sort').addEventListener('segment-change', (e) => { S.sort = (e as CustomEvent).detail.value; render(); });
+  $('fl-period').addEventListener('segment-change', (e) => { S.period = (e as CustomEvent).detail.value; render(); });
+  $('fl-active').addEventListener('filter-remove', (e) => {
+    const k = (e as CustomEvent).detail.key;
+    if (k === 'q') { S.q = ''; setQuery($('fl-search'), ''); } else (S as Record<string, string>)[k] = 'all';
+    render();
+  });
+  const clear = () => { S.where = 'all'; S.review = 'all'; S.q = ''; setQuery($('fl-search'), ''); render(); };
+  $('fl-active').addEventListener('filters-clear', clear);
+  $('fl-sheet').addEventListener('filters-clear', clear);
+  render();
+</script>
+
+<style>
+  .fl-demo {
+    display: grid;
+    gap: var(--sp-3);
+  }
+
+  .fl-result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2) var(--sp-3);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--c-border);
+  }
+
+  .fl-count {
+    margin: 0;
+    color: var(--c-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+  }
+</style>

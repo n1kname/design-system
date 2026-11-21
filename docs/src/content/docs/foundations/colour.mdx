@@ -9,6 +9,26 @@ Name the role, not the colour. Every value comes from a warm neutral ramp and an
 
 The contrast shown is computed from the tokens at build time. WCAG 2.2 AA asks for 4.5:1 on text and 3:1 on graphics and control edges.
 
+## OKLCH
+
+Think of a colour picker with three sliders: light to dark (L), grey to vivid (C) and which colour (H). Darkening a pale colour by adding black is like black paint: it gets darker but also duller, so a green turns grey-olive. Here a colour family is one hue and one peak vividness, and its steps come from moving the lightness slider alone, so a pale teal and a deep teal are plainly the same teal.
+
+Since 0.10.0 every colour token is written that way in the CSS, as `oklch()`: `--c-item-live: oklch(0.48 0.0816 200.45)`. It's normal CSS. Each value is gamut-clipped to sRGB, so it shows the same on every screen, and the build reads each one back and checks it is exactly the colour it asserted contrast for. OKLCH gives even steps but doesn't promise contrast, which is why every pairing is still checked.
+
+Mixing a tint (a chip's background from its colour, say) uses `color-mix(in oklab, …)`: the same space without the hue angle, so a mix towards a grey doesn't swing through other hues on the way.
+
+## Item states
+
+For a list worked through item by item ([card list](/components/card-list/#item-states)): hue says what kind of thing it is, weight says how much it needs the person.
+
+<Swatches rows={[
+  { token: 'item-action', label: 'Action: your process, needing you soon. Band, ring, filled chip' },
+  { token: 'item-live', label: 'Live: your process, moving. Ring' },
+  { token: 'item-new', label: 'New since they last looked. Dot' },
+  { token: 'item-reviewed', label: 'Reviewed by them. Spine' },
+  { token: 'item-history', label: 'History: closed or set aside. Words' },
+]} />
+
 ## Surfaces
 
 The ratio here is against the page, and it's low on purpose. Surfaces separate through their borders.

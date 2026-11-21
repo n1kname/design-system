@@ -10,7 +10,11 @@
   list-style: none;
 }
 
+/* The edge and the shadow are built from parts, so a state, hover and a second state stack instead
+ * of overriding each other: --edge is the border, then band, spine, ring, halo and lift as shadows.
+ * A state sets its parts; hover only swaps --edge for --edge-hover and adds the lift. */
 .card {
+  --none: 0 0 0 0 transparent;
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -21,19 +25,110 @@
   column-gap: var(--sp-4);
   row-gap: var(--sp-2);
   padding: var(--sp-4) var(--sp-5);
-  border: 1px solid var(--c-border);
+  border: 1px solid var(--edge, var(--c-border));
   border-radius: var(--radius-lg);
   background: var(--c-surface);
+  box-shadow: var(--band, var(--none)), var(--spine, var(--none)), var(--ring, var(--none)), var(--halo, var(--none)), var(--lift, var(--none));
   transition:
     border-color var(--motion-hover) var(--ease-hover),
     transform var(--motion-hover) var(--ease-hover),
-    box-shadow var(--motion-hover) var(--ease-hover);
+    box-shadow var(--motion-base) var(--ease-out);
 }
 
 .card-item:not(.placeholder) .card:hover {
-  border-color: var(--c-border-strong);
+  border-color: var(--edge-hover, var(--c-border-strong));
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
+  --lift: 0 2px 8px oklch(0 0 0 / 0.06);
+}
+
+/* ---- Item states: hue says what kind of thing it is, weight says how much it needs you ---- */
+
+/* Reviewed (weight 2): they weighed in themselves. A quiet spine. */
+.card-item[data-reviewed] .card {
+  --spine: inset 3px 0 0 0 var(--c-item-reviewed);
+}
+
+/* Live (weight 4): your process, moving. A ring in the process teal. */
+.card-item[data-state='live'] .card {
+  --edge: var(--c-item-live);
+  --edge-hover: var(--c-item-live);
+  --ring: inset 0 0 0 1px var(--c-item-live);
+  --halo: 0 0 0 3px color-mix(in oklab, var(--c-item-live) 20%, transparent);
+}
+
+/* Action (weight 5): your process, needing you soon. The ring, a band, and the filled chip. */
+.card-item[data-state='action'] .card {
+  --edge: var(--c-item-action);
+  --edge-hover: var(--c-item-action);
+  --band: inset 5px 0 0 0 var(--c-item-action);
+  --ring: inset 0 0 0 1px var(--c-item-action);
+  --halo: 0 0 0 3px color-mix(in oklab, var(--c-item-action) 26%, transparent);
+}
+
+.card-item[data-state='live']:not(.placeholder) .card:hover,
+.card-item[data-state='action']:not(.placeholder) .card:hover {
+  --halo: 0 0 0 4px color-mix(in oklab, var(--c-item-live) 32%, transparent);
+}
+
+/* Once, on the first fill, so the eye finds it. Never loops. */
+.card-item.pulse .card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: card-pulse var(--motion-reveal) var(--ease-out) var(--motion-slow) 1 both;
+}
+
+@keyframes card-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--c-item-action) 55%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 12px color-mix(in oklab, var(--c-item-action) 0%, transparent);
+  }
+}
+
+/* History (weight 1): closed or set aside. Every word steps down one ink level and the dial goes
+ * quiet, rather than fading, so what's left still reads at AA. */
+.card-item[data-state='history'] .card-title,
+.card-item[data-state='history'] .card-open {
+  color: var(--c-text-secondary);
+  font-weight: 500;
+}
+
+.card-item[data-state='history'] .card-sub {
+  color: var(--c-text-muted);
+}
+
+.card-item[data-state='history'] .score-dial {
+  --dial: var(--c-border-strong);
+  color: var(--c-text-muted);
+}
+
+/* New (weight 3): new since the person last looked. A dot before the title, like unread mail. */
+.card-item[data-unseen] .card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.card-item[data-unseen] .card-title::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-item-new);
+}
+
+.card-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .card:focus-within:has(.card-open:focus-visible) {
@@ -120,6 +215,35 @@
 
 .fact-chip.good svg {
   color: var(--c-status-good);
+}
+
+/* The item states in words. Live: a tint of the process teal. Action: the teal, filled, the
+ * heaviest chip there is. History: an outline only, so it recedes. */
+.fact-chip.live {
+  background: var(--c-item-live-bg);
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.fact-chip.live svg {
+  color: var(--c-item-live);
+}
+
+.fact-chip.action {
+  background: var(--c-item-action);
+  color: var(--c-item-action-ink);
+  font-weight: 600;
+}
+
+.fact-chip.action svg {
+  color: var(--c-item-action-ink);
+}
+
+.fact-chip.history {
+  background: transparent;
+  outline: 1px dashed var(--c-border-strong);
+  outline-offset: -1px;
+  color: var(--c-item-history);
 }
 
 .card-actions {
@@ -279,7 +403,8 @@
     transform: none;
   }
 
-  .card-item.enter {
+  .card-item.enter,
+  .card-item.pulse .card::before {
     animation: none;
   }
 

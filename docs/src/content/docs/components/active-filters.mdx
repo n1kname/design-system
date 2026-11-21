@@ -1,0 +1,80 @@
+---
+title: "Active filters"
+description: "What's narrowing a list, as pills that each take their filter off, and Clear all."
+---
+
+import FilterableListDemo from '../../../components/FilterableListDemo.astro';
+import ActiveFilters from '@n1kname/components/ActiveFilters.astro';
+
+<div class="not-content">
+  <FilterableListDemo />
+</div>
+
+Set a workplace or a review filter, or search, to see the pills.
+
+## What it's for
+
+Saying what's narrowing the list, in one place, with a way to take each thing off. It matters most where filters are out of sight, folded into a [filter sheet](/components/filter-sheet/) on a phone: the person still sees what's on without opening anything.
+
+## When not to use it
+
+- **The main filter.** Its chosen chip already says it, in view.
+- **A list with one filter.** The filter itself shows what's set.
+
+## Anatomy
+
+- **Pills:** one per filter that's set, its value as the label and a cross.
+- **Clear all:** a text button after them.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `label` | Names the pills for a screen reader. "Active filters". |
+| `remove` | Said before each pill: "Remove filter: Remote". |
+| `clear` | Clear all's words. |
+| `returnFocus` | The id of what gets focus when the last filter is removed from the keyboard, such as the search field. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Nothing set | Hidden; it takes no space. |
+| Set | The pills and Clear all. A pill that wasn't there before pops in over `--motion-base`; the others stay put. |
+| Hover | The pill darkens a step and its cross takes the text colour. |
+
+## Tokens
+
+`--c-focus`, `--c-surface-hover`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-out`, `--motion-base`, `--motion-fast`, `--sp-1` to `--sp-3`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **Each pill is a button** that says what it does: "Remove filter: Remote".
+- **Focus stays in the bar.** Removing a pill from the keyboard puts focus on the pill that took its place, or Clear all, or, with nothing left, the element named by `returnFocus`.
+- **The pills are a list,** named by `label`.
+- **Under reduced motion** pills appear without popping in.
+
+## Content
+
+- **Label a pill with the value,** "Remote", "Reviewed", not "Workplace: Remote", unless two groups share a value.
+- **A search is a pill too,** in quotes: "designer".
+- **Same order as the filters** above it, so the eye can match them.
+
+## Status
+
+New in 0.58.0.
+
+## Code
+
+```astro wrap
+import ActiveFilters from '@n1kname/components/ActiveFilters.astro';
+
+<ActiveFilters id="active" returnFocus="search" />
+<script>
+  import { setActiveFilters } from '@n1kname/components/activefilters.js';
+  const active = document.getElementById('active');
+  setActiveFilters(active, [{ key: 'where', label: 'Remote' }, { key: 'q', label: '"designer"' }]);
+  active.addEventListener('filter-remove', (e) => drop(e.detail.key));
+  active.addEventListener('filters-clear', () => dropAll());
+</script>
+```

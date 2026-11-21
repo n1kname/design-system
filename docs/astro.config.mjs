@@ -31,7 +31,10 @@ export default defineConfig({
         },
         {
           label: 'Patterns',
-          items: [{ label: 'Loading and empty', link: '/patterns/loading/' }],
+          items: [
+            { label: 'Loading and empty', link: '/patterns/loading/' },
+            { label: 'Filterable list', link: '/patterns/filterable-list/' },
+          ],
         },
         {
           label: 'Layout',
@@ -55,6 +58,9 @@ export default defineConfig({
             { label: 'Period picker', link: '/components/period-picker/' },
             { label: 'Search field', link: '/components/search-field/' },
             { label: 'Filter chips', link: '/components/filter-chips/' },
+            { label: 'Filter sheet', link: '/components/filter-sheet/' },
+            { label: 'Active filters', link: '/components/active-filters/' },
+            { label: 'View menu', link: '/components/view-menu/' },
             { label: 'Segmented', link: '/components/segmented/' },
             { label: 'Data table', link: '/components/data-table/' },
             { label: 'Card list', link: '/components/card-list/' },

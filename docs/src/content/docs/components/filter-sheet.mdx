@@ -1,0 +1,88 @@
+---
+title: "Filter sheet"
+description: "The second rank of filters: a row where there's room, one Filters button and a bottom sheet on a phone."
+---
+
+import FilterableListDemo from '../../../components/FilterableListDemo.astro';
+import FilterSheet from '@n1kname/components/FilterSheet.astro';
+
+<div class="not-content">
+  <FilterableListDemo />
+</div>
+
+Narrow the window under 640px to see the Workplace and Your review groups fold behind **Filters**.
+
+## What it's for
+
+The filters someone sets now and then, under the one they use all the time. Where there's room they sit in a row, so everything is one click away; on a phone they fold behind one button, with a badge for how many are set, and open in a bottom sheet that ends in a button saying what closing shows: "Show 12 roles".
+
+## When not to use it
+
+- **The main filter.** It stays in view at every width: a [filter chips](/components/filter-chips/) row of its own, scrolling sideways on a phone if it must.
+- **One group only.** Put it in the row; a sheet for one choice is a detour.
+- **Sorting and the period.** They change how the result is shown, not what's in it: a [view menu](/components/view-menu/).
+
+## Anatomy
+
+- **Row:** the groups in the slot, apart by more space between them than inside them.
+- **Button** (phone): a sliders icon, "Filters", a count badge when something is set, a chevron that says it opens.
+- **Sheet** (phone): a grabber, the heading and Clear all, each group under a caption taken from its own `label`, and the closing button.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `label` | The button and the sheet's heading. "Filters". |
+| `clear` | Clear all's words. |
+| `done` | The closing button's words until `setFilterSheet()` gives a count. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Wide | The groups in a row; no button, no sheet. |
+| Phone, nothing set | The button without a badge. |
+| Phone, set | The badge with how many groups are set. |
+| Open | The sheet rises from the bottom edge over `--motion-slow`; the page dims behind it. |
+| Widened while open | The sheet closes and the groups are back in the row. |
+
+## Tokens
+
+`--c-bg`, `--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-text`, `--c-text-accent`, `--c-text-muted`, `--c-text-secondary`, `--ease-out`, `--font-display`, `--font-mono`, `--leading-h3`, `--motion-base`, `--motion-slow`, `--radius-md`, `--radius-xl`, `--sp-1` to `--sp-5`, `--text-body-sm`, `--text-caption`, `--text-h3`.
+
+## Keyboard and screen reader
+
+- **The sheet is a modal dialog,** named by its heading. Focus moves in, Escape or a tap on the dimmed page closes it, and focus goes back to the button.
+- **The groups are the page's own.** They move into the sheet and back, so their names, states and listeners stay what they were; nothing is drawn twice.
+- **The button says the count,** "Filters, 2 set", and that it opens a dialog.
+- **Under reduced motion** the sheet appears without rising.
+
+## Content
+
+- **Group labels are nouns:** "Workplace", "Your review". They become the captions in the sheet.
+- **The closing button names the result:** "Show 12 roles", not "Done" or "Apply". The list updates as chips are pressed, so nothing waits on it.
+- **Pair it with [active filters](/components/active-filters/),** so what's set stays visible when the sheet is closed.
+
+## Status
+
+New in 0.58.0.
+
+## Code
+
+```astro wrap
+import FilterChips from '@n1kname/components/FilterChips.astro';
+import FilterSheet from '@n1kname/components/FilterSheet.astro';
+
+<FilterChips id="status" label="Status" options={statuses} />
+<FilterSheet id="more">
+  <FilterChips id="where" label="Workplace" all="Any workplace" />
+  <FilterChips id="review" label="Your review" all="Any review" />
+</FilterSheet>
+<script>
+  import { setFilterSheet } from '@n1kname/components/filtersheet.js';
+  const more = document.getElementById('more');
+  // after each change: how many groups are set, and what closing shows
+  setFilterSheet(more, { active: 1, done: 'Show 12 roles' });
+  more.addEventListener('filters-clear', () => clearSecondRank());
+</script>
+```

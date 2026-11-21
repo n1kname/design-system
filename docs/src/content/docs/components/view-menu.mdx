@@ -1,0 +1,82 @@
+---
+title: "View menu"
+description: "How a result is shown, sort and period, behind one button that says what's set."
+---
+
+import FilterableListDemo from '../../../components/FilterableListDemo.astro';
+import ViewMenu from '@n1kname/components/ViewMenu.astro';
+
+<div class="not-content">
+  <FilterableListDemo />
+</div>
+
+Open **View** at the top right of the result.
+
+## What it's for
+
+The controls that change how a result is laid out, not what's in it: the order and the period. Behind one button that says what's set, "View: Score · 30 days", they stop competing with the filters, and the row of controls above a list stays about the list.
+
+## When not to use it
+
+- **Filters.** What's in the list belongs in [filter chips](/components/filter-chips/) and a [filter sheet](/components/filter-sheet/).
+- **One control someone changes all the time.** Leave it in view as a [segmented](/components/segmented/) control.
+- **Actions,** such as export. That's a button.
+
+## Anatomy
+
+- **Button:** the lead word ("View:"), what's set, and a chevron that turns over while open.
+- **Panel:** the controls in the slot, each under a caption taken from its own `label`, under the button with its right edge on the button's.
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `label` | The button's lead word and the panel's name. "View". |
+| `summary` | What's set, until `setViewMenu()` says. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Closed | The button. |
+| Hover, open | A stronger border; open, the chevron turns over. |
+| Open | The panel fades in under the button over `--motion-fast`, and stays on screen at any width. |
+
+## Tokens
+
+`--c-border`, `--c-border-strong`, `--c-focus`, `--c-surface`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-out`, `--motion-fast`, `--radius-md`, `--sp-2` to `--sp-4`, `--text-body-sm`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **The panel is a native popover.** Escape or a click outside closes it, and focus goes back to the button.
+- **The button says it's expanded** while the panel is open.
+- **The panel is a group** named by `label`; each control keeps its own name, so the captions are hidden from screen readers rather than said twice.
+- **Under reduced motion** the panel appears at once and the chevron doesn't turn.
+
+## Content
+
+- **The summary reads as a phrase:** "Score · 30 days", the sort first.
+- **Two or three controls.** More, and it isn't a view any more.
+
+## Status
+
+New in 0.58.0.
+
+## Code
+
+```astro wrap
+import ViewMenu from '@n1kname/components/ViewMenu.astro';
+import Segmented from '@n1kname/components/Segmented.astro';
+
+<ViewMenu id="view" summary="Newest · 30 days">
+  <Segmented id="sort" label="Sort by" value="newest" options={sorts} />
+  <Segmented id="period" label="Found in" value="30" options={periods} />
+</ViewMenu>
+<script>
+  import { setViewMenu } from '@n1kname/components/viewmenu.js';
+  document.getElementById('sort').addEventListener('segment-change', (e) => {
+    sortBy(e.detail.value);
+    setViewMenu(document.getElementById('view'), 'Score · 30 days');
+  });
+</script>
+```

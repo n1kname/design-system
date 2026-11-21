@@ -37,7 +37,9 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 | `reveal` | Actions show on hover or focus where a pointer hovers; always on touch. Off by default: always shown. |
 | `loading` | Starts with placeholder cards. |
 | `empty`, `failed` slots | Shown instead of the cards, as DataTable's. |
-| Chip `tone` | `neutral` (default) or `good`: something in the item's favour. The page decides what counts. |
+| Chip `tone` | `neutral` (default) or `good`: something in the item's favour. The page decides what counts. `action`, `live` and `history` say an item state in words. |
+| Item `state` | `action`, `live` or `history`. See [item states](#item-states). |
+| Item `reviewed`, `unseen` | The person weighed in themselves; new since they last looked. |
 
 ## States
 
@@ -50,17 +52,21 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 | Removed | `removeCard()` slides it out and the gap closes. |
 | Toggled on | The heart pops. |
 | Empty, failed | Their slot instead of the cards. |
+| Action, live, new, reviewed, history | The item states, below. They stack. |
+| First fill with an action card | That card pulses once, over `--motion-reveal`, so the eye finds it. Never again on the page. |
 
 ## Tokens
 
-`--c-border`, `--c-border-strong`, `--c-focus`, `--c-status-good`, `--c-status-warning`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--font-body`, `--font-mono`, `--motion-base`, `--motion-hover`, `--radius-lg`, `--radius-sm`, `--sp-1` to `--sp-5`, `--text-body-sm`, `--text-caption`, `--text-mono`.
+`--c-border`, `--c-border-strong`, `--c-focus`, `--c-item-action`, `--c-item-action-ink`, `--c-item-history`, `--c-item-live`, `--c-item-live-bg`, `--c-item-new`, `--c-item-reviewed`, `--c-status-good`, `--c-status-warning`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--font-body`, `--font-mono`, `--motion-base`, `--motion-hover`, `--motion-reveal`, `--motion-slow`, `--radius-lg`, `--radius-sm`, `--sp-1` to `--sp-5`, `--text-body-sm`, `--text-caption`, `--text-mono`.
 
 ## Keyboard and screen reader
 
 - **The title is the card's one link or button,** stretched over the card, so Tab reaches each card once, then its actions.
 - **The dial is an image with a name,** "Score 8.4 out of 10".
 - **The list is named** with `label`, and `aria-busy` while loading.
-- **Under reduced motion** nothing lifts, rises, slides or pops.
+- **An unseen card says "New"** with its title, since the dot before it is only drawn.
+- **Every item state is also a chip in words,** so colour never carries it alone.
+- **Under reduced motion** nothing lifts, rises, slides, pops or pulses.
 
 ## Content
 
@@ -70,7 +76,37 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 
 ## Status
 
-New in 0.31.0.
+New in 0.31.0. Item states in 0.58.0.
+
+## Item states
+
+One rule: **hue says what kind of thing it is, weight says how much it needs you.** The person's own process is one teal at two weights; new is the accent, the one thing that asks to be looked at; reviewed and history are neutrals, so they step back.
+
+| Weight | State | Set with | Looks like |
+|---|---|---|---|
+| 5 | Action: your process, needing you soon | `state: 'action'` and an `action` chip, such as the date | A band, a ring, the filled chip. Pulses once. |
+| 4 | Live: your process, moving | `state: 'live'` and a `live` chip | A ring and a tinted chip |
+| 3 | New since they last looked | `unseen: true` | A dot before the title |
+| 2 | Reviewed: they weighed in themselves | `reviewed: true` | A spine |
+| 1 | History: closed or set aside | `state: 'history'` and a `history` chip that says why | The words step down an ink level; a dashed chip |
+
+They stack: a live item someone reviewed shows the ring and the spine. History steps its words down a level rather than fading them, so they still read at AA.
+
+<div class="not-content">
+  <CardList
+    label="Fictional roles, one per state"
+    level={3}
+    items={[
+      { id: 's1', title: 'Service Designer', subtitle: 'Harbour Labs', score: 9.0, state: 'action', reviewed: true, chips: [{ icon: 'calendar', label: 'Interview Thu 10:00', tone: 'action' }, { icon: 'activity', label: 'In process', tone: 'live' }] },
+      { id: 's2', title: 'Senior Product Designer', subtitle: 'Northwind Pay', score: 8.2, state: 'live', chips: [{ icon: 'activity', label: 'In process', tone: 'live' }, { icon: 'building', label: 'Hybrid' }] },
+      { id: 's3', title: 'Principal Product Designer', subtitle: 'Kite Energy', score: 8.5, unseen: true, chips: [{ icon: 'house-plug', label: 'Remote' }] },
+      { id: 's4', title: 'Lead UX Designer', subtitle: 'Fieldwork', score: 7.9, reviewed: true, chips: [{ icon: 'house-plug', label: 'Remote' }, { icon: 'circle-check', label: 'Reviewed' }] },
+      { id: 's5', title: 'Staff Product Designer', subtitle: 'Lumen Health', score: 5.6, state: 'history', chips: [{ icon: 'clock', label: 'Gone quiet', tone: 'history' }] },
+    ]}
+  />
+</div>
+
+In a working list, see the [filterable list](/patterns/filterable-list/) pattern.
 
 ## Code
 

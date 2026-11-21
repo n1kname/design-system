@@ -99,6 +99,8 @@ const list = all ? [{ value: 'all', label: all, count: options.every((o) => o.co
   }
 
   .filter-chips :global(.n) {
+    /* inline-block so a changed count can roll in (chips.js) */
+    display: inline-block;
     color: var(--c-text-muted);
     font-weight: 400;
     font-variant-numeric: tabular-nums;

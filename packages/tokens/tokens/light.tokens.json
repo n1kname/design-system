@@ -216,6 +216,42 @@
       "$type": "color",
       "$value": "{c.chart-1}"
     },
+    "item-action": {
+      "$type": "color",
+      "$value": "{c.chart-2}"
+    },
+    "item-action-ink": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1,
+          1,
+          1
+        ],
+        "hex": "#FFFFFF"
+      }
+    },
+    "item-live": {
+      "$type": "color",
+      "$value": "{c.chart-2}"
+    },
+    "item-live-bg": {
+      "$type": "color",
+      "$value": "{c.tag-cool-bg}"
+    },
+    "item-new": {
+      "$type": "color",
+      "$value": "{c.accent-edge}"
+    },
+    "item-reviewed": {
+      "$type": "color",
+      "$value": "{c.border-strong}"
+    },
+    "item-history": {
+      "$type": "color",
+      "$value": "{c.text-muted}"
+    },
     "surface-hover": {
       "$type": "color",
       "$value": "{primitive.neutral.100}"

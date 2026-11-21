@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.57.1",
+  "version": "0.58.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -30,7 +30,10 @@
     "./controls.css": "./src/controls.css",
     "./controls.js": "./src/controls.js",
     "./cardlist.css": "./src/cardlist.css",
-    "./cardlist.js": "./src/cardlist.js"
+    "./cardlist.js": "./src/cardlist.js",
+    "./filtersheet.js": "./src/filtersheet.js",
+    "./activefilters.js": "./src/activefilters.js",
+    "./viewmenu.js": "./src/viewmenu.js"
   },
   "scripts": {
     "check": "node src/yearcalendar.test.mjs && node src/facts.test.mjs"

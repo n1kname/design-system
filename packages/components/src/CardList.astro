@@ -15,8 +15,11 @@ import { cardHTML, placeholdersHTML } from './cardlist.js';
 interface Chip {
   icon?: string;
   label: string;
-  /** good: something in the item's favour, in the status-good tint. The page decides what. */
-  tone?: 'neutral' | 'good';
+  /**
+   * good: something in the item's favour, in the status-good tint. The page decides what.
+   * action, live, history: an item state in words, to sit with the card's `state`.
+   */
+  tone?: 'neutral' | 'good' | 'action' | 'live' | 'history';
 }
 interface Item {
   id: string;
@@ -25,6 +28,16 @@ interface Item {
   href?: string;
   score?: number | null;
   scoreText?: string;
+  /**
+   * Hue says what kind of thing it is, weight says how much it needs you. action: your process,
+   * needing you soon (band, ring, pulses once). live: your process, moving (ring). history: closed
+   * or set aside (the words step down). Pair each with a chip of the same tone that says it.
+   */
+  state?: 'action' | 'live' | 'history';
+  /** They weighed in themselves: a status, a note, a rating. A spine. */
+  reviewed?: boolean;
+  /** New since they last looked: a dot before the title, and "New" said with it. */
+  unseen?: boolean;
   chips?: Chip[];
   actions?: { action: string; icon: string; label: string; pressed?: boolean }[];
 }

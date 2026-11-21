@@ -178,6 +178,19 @@ const semantics = (mode) => {
   out['state-waiting'] = pick(n('300'), n('700'));
   out['state-set-aside'] = { ref: 'c.chart-neutral' };
   out['state-missing'] = { ref: 'c.chart-1' };
+  // Item states, for a list worked through item by item (CardList `state`). One rule: hue says what
+  // kind of thing it is, weight says how much it needs you. Your own process is the teal of chart
+  // slot 2 at two weights, action (a filled chip and a band) and live (a ring); new is the accent
+  // edge, the one thing that asks to be looked at; reviewed and history are neutrals, a boundary
+  // and an ink, so they step back. The ink on a filled action chip is white on light and the deep
+  // brown on dark, as on-accent is, because the teal turns bright there.
+  out['item-action'] = { ref: 'c.chart-2' };
+  out['item-action-ink'] = pick('#FFFFFF', n('950'));
+  out['item-live'] = { ref: 'c.chart-2' };
+  out['item-live-bg'] = { ref: 'c.tag-cool-bg' };
+  out['item-new'] = { ref: 'c.accent-edge' };
+  out['item-reviewed'] = { ref: 'c.border-strong' };
+  out['item-history'] = { ref: 'c.text-muted' };
   // Hover and well on any surface.
   out['surface-hover'] = out['surface-sunken'];
   // The field behind a case hero: colour and grain from the leading pair, quiet in both themes.
