@@ -1,0 +1,313 @@
+---
+/**
+ * The people a service is for, side by side: each with an avatar disc, a name, a line on who they
+ * are, what they need, and a job story or quote in their voice. For a page that compares roles,
+ * such as the four on a story map.
+ *
+ * Deliberately not cards: open columns with a hairline between them, so a page that already has
+ * boxes doesn't get more. The quote hangs on a rule in the person's tone. A list, each person a
+ * heading, their notes and their quote, read in order. Up to four columns; below 640px wide two,
+ * below 420px one, with a rule above each person instead.
+ *
+ * Once, as it comes into view, the people rise in one after another. Nothing moves under reduced
+ * motion, and without script they are simply there.
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+type Tone = 'accent' | 'cool' | 'quiet';
+
+interface Person {
+  /** "Driver", "Fleet manager". */
+  name: string;
+  /** Under the name: who they are, in a few words. */
+  role?: string;
+  icon?: IconName;
+  tone?: Tone;
+  /** What they need to do, in a sentence. */
+  needs?: string;
+  /** In their voice: a job story or a real quote, without the quotation marks. */
+  quote?: string;
+  /** Over the quote, such as "Job story". */
+  quoteLabel?: string;
+  /** More labelled lines, such as { label: 'Later', text: '…' }. */
+  notes?: { label: string; text: string }[];
+}
+
+interface Props {
+  /** What the people are, for a screen reader: the list is named by it. */
+  title: string;
+  people: Person[];
+  /** The label over each person's needs. */
+  needsLabel?: string;
+  caption?: string;
+  class?: string;
+}
+
+const { title, people, needsLabel = 'Needs', caption, class: className } = Astro.props;
+const tones: Tone[] = ['accent', 'cool'];
+---
+
+<figure class:list={['personas', className]} data-personas>
+  <ul aria-label={title} style={`--cols: ${Math.min(4, Math.max(1, people.length))}`}>
+    {
+      people.map((p, i) => (
+        <li class="person" data-tone={p.tone ?? tones[i % tones.length]} style={`--i: ${i}`}>
+          <span class="avatar" aria-hidden="true">
+            <Icon name={p.icon ?? 'users'} size={26} />
+          </span>
+          <h3 class="name">{p.name}</h3>
+          {p.role && <p class="role">{p.role}</p>}
+          <dl>
+            {p.needs && (
+              <div>
+                <dt>{needsLabel}</dt>
+                <dd>{p.needs}</dd>
+              </div>
+            )}
+            {p.notes?.map((n) => (
+              <div>
+                <dt>{n.label}</dt>
+                <dd>{n.text}</dd>
+              </div>
+            ))}
+          </dl>
+          {p.quote && (
+            <blockquote>
+              {p.quoteLabel && <span class="quote-label">{p.quoteLabel}</span>}
+              <p>“{p.quote}”</p>
+            </blockquote>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script is:inline>
+  // Before the first paint, so people waiting to arrive never show and then vanish.
+  (() => {
+    const all = document.querySelectorAll('[data-personas]:not(.arrive)');
+    const fig = all[all.length - 1];
+    if (!fig || !('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    fig.classList.add('arrive');
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      },
+      { rootMargin: '0px 0px -15% 0px' },
+    );
+    io.observe(fig);
+  })();
+</script>
+
+<style>
+  .personas {
+    min-width: 0;
+    margin: var(--sp-7) 0;
+    container-type: inline-size;
+  }
+
+  [data-tone='accent'] {
+    --edge: var(--c-accent-edge);
+    --soft: var(--c-surface-tint);
+    --mark: var(--c-accent);
+  }
+
+  [data-tone='cool'] {
+    --edge: color-mix(in oklab, var(--c-tag-cool-text) 55%, transparent);
+    --soft: var(--c-tag-cool-bg);
+    --mark: var(--c-tag-cool-text);
+  }
+
+  [data-tone='quiet'] {
+    --edge: var(--c-diagram-edge);
+    --soft: var(--c-surface);
+    --mark: var(--c-text-secondary);
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .person {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    min-width: 0;
+    margin: 0;
+    padding: var(--sp-2) var(--sp-5);
+  }
+
+  /* Open columns: a hairline between people, nothing around them. */
+  .person + .person {
+    border-left: 1px solid var(--c-border);
+  }
+
+  .person:first-child {
+    padding-left: 0;
+  }
+
+  .person:last-child {
+    padding-right: 0;
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--soft);
+    border: 1.5px solid var(--edge);
+    color: var(--mark);
+  }
+
+  .name {
+    margin: var(--sp-1) 0 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    color: var(--c-text);
+  }
+
+  .role {
+    margin: calc(-1 * var(--sp-2)) 0 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin: 0;
+  }
+
+  dt,
+  .quote-label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  /* The person's voice: hung on a rule in their tone, at the foot of the column. */
+  blockquote {
+    margin: auto 0 0;
+    padding: var(--sp-1) 0 var(--sp-1) var(--sp-3);
+    border-left: 2px solid var(--mark);
+  }
+
+  blockquote p {
+    margin: 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  /* Narrow overrides repeat the sibling selector, so they outweigh the open-column rule above
+   * (scoped styles count every class twice). */
+  @container (max-width: 640px) {
+    ul {
+      grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr));
+      row-gap: var(--sp-6);
+    }
+
+    .person,
+    .person + .person {
+      padding: 0 var(--sp-4);
+    }
+
+    .person:nth-child(odd),
+    .person + .person:nth-child(odd) {
+      padding-left: 0;
+      border-left: 0;
+    }
+
+    .person:nth-child(even),
+    .person + .person:nth-child(even) {
+      padding-right: 0;
+    }
+  }
+
+  @container (max-width: 420px) {
+    ul {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0;
+    }
+
+    .person,
+    .person + .person,
+    .person + .person:nth-child(odd),
+    .person + .person:nth-child(even) {
+      padding: var(--sp-5) 0;
+      border-left: 0;
+    }
+
+    .person + .person,
+    .person + .person:nth-child(odd),
+    .person + .person:nth-child(even) {
+      border-top: 1px solid var(--c-border);
+    }
+
+    .person:first-child {
+      padding-top: 0;
+    }
+  }
+
+  figcaption {
+    margin-top: var(--sp-4);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  /* Arriving: the people rise in, 90ms apart. */
+  .arrive .person {
+    opacity: 0;
+    translate: 0 12px;
+  }
+
+  .arrive.in .person {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--motion-reveal, 500ms) var(--ease-out),
+      translate var(--motion-reveal, 500ms) var(--ease-out);
+    transition-delay: calc(var(--i) * 90ms);
+  }
+
+  @media (forced-colors: active) {
+    .avatar {
+      border-color: CanvasText;
+    }
+
+    blockquote {
+      border-left-color: CanvasText;
+    }
+  }
+</style>

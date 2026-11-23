@@ -1,0 +1,106 @@
+---
+title: "Personas"
+description: "The people a service is for, side by side in open columns: who they are, what they need, and a job story in their voice."
+---
+
+import Personas from '@n1kname/components/Personas.astro';
+
+<div class="not-content">
+  <Personas
+    title="Who a library card is for"
+    needsLabel="What they need to do"
+    people={[
+      {
+        name: 'Member',
+        role: 'Borrows books every month',
+        icon: 'users',
+        tone: 'accent',
+        needs: 'Get a card quickly, borrow without queueing, and know when books are due.',
+        quoteLabel: 'Job story',
+        quote: 'When a book is due, I want a reminder the day before, so I never pay a late fee.',
+      },
+      {
+        name: 'Desk staff',
+        role: 'Helps people at the counter',
+        icon: 'headphones',
+        tone: 'cool',
+        needs: 'Sign people up without retyping forms, and answer questions about loans.',
+        notes: [{ label: 'Later', text: 'See a member’s history before they reach the desk.' }],
+      },
+      {
+        name: 'Branch manager',
+        role: 'Runs one library',
+        icon: 'building-2',
+        tone: 'cool',
+        needs: 'See how many people join and borrow, and where the queues are.',
+        quoteLabel: 'Job story',
+        quote: 'When a month ends, I want the numbers in one place, so I can plan staff for the next.',
+      },
+    ]}
+    caption="A made-up example."
+  />
+</div>
+
+## What it's for
+
+The roles a service has to work for, compared side by side: who each one is, what they need to do, and a job story or a real quote in their voice. For the roles on a story map or a blueprint, where seeing them next to each other is the point.
+
+## When not to use it
+
+- **One persona in depth,** with goals, frustrations and a photo. That's a page of its own, not a row.
+- **Comparing things, not people,** such as sources of evidence. Use [Compare cards](/components/compare-cards/).
+- **How the roles work together.** That's a [Flow diagram](/components/flow-diagram/).
+
+## Anatomy
+
+- **Avatar:** an icon disc in the person's tone. Icons, not faces: a role is not a stock photo.
+- **Name and role:** the name in the display face, and who they are in a few words under it.
+- **Notes:** what they need to do (labelled by `needsLabel`), and any more labelled lines, such as "Later".
+- **Voice:** a job story or a quote, in italics on a rule in their tone, at the foot of the column so the voices line up.
+- **Columns:** open, with a hairline between them and nothing around them, so a page with boxes doesn't get more.
+
+## Variants
+
+One layout. Tones alternate `accent` and `cool` unless a person sets `tone` (`accent`, `cool` or `quiet`). A person can leave out the role, the notes or the quote.
+
+## States
+
+- **Arriving:** once, as it comes into view, the people rise in, 90ms apart. Nothing moves under reduced motion, and without script they are simply there.
+- **Narrow:** up to four columns where there's room; below 640px wide two, below 420px one, with a rule between people instead of beside them.
+- **Forced colours:** the avatar's edge and the quote's rule are drawn in the system's text colour.
+
+## Tokens
+
+The diagrams' tones, as in [Flow diagram](/components/flow-diagram/): `--c-surface-tint`, `--c-accent` and `--c-accent-edge` (accent), `--c-tag-cool-bg` and `--c-tag-cool-text` (cool), `--c-surface`, `--c-diagram-edge` and `--c-text-secondary` (quiet). Also `--c-border`, `--c-text`, `--c-text-muted`, `--font-display`, `--text-sub`, `--text-body-sm`, `--text-caption`, `--motion-reveal`, `--ease-out`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate,** so nothing takes focus.
+- **It is a list named by `title`,** each person a heading, then their notes as a description list, then their quote as a blockquote. The avatar is hidden.
+
+## Content
+
+- **Names:** the role, not a made-up first name: "Fleet manager", not "Frank".
+- **Role line:** who they are in a few words.
+- **Needs:** one sentence, a verb first.
+- **Voice:** a job story ("When…, I want…, so…") or a real quote, never an invented one. Say in the caption where it comes from.
+
+## Status
+
+New. Used by a portfolio, for the four roles on a story map that had been plain cards.
+
+## Code
+
+```astro wrap
+---
+import Personas from '@n1kname/components/Personas.astro';
+---
+
+<Personas
+  title="Who it is for"
+  people={[
+    { name: 'Member', role: 'Borrows books', icon: 'users', needs: 'Borrow without queueing.', quote: 'When a book is due, I want a reminder.' },
+    { name: 'Desk staff', role: 'Helps at the counter', icon: 'headphones', needs: 'Sign people up quickly.' },
+  ]}
+/>
+```
