@@ -1,0 +1,105 @@
+---
+title: "Tracks"
+description: "The same steps taken on parallel tracks: each track a row of bands that point on to the next."
+---
+
+import Tracks from '@n1kname/components/Tracks.astro';
+
+<div class="not-content">
+  <Tracks
+    title="Three ways to return a library book"
+    steps={['How it comes back', 'What the service does']}
+    tracks={[
+      {
+        title: 'At the desk',
+        icon: 'users',
+        cells: [
+          'Handed over in person, during opening hours.',
+          'Scan it at the counter and print a receipt only if asked.',
+        ],
+      },
+      {
+        title: 'In the drop box',
+        icon: 'building-2',
+        cells: [
+          'Dropped through a slot, any time of day.',
+          'Check it in the next morning, backdated to when it was dropped.',
+        ],
+      },
+      {
+        title: 'By post',
+        icon: 'mail',
+        cells: [
+          'Sent back in an envelope, days later.',
+          'Count the postmark as the return date, so nobody pays for the post being slow.',
+        ],
+      },
+    ]}
+    caption="A made-up example."
+  />
+</div>
+
+## What it's for
+
+One question answered several ways, step for step: three countries and how each sets a price and what the design does about it, three channels and how each one works. Each track is a row and each row reads as a small flow, so the differences show in the same place on every row. Drawn in the same family as [Phases](/components/phases/), for a page that has had enough boxes.
+
+## When not to use it
+
+- **One flow, not several.** Use [Phases](/components/phases/) or [Steps](/components/steps/).
+- **Things compared on what they give and miss,** not on steps. Use [Compare cards](/components/compare-cards/).
+- **Many tracks, or numbers.** More than five rows reads as a table; use a [Data table](/components/data-table/).
+- **How the tracks connect to each other.** That's a [Flow diagram](/components/flow-diagram/).
+
+## Anatomy
+
+- **Plate:** sunken, with a hairline, as in Phases.
+- **Step names:** once, over their columns.
+- **Track name:** on the left, with a disc holding an icon or a short mark such as "NL", and an optional line under it.
+- **Bands:** one per step, each pointing on to the next, a sentence in each. The last step is tinted in the accent, the ones before it quiet, so the eye lands on the answer.
+- **Caption:** optional, under the plate.
+
+## Variants
+
+One layout. Tracks alternate `accent` and `cool` discs unless a track sets `tone`. `stepTones` sets the tone of each column of bands (`accent`, `cool` or `quiet`). A disc takes `icon` or `short`; with neither, the track has no disc.
+
+## States
+
+- **Arriving:** once, as it comes into view, the tracks slide in, 110ms apart. Nothing moves under reduced motion, and without script they are simply there.
+- **Narrow:** below 640px wide each track stacks: its name, then its steps one under the other, each band named and an arrow down between them.
+- **Forced colours:** the bands lose their points and get a border in the system's text colour, and so do the discs.
+
+## Tokens
+
+`--c-surface-sunken` and `--c-border` for the plate; `--c-diagram-line` for the arrows. Tones as in [Flow diagram](/components/flow-diagram/): `--c-accent` and `--c-accent-edge` (accent), `--c-tag-cool-bg` and `--c-tag-cool-text` (cool), `--c-surface`, `--c-diagram-edge` and `--c-text-secondary` (quiet). Also `--c-text`, `--c-text-muted`, `--font-display`, `--text-body`, `--text-body-sm`, `--text-caption`, `--radius-md`, `--radius-lg`, `--motion-reveal`, `--ease-out`.
+
+## Keyboard and screen reader
+
+- **Nothing to operate,** so nothing takes focus.
+- **It is a list named by `title`,** each track a heading and an ordered list of its steps. Each step says its name before its text, so the column headers, hidden from a screen reader, aren't needed to follow it.
+
+## Content
+
+- **Step names:** a few words, the same for every track: "How the price is set".
+- **Bands:** one sentence each, ending in a full stop. Short enough for three lines at most.
+- **Tracks:** two to five.
+
+## Status
+
+New. Used by a portfolio, for three countries that had been cards. Since 0.60.0.
+
+## Code
+
+```astro wrap
+---
+import Tracks from '@n1kname/components/Tracks.astro';
+---
+
+<Tracks
+  title="Two ways back"
+  steps={['How it comes back', 'What we do']}
+  tracks={[
+    { title: 'At the desk', short: 'D', cells: ['In person.', 'Scan it.'] },
+    { title: 'By post', short: 'P', cells: ['In an envelope.', 'Count the postmark.'] },
+  ]}
+/>
+```

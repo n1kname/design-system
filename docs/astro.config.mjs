@@ -117,6 +117,7 @@ export default defineConfig({
             { label: 'Service blueprint', link: '/components/service-blueprint/' },
             { label: 'Compare cards', link: '/components/compare-cards/' },
             { label: 'Personas', link: '/components/personas/' },
+            { label: 'Tracks', link: '/components/tracks/' },
             { label: 'Section nav', link: '/components/section-nav/' },
             { label: 'Career map', link: '/components/career-map/' },
             { label: 'Tiers', link: '/components/tiers/' },

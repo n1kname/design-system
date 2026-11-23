@@ -1,0 +1,371 @@
+---
+/**
+ * The same few steps, taken on parallel tracks: each track a row, its name on the left, then its
+ * steps as bands that point on to the next. For one question answered several ways, such as three
+ * countries and how each sets a price and what the design does about it, where cards would box
+ * up what is really a flow.
+ *
+ * Drawn as Phases is, on a sunken plate with tinted bands, so a page with both reads as one
+ * family. The step names sit once over the columns; each band holds a sentence. A list of tracks,
+ * each a heading and its steps in order, every step named, so it reads the same out loud.
+ * Below 640px wide each track stacks: its steps one under the other, named over each band, with
+ * an arrow between them.
+ *
+ * Once, as it comes into view, the tracks arrive one after another. Nothing moves under reduced
+ * motion, and without script it is simply there.
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+type Tone = 'accent' | 'cool' | 'quiet';
+
+interface Track {
+  /** On the left: "Netherlands". */
+  title: string;
+  /** Under the title, a few words. */
+  sub?: string;
+  /** In the disc: an icon, or a short mark such as "NL". Neither leaves the disc out. */
+  icon?: IconName;
+  short?: string;
+  tone?: Tone;
+  /** One sentence per step, in the order of `steps`. */
+  cells: string[];
+}
+
+interface Props {
+  /** What the tracks are, for a screen reader: the list is named by it. */
+  title: string;
+  /** The steps every track takes, named once over the columns. */
+  steps: string[];
+  tracks: Track[];
+  /** A tone per step. The last step is accent, the ones before it quiet, by default. */
+  stepTones?: Tone[];
+  caption?: string;
+  class?: string;
+}
+
+const { title, steps, tracks, stepTones, caption, class: className } = Astro.props;
+const n = steps.length;
+const toneOf = (k: number): Tone => stepTones?.[k] ?? (k === n - 1 ? 'accent' : 'quiet');
+const trackTones: Tone[] = ['accent', 'cool'];
+---
+
+<figure class:list={['tracks', className]} data-tracks>
+  <div class="plate" style={`--n: ${n}`}>
+    <div class="heads" aria-hidden="true">
+      <span></span>
+      <div class="head-cols">{steps.map((s) => <span>{s}</span>)}</div>
+    </div>
+    <ul aria-label={title}>
+      {
+        tracks.map((t, i) => (
+          <li class="track" style={`--i: ${i}`}>
+            <div class="name" data-tone={t.tone ?? trackTones[i % trackTones.length]}>
+              {(t.icon || t.short) && (
+                <span class="disc" aria-hidden="true">
+                  {t.icon ? <Icon name={t.icon} size={20} /> : <span class="short">{t.short}</span>}
+                </span>
+              )}
+              <div>
+                <h3>{t.title}</h3>
+                {t.sub && <p class="sub">{t.sub}</p>}
+              </div>
+            </div>
+            <ol class="bands">
+              {steps.map((s, k) => (
+                <li class="band" data-tone={toneOf(k)}>
+                  <span class="step">{s}</span>
+                  <span class="text">{t.cells[k] ?? ''}</span>
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script is:inline>
+  // Before the first paint, so tracks waiting to arrive never show and then vanish.
+  (() => {
+    const all = document.querySelectorAll('[data-tracks]:not(.arrive)');
+    const fig = all[all.length - 1];
+    if (!fig || !('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    fig.classList.add('arrive');
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      },
+      { rootMargin: '0px 0px -15% 0px' },
+    );
+    io.observe(fig);
+  })();
+</script>
+
+<style>
+  .tracks {
+    --notch: 18px;
+    --name: 10rem;
+    min-width: 0;
+    margin: var(--sp-7) 0;
+  }
+
+  .plate {
+    container-type: inline-size;
+    background: var(--c-surface-sunken);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-5);
+  }
+
+  /* The diagrams' tones: a tint for the band, the edge colour for the disc. */
+  [data-tone='accent'] {
+    --fill: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
+    --edge: var(--c-accent-edge);
+    --mark: var(--c-accent);
+  }
+
+  [data-tone='cool'] {
+    --fill: var(--c-tag-cool-bg);
+    --edge: color-mix(in oklab, var(--c-tag-cool-text) 55%, transparent);
+    --mark: var(--c-tag-cool-text);
+  }
+
+  [data-tone='quiet'] {
+    --fill: var(--c-surface);
+    --edge: var(--c-diagram-edge);
+    --mark: var(--c-text-secondary);
+  }
+
+  .heads,
+  .track {
+    display: grid;
+    grid-template-columns: var(--name) minmax(0, 1fr);
+    column-gap: var(--sp-4);
+  }
+
+  /* The step names, once, over their columns. */
+  .heads {
+    margin-bottom: var(--sp-3);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--c-text-secondary);
+  }
+
+  .head-cols {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  }
+
+  .head-cols > span {
+    padding-left: calc(var(--notch) + var(--sp-2));
+  }
+
+  .head-cols > span:first-child {
+    padding-left: var(--sp-4);
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .track {
+    align-items: stretch;
+    margin: 0;
+  }
+
+  .name {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+    min-width: 0;
+  }
+
+  .disc {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fill);
+    border: 1.5px solid var(--edge);
+    color: var(--mark);
+  }
+
+  .short {
+    font-size: var(--text-caption);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-body);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+  }
+
+  .sub {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  .bands {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Each band points on to the next; the next is cut to take the point, a hairline apart. */
+  .band {
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+    margin: 0 calc(var(--notch) * -1 + 3px) 0 0;
+    padding: var(--sp-3) calc(var(--notch) + var(--sp-3)) var(--sp-3) calc(var(--notch) + var(--sp-2));
+    background: var(--fill);
+    clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%, var(--notch) 50%);
+  }
+
+  .band:first-child {
+    clip-path: polygon(0 0, calc(100% - var(--notch)) 0, 100% 50%, calc(100% - var(--notch)) 100%, 0 100%);
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    padding-left: var(--sp-4);
+  }
+
+  .band:last-child {
+    margin-right: 0;
+  }
+
+  .text {
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+    color: var(--c-text);
+    text-wrap: pretty;
+  }
+
+  /* On a wide screen the step's name is over the column, so here it is for a screen reader. */
+  .step {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  figcaption {
+    margin-top: var(--sp-3);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    color: var(--c-text-muted);
+  }
+
+  @container (max-width: 640px) {
+    .heads {
+      display: none;
+    }
+
+    ul {
+      gap: var(--sp-6);
+    }
+
+    .track {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--sp-3);
+    }
+
+    .bands {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--sp-5);
+    }
+
+    .band,
+    .band:first-child {
+      position: relative;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+      min-height: 0;
+      margin: 0;
+      padding: var(--sp-3) var(--sp-4);
+      clip-path: none;
+      border-radius: var(--radius-md);
+    }
+
+    .step {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+      font-size: var(--text-caption);
+      font-weight: 600;
+      color: var(--c-text-secondary);
+    }
+
+    /* Stacked, an arrow down from each step to the next says they follow on. */
+    .band:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: calc(50% - 7px);
+      bottom: calc(-1 * var(--sp-5));
+      width: 14px;
+      height: var(--sp-5);
+      background: var(--c-diagram-line);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 20'%3E%3Cpath d='M7 2V17M2.5 13 7 17.5 11.5 13' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+  }
+
+  /* Arriving: the tracks slide in, 110ms apart. */
+  .arrive .track {
+    opacity: 0;
+    translate: -8px 0;
+  }
+
+  .arrive.in .track {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--motion-reveal, 500ms) var(--ease-out),
+      translate var(--motion-reveal, 500ms) var(--ease-out);
+    transition-delay: calc(var(--i) * 110ms);
+  }
+
+  @media (forced-colors: active) {
+    .band,
+    .band:first-child {
+      border: 1px solid CanvasText;
+      clip-path: none;
+      margin-right: 0;
+    }
+
+    .band::after {
+      forced-color-adjust: none;
+      background: CanvasText;
+    }
+
+    .disc {
+      border-color: CanvasText;
+    }
+  }
+</style>
