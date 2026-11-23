@@ -58,7 +58,10 @@ interface Props {
   title: string;
   /** One line on what it achieved. */
   text?: string;
-  /** Above the title: organisation, years, state. */
+  /** Under the title: organisation, years, state. The title leads; a label over a heading is one
+   *  of the habits that reads as generated, so the facts follow it instead. */
+  meta?: string;
+  /** @deprecated Since 0.61.0: use `meta`. Still accepted, and shown in meta's place, under the title. */
   overline?: string;
   /** Shown on a wide tile only; up to four. */
   metrics?: Metric[];
@@ -94,6 +97,7 @@ const {
   href,
   title,
   text,
+  meta: metaProp,
   overline,
   metrics = [],
   screens = [],
@@ -132,10 +136,11 @@ const layerWidths = (img: ImageMetadata) => {
 const layerSizes = (width: number) =>
   `(max-width: 760px) ${Math.round(width * 0.85)}vw, ${Math.round(width * (layout === 'wide' ? 7 : 6))}px`;
 const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
-// The link is named title first, then the line, the overline and the note, so a screen reader
+const meta = metaProp ?? overline;
+// The link is named title first, then the line, the meta and the note, so a screen reader
 // hears the case before its dates. Ids from the href, so the build stays the same each run.
 const uid = `case-tile-${href.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}`;
-const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-over`, note && `${uid}-note`].filter(Boolean).join(' ');
+const labelledby = [`${uid}-title`, text && `${uid}-text`, meta && `${uid}-meta`, note && `${uid}-note`].filter(Boolean).join(' ');
 ---
 
 <a
@@ -147,8 +152,8 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
 >
   <div class="frame">
   <div class="copy">
-    {overline && <p class="overline" id={`${uid}-over`}>{overline}</p>}
     <Heading class="title" id={`${uid}-title`}>{title}</Heading>
+    {meta && <p class="meta" id={`${uid}-meta`}>{meta}</p>}
     {text && <p class="text" id={`${uid}-text`}>{text}</p>}
     {note && <p class="note" id={`${uid}-note`}>{note}</p>}
     {
@@ -291,8 +296,8 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
     padding-bottom: 0;
   }
 
-  .overline {
-    margin: 0 0 var(--sp-3);
+  .meta {
+    margin: var(--sp-2) 0 0;
     font-size: var(--text-caption);
     letter-spacing: 0.02em;
     color: rgb(255 255 255 / 0.74);
@@ -418,7 +423,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, overline && `${uid}-o
       );
   }
   .ink-dark .title { color: #17181a; }
-  .ink-dark .overline { color: rgb(0 0 0 / 0.66); }
+  .ink-dark .meta { color: rgb(0 0 0 / 0.66); }
   .ink-dark .text { color: rgb(0 0 0 / 0.8); }
   .ink-dark .note { background: rgb(0 0 0 / 0.1); color: #17181a; }
   .ink-dark .metrics { border-top-color: rgb(0 0 0 / 0.2); }

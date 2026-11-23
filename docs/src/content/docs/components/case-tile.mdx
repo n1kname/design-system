@@ -21,7 +21,7 @@ export const phones = [
     href="#variants"
     layout="wide"
     tone="#2f5bd8"
-    overline="Organisation · 2025 — now · In flight"
+    meta="Organisation · 2025 — now · In flight"
     title="Fieldnote"
     text="A headline that says what the work achieved, in one line."
     note="Concepts"
@@ -40,8 +40,8 @@ export const phones = [
 The cases on a portfolio index, when the work is worth looking at before it's worth reading: each tile shows the product in its own colour, says what it achieved, and opens the case. One wide tile leads; the rest sit two to a row.
 
 <div class="not-content demo-stack" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px">
-  <CaseTile href="#variants" tone="#1f7a68" overline="Organisation · 2025 — now" title="Home prices" text="Paying back charging at the real price." note="Prototype" device="phone" screens={phones} />
-  <CaseTile href="#variants" tone="#9c2a1f" overline="Organisation · 2018 — 2024 · Shipped" title="Fleet console" text="From a driver portal to a platform for enterprise clients." screens={laptops} />
+  <CaseTile href="#variants" tone="#1f7a68" meta="Organisation · 2025 — now" title="Home prices" text="Paying back charging at the real price." note="Prototype" device="phone" screens={phones} />
+  <CaseTile href="#variants" tone="#9c2a1f" meta="Organisation · 2018 — 2024 · Shipped" title="Fleet console" text="From a driver portal to a platform for enterprise clients." screens={laptops} />
 </div>
 
 ## Patterns
@@ -66,7 +66,7 @@ The panel carries a texture under the screens, on a layer of its own that fades 
 ## Anatomy
 
 - **Panel:** the `tone` as a soft diagonal gradient with a faint dot grid, 24px corners. White text, so the tone must be deep.
-- **Words:** an overline (organisation, years, state), the title in the display face, one line, and an optional note such as "Concepts".
+- **Words:** the title in the display face, then its meta (organisation, years, state) just under it, one line, and an optional note such as "Concepts".
 - **Figures:** up to four, two by two under a hairline, on a wide tile only.
 - **Pictures:** two or three screens (laptop or phone) or one picture, running off the bottom and right edge. The first screen sits in front.
 
@@ -99,7 +99,7 @@ The panel carries a texture under the screens, on a layer of its own that fades 
 
 ## Keyboard and screen reader
 
-- **It's one link,** named title first, then the line, the overline and the note, so the case comes before its dates. Screens get empty alt by default, so the name stays short.
+- **It's one link,** named title first, then the line, the meta and the note, so the case comes before its dates. Screens get empty alt by default, so the name stays short.
 - **Don't put another link inside.**
 - **The figures are a description list,** read as value and label.
 
@@ -126,7 +126,7 @@ import station from '../assets/station.png';
   href="/work/a"
   layout="wide"
   tone="#1c3fa8"
-  overline="Organisation · 2025 — now · In flight"
+  meta="Organisation · 2025 — now · In flight"
   title="Product name"
   text="What it achieved, in one line."
   metrics={[{ value: '40,000+', label: 'searches a week' }]}
