@@ -137,6 +137,7 @@ const layerSizes = (width: number) =>
   `(max-width: 760px) ${Math.round(width * 0.85)}vw, ${Math.round(width * (layout === 'wide' ? 7 : 6))}px`;
 const figures = layout === 'wide' ? metrics.slice(0, 4) : [];
 const meta = metaProp ?? overline;
+// Each dot is held to the item before it (a no-break space), so a wrapped line never starts on one.
 // The link is named title first, then the line, the meta and the note, so a screen reader
 // hears the case before its dates. Ids from the href, so the build stays the same each run.
 const uid = `case-tile-${href.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}`;
@@ -153,7 +154,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, meta && `${uid}-meta`
   <div class="frame">
   <div class="copy">
     <Heading class="title" id={`${uid}-title`}>{title}</Heading>
-    {meta && <p class="meta" id={`${uid}-meta`}>{meta}</p>}
+    {meta && <p class="meta" id={`${uid}-meta`}>{meta.split(' · ').join('\u00a0· ')}</p>}
     {text && <p class="text" id={`${uid}-text`}>{text}</p>}
     {note && <p class="note" id={`${uid}-note`}>{note}</p>}
     {

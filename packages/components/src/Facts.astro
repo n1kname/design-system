@@ -199,6 +199,20 @@ const hl = highlight && variant === 'tiles';
     color: var(--c-text-secondary);
   }
 
+  /* A label that would get less than 7rem beside its icon (a narrow tile, two across on a phone)
+     drops under it and takes the tile's whole width: beside the icon it had about 70px and broke
+     a word to a line. Done with wrapping, not a container query: a container on the tile would
+     switch off its subgrid, and the figures would no longer share a baseline. */
+  .tiles :global(dt) {
+    flex-wrap: wrap;
+    row-gap: var(--sp-2);
+  }
+
+  .tiles :global(.fact-label) {
+    flex: 1 1 7rem;
+    min-width: 0;
+  }
+
   .tiles :global(.fact-icon) {
     width: 28px;
     height: 28px;

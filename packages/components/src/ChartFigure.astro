@@ -48,7 +48,12 @@ const Tag = as;
 </script>
 
 <style>
+  /* A column, so the panel can fill a figure that a grid stretches (two charts side by side)
+   * without counting the caption: height: 100% took the caption's height into the panel and left
+   * that much empty under the legend. */
   .chart-figure {
+    display: flex;
+    flex-direction: column;
     margin-block: var(--sp-6) var(--sp-7);
   }
   .chart-figure.panel {
@@ -57,7 +62,7 @@ const Tag = as;
 
   .frame {
     container-type: inline-size;
-    height: 100%;
+    flex: 1 1 auto;
     padding: var(--sp-5);
     background: var(--c-surface);
     border: 1px solid var(--c-border);

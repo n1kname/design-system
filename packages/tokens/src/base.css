@@ -23,3 +23,9 @@
     caret-color: var(--c-text-accent);
     scrollbar-color: var(--c-border-strong) transparent;
 }
+
+/* Running text never ends on one word alone. Headings balance in each site; this is the body's
+ * half. :where() keeps it at zero specificity, so a component can still choose otherwise. */
+:where(p, li, dd, figcaption, blockquote) {
+    text-wrap: pretty;
+}
