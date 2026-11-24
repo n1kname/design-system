@@ -13,3 +13,13 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* The parts of the browser a page doesn't draw, from the tokens so they follow the theme.
+ * The readable orange, not the bright accent: next to the bright one, Chrome draws a native
+ * control's track dark in light mode. Scrollbars take a colour only; their width stays the
+ * browser's. */
+:root {
+    accent-color: var(--c-text-accent);
+    caret-color: var(--c-text-accent);
+    scrollbar-color: var(--c-border-strong) transparent;
+}
