@@ -126,12 +126,21 @@ const { label, placeholder, shortcut = '/', param, describedBy, id = 'search' } 
     opacity: 0;
     transform: scale(0.6);
     pointer-events: none;
+    /* Hidden, not only see-through, while there is nothing to clear: Tab skips it. Visibility
+     * switches off after the fade and on before it. */
+    visibility: hidden;
+    transition:
+      opacity var(--motion-fast) var(--ease-out),
+      transform var(--motion-fast) var(--ease-out),
+      visibility 0s linear var(--motion-fast);
   }
 
   .search-field[data-filled] .clear {
     opacity: 1;
     transform: none;
     pointer-events: auto;
+    visibility: visible;
+    transition-delay: 0s;
   }
 
   .clear:focus-visible {

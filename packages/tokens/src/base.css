@@ -24,8 +24,19 @@
     scrollbar-color: var(--c-border-strong) transparent;
 }
 
-/* Running text never ends on one word alone. Headings balance in each site; this is the body's
- * half. :where() keeps it at zero specificity, so a component can still choose otherwise. */
+/* Selected text: the accent mixed into the page, like the highlighter (the surface tint is too
+ * close to the light page to see). */
+::selection {
+    background: color-mix(in oklab, var(--c-accent) 30%, var(--c-bg));
+    color: var(--c-text);
+}
+
+/* Headings balance their lines; running text never ends on one word alone. :where() keeps both
+ * at zero specificity, so a component can still choose otherwise. */
+:where(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+}
+
 :where(p, li, dd, figcaption, blockquote) {
     text-wrap: pretty;
 }
