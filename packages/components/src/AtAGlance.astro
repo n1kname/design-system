@@ -84,13 +84,15 @@ const Heading = `h${level}` as 'h2' | 'h3';
     border-radius: var(--radius-lg);
   }
 
+  /* A real heading, a step above the part labels, in the accent text colour like the figures and
+   * bullets under it. It was a small label in a heading's place, smaller than the parts. */
   .glance-title {
-    margin: 0 0 var(--sp-4);
-    font-family: var(--font-body);
-    font-size: var(--text-overline);
+    margin: 0 0 var(--sp-5);
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
     font-weight: 600;
-    line-height: var(--leading-overline);
-    letter-spacing: var(--tracking-overline);
+    line-height: var(--leading-h3);
+    letter-spacing: var(--tracking-h3);
     color: var(--c-text-accent);
   }
 

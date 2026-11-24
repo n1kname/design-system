@@ -152,7 +152,10 @@ const lineAbove = (stage: Stage, laneIndex: number) => {
     overflow: hidden;
   }
 
+  /* Positioned, so the screen-reader labels (absolute) inside it stay inside it: without this they
+   * anchored to the page and widened it by the grid's full width. */
   .scroller {
+    position: relative;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     padding: var(--sp-5) var(--sp-5) var(--sp-5) 0;
