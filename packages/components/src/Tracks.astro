@@ -47,7 +47,10 @@ interface Props {
 const { title, steps, tracks, stepTones, caption, class: className } = Astro.props;
 const n = steps.length;
 const toneOf = (k: number): Tone => stepTones?.[k] ?? (k === n - 1 ? 'accent' : 'quiet');
-const trackTones: Tone[] = ['accent', 'cool'];
+// A track's disc is teal unless the track says otherwise: the row names a kind of thing, and
+// alternating orange and teal by position read as meaning where there was none. The orange stays
+// for the step that matters.
+const trackTones: Tone[] = ['cool'];
 ---
 
 <figure class:list={['tracks', className]} data-tracks>

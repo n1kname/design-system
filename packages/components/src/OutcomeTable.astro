@@ -10,6 +10,10 @@ interface Item {
   icon: IconName;
   dimension: string;
   outcome: string;
+  /** The chip's colour, for rows that carry a status: `cool` (teal) for done, `accent` (the
+   * default) for in progress, `quiet` (grey) for not started. Rows without a status keep the
+   * accent. */
+  tone?: 'accent' | 'cool' | 'quiet';
 }
 
 interface Props {
@@ -32,7 +36,7 @@ const { items, closing, headings = ['Dimension', 'The outcome'] } = Astro.props;
       items.map((item) => (
         <div class="row">
           <dt class="t-sub">
-            <span class="chip">
+            <span class="chip" data-tone={item.tone ?? 'accent'}>
               <Icon name={item.icon} size={17} />
             </span>
             {item.dimension}
@@ -95,6 +99,18 @@ const { items, closing, headings = ['Dimension', 'The outcome'] } = Astro.props;
     border-radius: var(--radius-full);
     background: var(--c-surface-tint);
     color: var(--c-text-accent);
+  }
+
+  /* A status, readable at a glance down the column: done in the teal of the cool tags, not
+     started in grey. */
+  .chip[data-tone='cool'] {
+    background: var(--c-tag-cool-bg);
+    color: var(--c-tag-cool-text);
+  }
+
+  .chip[data-tone='quiet'] {
+    background: var(--c-surface-sunken);
+    color: var(--c-text-secondary);
   }
 
   dd {

@@ -8,7 +8,7 @@
  * with a halo); any after it are still to come (hollow markers on a dashed line). By default the
  * last entry is now. `order="newest-first"` turns that round for a history read from today back,
  * such as a career: the first entry is now and the ones below it are done. An entry can carry an
- * icon, shown in a disc: soft for what's done, the accent with a halo for now. With `fill` the discs
+ * icon, shown in a disc: light teal for what's done, the accent with a halo for now. With `fill` the discs
  * are the same, in teal for the history behind and the accent for now.
  *
  * Once, as each entry comes into view, its marker settles in, its text rises and its line draws on
@@ -237,9 +237,15 @@ const extras = await Promise.all(
     box-shadow: inset 0 0 0 2px var(--c-border-strong);
   }
 
-  /* With icons: a soft disc of the accent for what's done, the accent itself for now. */
+  /* With icons: the light teal of the cool tags for what's done, on a teal line, and the accent
+     itself for now, so the orange marks only where things stand (as with fill). */
+  .timeline[data-icons] {
+    --rail-done: color-mix(in oklab, var(--c-tag-cool-text) 45%, var(--c-border));
+  }
+
   [data-icons] [data-state='done'] .marker {
-    background: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
+    background: var(--c-tag-cool-bg);
+    color: var(--c-tag-cool-text);
   }
 
   [data-icons] [data-state='current'] .marker {
