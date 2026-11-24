@@ -2,9 +2,11 @@
 /**
  * A one-line caveat above the content it's about: the figures are a day old, a sensor is down.
  * Quieter than EmptyState kind="error": the content still shows. Warning by default; info for
- * something to know that isn't a problem.
+ * something to know that isn't a problem. A faint tint of the tone and an icon say which it is,
+ * so the tone never rests on colour alone.
  */
 import './controls.css';
+import Icon from './Icon.astro';
 
 interface Props {
   tone?: 'warning' | 'info';
@@ -12,4 +14,7 @@ interface Props {
 const { tone = 'warning' } = Astro.props;
 ---
 
-<p class:list={['notice', { info: tone === 'info' }]}><slot /></p>
+<p class:list={['notice', { info: tone === 'info' }]}>
+  <Icon name={tone === 'info' ? 'info' : 'triangle-alert'} />
+  <span><slot /></span>
+</p>

@@ -26,7 +26,8 @@ Saying something about the content below it that a reader should know before tru
 ## Anatomy
 
 - **Text:** one line, an optional bold lead.
-- **Edge:** a coloured rule on the left for the tone.
+- **Icon:** a warning triangle or an info circle, in the tone's colour, centred on the first line.
+- **Tint:** a faint wash of the tone behind it. No border, and no coloured bar down one side.
 
 ## Variants
 
@@ -41,11 +42,12 @@ It has no states of its own.
 
 ## Tokens
 
-`--c-accent`, `--c-status-warning`, `--c-surface`, `--c-text`, `--c-text-secondary`, `--leading-body-sm`, `--radius-sm`, `--sp-3`, `--sp-4`, `--text-body-sm`.
+`--c-status-warning`, `--c-text-accent`, `--c-surface`, `--c-text`, `--c-text-secondary`, `--leading-body-sm`, `--radius-md`, `--sp-3`, `--sp-4`, `--text-body-sm`.
 
 ## Keyboard and screen reader
 
 - **Read in place,** with no role: it's there when the page loads. For news that arrives later, use a [toast](/components/toast/).
+- **The icon is hidden** from screen readers; the words carry the message, so lead with what's true.
 
 ## Content
 
@@ -54,7 +56,7 @@ It has no states of its own.
 
 ## Status
 
-New in 0.30.0.
+New in 0.30.0. Since 0.63.0 a tint and an icon carry the tone; the side bar is gone.
 
 ## Code
 

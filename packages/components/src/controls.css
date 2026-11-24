@@ -213,19 +213,31 @@ select.field {
 }
 
 /* ---- Notice ---- */
+/* A faint wash of the tone and its icon; no coloured bar down one side. */
 .notice {
+  --notice-tone: var(--c-status-warning);
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-start;
   margin: 0;
   padding: var(--sp-3) var(--sp-4);
-  border-left: 3px solid var(--c-status-warning);
-  border-radius: var(--radius-sm);
-  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--notice-tone) 10%, var(--c-surface));
   font-size: var(--text-body-sm);
   line-height: var(--leading-body-sm, 1.5);
   color: var(--c-text-secondary);
 }
 
 .notice.info {
-  border-left-color: var(--c-accent);
+  --notice-tone: var(--c-text-accent);
+}
+
+/* The icon centres on the first line, however the text wraps. */
+.notice > svg {
+  flex: none;
+  color: var(--notice-tone);
+  margin-top: 2px;
+  margin-top: calc((1lh - 18px) / 2);
 }
 
 .notice strong {
