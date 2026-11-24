@@ -70,7 +70,7 @@ Phone screens step up and right across the panel instead, each in a thin bezel:
 | `note` | A label on the panel, on a blurred backing tinted from the tone, so it reads even where a picture runs under it. Keep it to a word or two on a card. On a phone the pictures start under it. |
 | `transition` | A view-transition name, so the card's stack grows into the cover on the page it opens. Only when card and cover share a shape; otherwise the morph warps, and the cover's own entrance is better. |
 | `parallax` | Turn the pointer-following on or off; on by default for a cover only. |
-| `eager` | Load the front screen first; on by default for a cover. |
+| `eager` | For a cover above the fold: no picture loads lazily, and the front screen (or the widest layer) is fetched first. On by default for a cover. |
 
 ## States
 

@@ -46,7 +46,7 @@ None. Leave out `areas` for no skills, `changes` on a level where nothing comes 
 
 ## States
 
-- **Picked:** solid, `aria-selected="true"`, its panel shown. Picking changes the panel at once.
+- **Picked:** solid, `aria-selected="true"`, its panel shown. Picking changes the panel at once. The level picked goes in the URL as `?level=` (`?<id>=` when a page has more than one map), replacing the history entry, so a reload or a shared link opens on it and Back still leaves the page.
 - **Hover and focus:** hover darkens a node's edge; focus gets the focus ring.
 - **Narrow:** below 640px wide the ladder is a list, and the panel's parts stack.
 - **Without script:** the level given as `selected` shows, and the table, when there is one, holds every level.

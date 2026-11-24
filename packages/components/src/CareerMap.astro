@@ -6,8 +6,10 @@
  * and what it does in each skill area. On request, every level side by side in one table.
  *
  * The ladder is a tab list: the arrow keys move along it and pick as they go, Home and End go to
- * the ends. Picking changes the panel at once; it's an answer to a question, not a moment. Without
- * script only the level given as `selected` shows, and the table still holds everything.
+ * the ends. Picking changes the panel at once; it's an answer to a question, not a moment. The
+ * level picked goes in the URL (`?level=`, or `?<id>=` with more than one map on a page), so a
+ * reload or a shared link opens on it. Without script only the level given as `selected` shows,
+ * and the table still holds everything.
  *
  * Drawn in the diagrams' own style, on a sunken plate, as Flow diagram is. Below 640px wide the
  * ladder becomes a list.
@@ -91,7 +93,7 @@ const byTheme = (t: string) => areas.filter((a) => (a.theme ?? '') === t);
 const ordered = ranks.flatMap((r) => at(r));
 ---
 
-<figure class:list={['career-map', className]} data-career-map>
+<figure class:list={['career-map', className]} data-career-map={uid}>
   <div class="plate">
     <div class="ladder" role="tablist" aria-label={title} style={`grid-template-columns: ${columns}`}>
       {
@@ -592,8 +594,17 @@ const ordered = ranks.flatMap((r) => at(r));
 <script>
   // Picking a level shows its panel. The arrow keys move along the ladder in reading order and pick
   // as they go; Home and End go to the ends.
-  document.querySelectorAll<HTMLElement>('[data-career-map]').forEach((map) => {
+  // The level picked goes in the URL, replacing the entry rather than adding one, so Back still
+  // leaves the page.
+  const maps = [...document.querySelectorAll<HTMLElement>('[data-career-map]')];
+  maps.forEach((map) => {
     const tabs = [...map.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const key = maps.length > 1 ? map.dataset.careerMap || 'level' : 'level';
+    const remember = (tab: HTMLButtonElement) => {
+      const url = new URL(location.href);
+      url.searchParams.set(key, tab.dataset.level ?? '');
+      history.replaceState(history.state, '', url);
+    };
     // Reading order follows the ranks: the DOM already lists them so.
     const pick = (tab: HTMLButtonElement, focus = false) => {
       tabs.forEach((t) => {
@@ -606,13 +617,21 @@ const ordered = ranks.flatMap((r) => at(r));
       if (focus) tab.focus();
     };
     tabs.forEach((t, i) => {
-      t.addEventListener('click', () => pick(t));
+      t.addEventListener('click', () => {
+        pick(t);
+        remember(t);
+      });
       t.addEventListener('keydown', (e) => {
         const to = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
         if (to === undefined) return;
         e.preventDefault();
-        pick(tabs[(to + tabs.length) % tabs.length], true);
+        const next = tabs[(to + tabs.length) % tabs.length];
+        pick(next, true);
+        remember(next);
       });
     });
+    const asked = new URL(location.href).searchParams.get(key);
+    const start = asked && tabs.find((t) => t.dataset.level === asked);
+    if (start) pick(start);
   });
 </script>

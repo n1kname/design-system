@@ -74,7 +74,8 @@ interface Props {
   device?: 'laptop' | 'phone';
   /** A view-transition-name, so a card's stack can grow into the cover on the page it opens. */
   transition?: string;
-  /** Load the front screen first, for a cover above the fold. */
+  /** For a cover above the fold: every picture loads at once (none lazily), and the front screen,
+   * or the widest layer, first. */
   eager?: boolean;
   /** Follow the pointer. On by default for a cover; a card fans out on hover instead. */
   parallax?: boolean;
@@ -101,6 +102,8 @@ const layerSizes = (width: number) =>
     ? `(max-width: 640px) ${Math.round(width * 0.7)}vw, ${Math.round(width * 7)}px`
     : `(max-width: 640px) ${Math.round(width * 0.9)}vw, ${Math.round(width * 3.6)}px`;
 const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.width))];
+// The widest layer is the largest paint on a cover, so it is the one fetched first.
+const lead = layers.reduce((best, l, i) => (l.width > layers[best].width ? i : best), 0);
 ---
 
 <div
@@ -115,7 +118,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
         {layers.map((l, i) => (
           <div class:list={['layer', { float: l.float }]} style={`left: ${l.x}%; top: ${l.y}%; width: ${l.width}%; --depth: ${l.depth ?? 0}; --i: ${i}`}>
             {typeof l.image === 'string' ? (
-              <img src={l.image} alt={l.alt ?? ''} width={l.size?.width} height={l.size?.height} loading={eager ? 'eager' : 'lazy'} />
+              <img src={l.image} alt={l.alt ?? ''} width={l.size?.width} height={l.size?.height} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager && i === lead ? 'high' : 'auto'} />
             ) : (
               <Image
                 src={l.image}
@@ -125,6 +128,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
                 format="webp"
                 quality={80}
                 loading={eager ? 'eager' : 'lazy'}
+                fetchpriority={eager && i === lead ? 'high' : 'auto'}
               />
             )}
           </div>
@@ -139,7 +143,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
       return (
         <div class={`screen s${i}`}>
           {typeof s.image === 'string' ? (
-            <img src={s.image} alt={s.alt} width={s.size?.width} height={s.size?.height} loading={eager && first ? 'eager' : 'lazy'} />
+            <img src={s.image} alt={s.alt} width={s.size?.width} height={s.size?.height} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager && first ? 'high' : 'auto'} />
           ) : (
             <Image
               src={s.image}
@@ -148,7 +152,7 @@ const fit = (img: ImageMetadata) => [...new Set(widths.filter((w) => w <= img.wi
               sizes={sizes}
               format="webp"
               quality={82}
-              loading={eager && first ? 'eager' : 'lazy'}
+              loading={eager ? 'eager' : 'lazy'}
               fetchpriority={eager && first ? 'high' : 'auto'}
             />
           )}
