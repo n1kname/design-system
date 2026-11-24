@@ -80,8 +80,9 @@ const Heading = `h${level}` as 'h2' | 'h3';
     container-type: inline-size;
     padding: var(--sp-5) var(--sp-6) var(--sp-6);
     background: var(--c-surface);
-    /* The accent all round: the summary is where a reader should land first. */
-    border: 1.5px solid var(--c-accent);
+    /* The accent all round: the summary is where a reader should land first. 2px, since Chrome
+     * rounds 1.5px down to 1px, which read thin. */
+    border: 2px solid var(--c-accent);
     border-radius: var(--radius-lg);
   }
 
