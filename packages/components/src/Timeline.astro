@@ -17,7 +17,7 @@
  * `fill` is the other motion, for a long history that is read rather than glanced at: the same
  * gapped, rounded segments, each filling as the reading line (60% down the window) passes it, in
  * the accent for the step into now and the chart teal for the rest. Each marker it reaches lights
- * up in full teal. The entries
+ * up in the light teal of the cool tags. The entries
  * don't arrive: the fill is the one moment. Under reduced motion, or without script, the rail is
  * drawn in full.
  *
@@ -381,7 +381,7 @@ const extras = await Promise.all(
      The same line as without the fill: a segment between each pair of markers, a small gap clear
      of each and rounded at both ends. Each segment fills from the top as the reading line passes
      it (--p, from 0 to 1, set by the script), teal for the history and the accent for the step into
-     now. A marker turns full teal as the fill reaches it, with a small spring. Without the script
+     now. A marker turns light teal as the fill reaches it, with a small spring. Without the script
      (or with reduced motion) nothing is held back: every segment and marker is drawn in full. */
   [data-fill] {
     --m: 12px;
@@ -441,16 +441,17 @@ const extras = await Promise.all(
     color: var(--c-on-accent);
   }
 
-  /* With icons: a disc the fill has reached is full teal; one it has yet to reach is a quiet tint;
+  /* With icons: a disc the fill has reached is the light teal of the cool tags, its icon in their
+     text colour (full teal read heavy on a light page); one it has yet to reach is a quiet tint;
      now is the accent itself, with its halo. */
   [data-fill][data-icons] [data-state] .marker {
-    background: var(--rail);
-    color: var(--c-bg);
+    background: var(--c-tag-cool-bg);
+    color: var(--c-tag-cool-text);
   }
 
   [data-fill][data-icons].filling li:not(.reached) .marker {
-    background: color-mix(in oklab, var(--rail) 16%, var(--c-bg));
-    color: color-mix(in oklab, var(--c-chart-2) 60%, var(--c-bg));
+    background: var(--c-surface-sunken);
+    color: color-mix(in oklab, var(--c-tag-cool-text) 50%, var(--c-bg));
   }
 
   [data-fill][data-icons] [data-state='current'] .marker,

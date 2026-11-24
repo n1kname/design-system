@@ -126,7 +126,8 @@ const trackTones: Tone[] = ['accent', 'cool'];
 
   /* The diagrams' tones: a tint for the band, the edge colour for the disc. */
   [data-tone='accent'] {
-    --fill: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
+    /* 24%: at 16% the band read pale next to the cool one. */
+    --fill: color-mix(in oklab, var(--c-accent) 24%, var(--c-surface));
     --edge: var(--c-accent-edge);
     /* The readable orange: the raw accent on its own tint is 2.6:1. */
     --mark: var(--c-text-accent);
