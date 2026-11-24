@@ -119,7 +119,8 @@ const markIcon: Partial<Record<Mark, IconName>> = { gain: 'circle-check', gap: '
   [data-tone='accent'] {
     --edge: var(--c-accent-edge);
     --soft: var(--c-surface-tint);
-    --mark: var(--c-accent);
+    /* The readable orange: the raw accent on its own tint is 2.6:1. */
+    --mark: var(--c-text-accent);
   }
 
   [data-tone='cool'] {

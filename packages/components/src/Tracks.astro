@@ -128,7 +128,8 @@ const trackTones: Tone[] = ['accent', 'cool'];
   [data-tone='accent'] {
     --fill: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
     --edge: var(--c-accent-edge);
-    --mark: var(--c-accent);
+    /* The readable orange: the raw accent on its own tint is 2.6:1. */
+    --mark: var(--c-text-accent);
   }
 
   [data-tone='cool'] {

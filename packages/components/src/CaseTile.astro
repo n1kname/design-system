@@ -251,10 +251,11 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, meta && `${uid}-meta`
     color: #fff;
     text-decoration: none;
     background:
+      /* The words sit top left, so the gradient starts at the tone itself there and only darkens
+       * away from them: a lighter stop under the copy took the meta line below AA. */
       linear-gradient(
         150deg,
-        color-mix(in oklab, var(--tile-tone), white 10%),
-        var(--tile-tone) 50%,
+        var(--tile-tone) 40%,
         color-mix(in oklab, var(--tile-tone), black 32%)
       );
     transition:
@@ -300,7 +301,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, meta && `${uid}-meta`
     margin: var(--sp-2) 0 0;
     font-size: var(--text-caption);
     letter-spacing: 0.02em;
-    color: rgb(255 255 255 / 0.74);
+    color: rgb(255 255 255 / 0.92);
   }
 
   .title {
@@ -319,7 +320,7 @@ const labelledby = [`${uid}-title`, text && `${uid}-text`, meta && `${uid}-meta`
     max-width: 36ch;
     font-size: clamp(1rem, 2.6cqw, 1.2rem);
     line-height: 1.45;
-    color: rgb(255 255 255 / 0.88);
+    color: #fff;
     text-wrap: pretty;
   }
 
