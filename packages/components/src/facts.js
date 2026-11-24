@@ -26,7 +26,7 @@ const deltaOf = (d) => (d == null || d === '' ? null : typeof d === 'string' ? {
 const hasLine = (f) => f.context != null || f.contextId != null || deltaOf(f.delta) != null;
 const sizeOf = (variant) => (variant === 'tiles' ? 16 : 14);
 
-const dtHTML = (f, size) => `${f.icon ? `<span class="fact-icon">${icon(f.icon, size)}</span>` : ''}<span class="fact-label">${esc(f.label)}</span>`;
+const dtHTML = (f, size) => `${f.icon ? `<span class="fact-icon">${icon(f.icon, size)}</span>` : ''}<span class="fact-label"${String(f.label ?? '').length > 18 ? ' data-long' : ''}>${esc(f.label)}</span>`;
 const lineHTML = (f) => {
   const d = deltaOf(f.delta);
   return `${d ? `<strong class="fact-delta" data-tone="${d.tone}">${esc(d.text)}</strong> ` : ''}${esc(f.context)}`;
