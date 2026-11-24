@@ -123,7 +123,8 @@ const last = phases.length - 1;
   }
 
   [data-tone='accent'] {
-    --fill: color-mix(in oklab, var(--c-accent) 16%, var(--c-surface));
+    /* 24%, as in Tracks: at 16% the band read pale next to the cool one. */
+    --fill: color-mix(in oklab, var(--c-accent) 24%, var(--c-surface));
     --mark: var(--c-accent-edge);
   }
 
