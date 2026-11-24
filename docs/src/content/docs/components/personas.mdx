@@ -56,7 +56,7 @@ The roles a service has to work for, compared side by side: who each one is, wha
 - **Avatar:** an icon disc in the person's tone. Icons, not faces: a role is not a stock photo.
 - **Name and role:** the name in the display face, and who they are in a few words under it.
 - **Notes:** what they need to do (labelled by `needsLabel`), and any more labelled lines, such as "Later".
-- **Voice:** a job story or a quote, in italics on a rule in their tone, at the foot of the column so the voices line up.
+- **Voice:** a job story or a quote, in italics on a soft tint of their tone (10%, as the [Notice](/components/notice/)), at the foot of the column so the voices line up. Not a rule down one side: that reads as a coloured bar on a box. The label over it takes the tone's readable colour.
 - **Columns:** open, with a hairline between them and nothing around them, so a page with boxes doesn't get more.
 
 ## Variants
@@ -67,11 +67,11 @@ One layout. Tones alternate `accent` and `cool` unless a person sets `tone` (`ac
 
 - **Arriving:** once, as it comes into view, the people rise in, 90ms apart. Nothing moves under reduced motion, and without script they are simply there.
 - **Narrow:** up to four columns where there's room; below 640px wide two, below 420px one, with a rule between people instead of beside them.
-- **Forced colours:** the avatar's edge and the quote's rule are drawn in the system's text colour.
+- **Forced colours:** the avatar's edge and a border round the quote are drawn in the system's text colour, since the tint drops out.
 
 ## Tokens
 
-The diagrams' tones, as in [Flow diagram](/components/flow-diagram/): `--c-surface-tint`, `--c-accent` and `--c-accent-edge` (accent), `--c-tag-cool-bg` and `--c-tag-cool-text` (cool), `--c-surface`, `--c-diagram-edge` and `--c-text-secondary` (quiet). Also `--c-border`, `--c-text`, `--c-text-muted`, `--font-display`, `--text-sub`, `--text-body-sm`, `--text-caption`, `--motion-reveal`, `--ease-out`.
+The diagrams' tones, as in [Flow diagram](/components/flow-diagram/): `--c-surface-tint`, `--c-accent` and `--c-accent-edge` (accent), `--c-tag-cool-bg` and `--c-tag-cool-text` (cool), `--c-surface`, `--c-diagram-edge` and `--c-text-secondary` (quiet). Also `--c-border`, `--c-text`, `--c-text-muted`, `--radius-md`, `--font-display`, `--text-sub`, `--text-body-sm`, `--text-caption`, `--motion-reveal`, `--ease-out`.
 
 ## Keyboard and screen reader
 

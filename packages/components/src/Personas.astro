@@ -5,7 +5,7 @@
  * such as the four on a story map.
  *
  * Deliberately not cards: open columns with a hairline between them, so a page that already has
- * boxes doesn't get more. The quote hangs on a rule in the person's tone. A list, each person a
+ * boxes doesn't get more. The quote sits on a soft tint of the person's tone. A list, each person a
  * heading, their notes and their quote, read in order. Up to four columns; below 640px wide two,
  * below 420px one, with a rule above each person instead.
  *
@@ -202,7 +202,8 @@ const tones: Tone[] = ['accent', 'cool'];
     margin-bottom: 2px;
     font-size: var(--text-caption);
     font-weight: 600;
-    color: var(--c-text-secondary);
+    /* Tinted from the surface it sits on, not a flat grey. */
+    color: var(--mark);
   }
 
   dd {
@@ -213,11 +214,13 @@ const tones: Tone[] = ['accent', 'cool'];
     text-wrap: pretty;
   }
 
-  /* The person's voice: hung on a rule in their tone, at the foot of the column. */
+  /* The person's voice, at the foot of the column: a 10% tint of their tone, as the Notice. Not
+   * a rule down one side, which reads as a coloured bar on a box. */
   blockquote {
     margin: auto 0 0;
-    padding: var(--sp-1) 0 var(--sp-1) var(--sp-3);
-    border-left: 2px solid var(--mark);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--radius-md);
+    background: color-mix(in oklab, var(--mark) 10%, var(--c-surface));
   }
 
   blockquote p {
@@ -308,7 +311,7 @@ const tones: Tone[] = ['accent', 'cool'];
     }
 
     blockquote {
-      border-left-color: CanvasText;
+      border: 1px solid CanvasText;
     }
   }
 </style>
