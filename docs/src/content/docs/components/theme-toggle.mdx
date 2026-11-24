@@ -61,6 +61,9 @@ import ThemeToggle from '@n1kname/components/ThemeToggle.astro';
 ---
 
 <ThemeToggle labels={{ toDark: 'Switch to dark', toLight: 'Switch to light' }} />
+
+<!-- Sites on one domain share the choice: -->
+<ThemeToggle cookieDomain="example.com" />
 ```
 
 The page applies the kept choice before it paints, so dark never flashes light. Put this first in `<head>`:
@@ -70,8 +73,9 @@ The page applies the kept choice before it paints, so dark never flashes light. 
 <meta name="theme-color" content="#1A0C06" media="(prefers-color-scheme: dark)" data-for="dark" />
 <script is:inline>
   try {
-    const saved = localStorage.getItem('theme');
-    if (saved) {
+    const kept = document.cookie.match(/(?:^|; )theme=(light|dark)/);
+    const saved = kept ? kept[1] : localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') {
       document.documentElement.dataset.theme = saved;
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
         m.media = m.dataset.for === saved ? 'all' : 'not all';
@@ -83,5 +87,7 @@ The page applies the kept choice before it paints, so dark never flashes light. 
 
 ## Keep in mind
 
-- **No `data-theme` means follow the system,** as `tokens.css` does. The toggle sets it, and keeps it under `theme` in `localStorage`.
+- **No `data-theme` means follow the system,** as `tokens.css` does. The toggle sets it, and keeps it in a `theme` cookie (and under `theme` in `localStorage`, for older head scripts).
+- **Shared between sites:** a cookie ignores the port, so every site on one host shares the choice (apps on one server, say). Give `cookieDomain` and the subdomains of that domain share it too, such as a landing page and a portfolio on its own subdomain. On a host outside that domain (a LAN address, localhost) the cookie stays with the host.
+- **The head script reads the cookie first,** then `localStorage`, so a choice made before the cookie still counts.
 - **The browser bar follows** where the page marks its two `theme-color` tags with `data-for`.

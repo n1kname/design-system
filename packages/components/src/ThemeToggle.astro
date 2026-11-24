@@ -2,8 +2,11 @@
 /**
  * The light and dark switch: a round button whose icon shows the theme it goes to, the moon
  * in light and the sun in dark. The two icons share a cell and cross-fade. The choice is kept
- * under `theme` in localStorage, and the page's own head script applies it before paint (see
- * the docs page), so nothing flashes. Without that, it follows the system, as tokens.css does.
+ * in a `theme` cookie, so sites on one host share it (a cookie ignores the port) and, with
+ * `cookieDomain`, so do the subdomains of one domain. It is also kept under `theme` in
+ * localStorage, for pages whose head script predates the cookie. The page's own head script
+ * applies it before paint (see the docs page), so nothing flashes. Without that, it follows
+ * the system, as tokens.css does.
  *
  * Where the browser has view transitions, the whole page eases into the new colours over
  * --motion-base instead of snapping. Not under reduced motion.
@@ -13,14 +16,17 @@
 interface Props {
   /** What the button says to a screen reader, in each direction. */
   labels?: { toDark: string; toLight: string };
+  /** Share the choice with every subdomain of this domain, e.g. `example.com`. Ignored on a
+   * host outside it (a LAN address, localhost), where the cookie stays with the host. */
+  cookieDomain?: string;
   id?: string;
   class?: string;
 }
 
-const { labels = { toDark: 'Switch to dark', toLight: 'Switch to light' }, id, class: className } = Astro.props;
+const { labels = { toDark: 'Switch to dark', toLight: 'Switch to light' }, cookieDomain, id, class: className } = Astro.props;
 ---
 
-<button type="button" class:list={['theme-toggle', className]} id={id} data-theme-toggle>
+<button type="button" class:list={['theme-toggle', className]} id={id} data-theme-toggle data-cookie-domain={cookieDomain}>
   <span class="sr to-dark">{labels.toDark}</span><span class="sr to-light">{labels.toLight}</span>
   <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -32,27 +38,37 @@ const { labels = { toDark: 'Switch to dark', toLight: 'Switch to light' }, id, c
 </button>
 
 <script>
-  const apply = (next: string) => {
+  // A year, on the whole host, or the whole domain where the page asks and is on it.
+  const keep = (next: string, domain?: string) => {
+    const host = location.hostname;
+    const shared = domain && (host === domain || host.endsWith('.' + domain)) ? `; domain=${domain}` : '';
+    const secure = location.protocol === 'https:' ? '; secure' : '';
+    document.cookie = `theme=${next}; path=/; max-age=31536000; samesite=lax${shared}${secure}`;
+  };
+
+  const apply = (next: string, domain?: string) => {
     document.documentElement.dataset.theme = next;
     // The browser bar follows the choice too, where the page marks its two theme-colors.
     document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"][data-for]').forEach((m) => {
       m.media = m.dataset.for === next ? 'all' : 'not all';
     });
+    keep(next, domain);
     try {
       localStorage.setItem('theme', next);
     } catch {}
   };
 
-  document.querySelectorAll('[data-theme-toggle]').forEach((button) =>
+  document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((button) =>
     button.addEventListener('click', () => {
+      const domain = button.dataset.cookieDomain;
       const root = document.documentElement;
       const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
       const next = dark ? 'light' : 'dark';
       // The page eases into its new colours: one cross-fade of the whole page, which costs far
       // less than a transition on every element.
-      if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return apply(next);
+      if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return apply(next, domain);
       root.dataset.themeChange = '';
-      document.startViewTransition(() => apply(next)).finished.finally(() => delete root.dataset.themeChange);
+      document.startViewTransition(() => apply(next, domain)).finished.finally(() => delete root.dataset.themeChange);
     }),
   );
 </script>
