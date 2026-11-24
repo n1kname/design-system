@@ -9,6 +9,7 @@ export const HEAT = [1, 2, 3, 4, 5, 6].map((i) => `var(--c-heat-${i})`);
  * A canvas reads colours, not tokens: a token (or any CSS colour), resolved now, as rgb(). Call it
  * again when the theme changes (onTheme).
  */
+let paint;
 export const resolve = (value) => {
   const probe = document.createElement('i');
   probe.style.color = value;
@@ -16,7 +17,14 @@ export const resolve = (value) => {
   document.body.append(probe);
   const colour = getComputedStyle(probe).color;
   probe.remove();
-  return colour;
+  // The browser keeps the token's own colour space (oklch() since tokens 0.10), which MapLibre
+  // can't read: it drops the paint without a word. One pixel on a canvas turns it into rgb().
+  paint ??= (typeof OffscreenCanvas === 'function' ? new OffscreenCanvas(1, 1) : Object.assign(document.createElement('canvas'), { width: 1, height: 1 })).getContext('2d', { willReadFrequently: true });
+  paint.clearRect(0, 0, 1, 1);
+  paint.fillStyle = colour;
+  paint.fillRect(0, 0, 1, 1);
+  const [r, g, b, a] = paint.getImageData(0, 0, 1, 1).data;
+  return a === 255 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${+(a / 255).toFixed(3)})`;
 };
 
 /** Calls fn when the theme changes, by the switch (data-theme) or by the system. */

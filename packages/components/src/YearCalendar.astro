@@ -183,6 +183,8 @@ const html = calendarHTML({ year, days, tone, levels, colors, steps, weekStart, 
     z-index: 5;
   }
 
+  /* The table for screen readers sits in a 1px box that clips it: a table can't be narrower than
+   * its cells, so on the table itself width: 1px did nothing and it widened the page on a phone. */
   .year-calendar :global(.yc-sr) {
     position: absolute;
     width: 1px;

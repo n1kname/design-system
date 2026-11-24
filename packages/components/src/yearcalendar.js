@@ -129,9 +129,9 @@ export const calendarHTML = (opts) => {
   const table =
     opts.table === false
       ? ''
-      : `<table class="yc-sr"><caption>${esc(named)}</caption><thead><tr><th scope="col">${esc(say.month)}</th><th scope="col">${esc(say.days)}</th>${total ? `<th scope="col">${esc(say.total)}</th>` : ''}</tr></thead><tbody>${byMonth
+      : `<div class="yc-sr"><table><caption>${esc(named)}</caption><thead><tr><th scope="col">${esc(say.month)}</th><th scope="col">${esc(say.days)}</th>${total ? `<th scope="col">${esc(say.total)}</th>` : ''}</tr></thead><tbody>${byMonth
           .map((m, i) => `<tr><th scope="row">${esc(monthNames[i])}</th><td>${m.days}</td>${total ? `<td>${esc(total(m.sum, i))}</td>` : ''}</tr>`)
-          .join('')}</tbody></table>`;
+          .join('')}</tbody></table></div>`;
 
   return (
     `<div class="yc-frame" style="--weeks: ${weeks.length}; ${ramp}">` +
