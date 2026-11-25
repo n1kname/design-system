@@ -7,13 +7,13 @@ import PageHeader from '@n1kname/components/PageHeader.astro';
 import Button from '@n1kname/components/Button.astro';
 
 <div class="not-content">
-  <PageHeader eyebrow="A section" title="Most rooms stayed fresh this week" lede="This line says what the page shows and why, in a sentence or two." meta="Through 31 Oct">
+  <PageHeader title="Most rooms stayed fresh this week" lede="This line says what the page shows and why, in a sentence or two." meta="Through 31 Oct">
     <Button slot="actions">All figures</Button>
   </PageHeader>
 </div>
 
 <div class="not-content">
-  <PageHeader eyebrow="Did we use less gas this year?" title="Less." rule mark="6,5% lower" lede="Gas per degree day is 6,5% lower over Jan–Oct, the months with real heating in both years." meta="Through 31 Oct" />
+  <PageHeader title="Did we use less gas this year?" answer="Less." rule mark="6,5% lower" lede="Gas per degree day is 6,5% lower over Jan–Oct, the months with real heating in both years." meta="Through 31 Oct" />
 </div>
 
 ## What it's for
@@ -27,9 +27,9 @@ To open a page with what matters: the conclusion, then the proof below it. A dat
 
 ## Anatomy
 
-- **Eyebrow:** optional, the section.
-- **Title:** an `h1`. A finding, where the page has one.
-- **Rule:** optional, the house signature: a short accent bar under the title.
+- **Title:** an `h1`. A finding, where the page has one; for a page that answers a question, the question.
+- **Answer:** optional, under a question title: the finding, in the headline family a step smaller (h3), in the text colour.
+- **Rule:** optional, the house signature: a short accent bar under the title and answer.
 - **Lede:** optional.
 - **Highlight:** optional, on the words that answer the question.
 - **Meta:** optional, the freshness of the data.
@@ -38,18 +38,18 @@ To open a page with what matters: the conclusion, then the proof below it. A dat
 ## Variants
 
 - **Plain:** for a page that describes rather than answers.
-- **With `rule` and `mark`:** for a page that answers a question. The rule gives the answer weight, and the highlighter points at the figure behind it.
-- **`compact`:** small enough to float over a map, in a [map stage](/components/map-stage/) in fill mode. The title drops to the h3 size, the rule is shorter and closer, and the actions sit centred beside it in one row while there is room.
+- **With `answer`, `rule` and `mark`:** for a page that answers a question. The question is the heading, so it names the page; the answer follows it, the rule gives the answer weight, and the highlighter points at the figure behind it. There is no small label over the title: a heading names its own section.
+- **`compact`:** small enough to float over a map, in a [map stage](/components/map-stage/) in fill mode. The title drops to the h3 size, an answer to the sub-heading size, the rule is shorter and closer, and the actions sit centred beside it in one row while there is room.
 
 ## States
 
-While a page waits for data, the title, lede and meta keep their height, so nothing jumps. See [Loading and empty](/patterns/loading/).
+While a page waits for data, the title, answer, lede and meta keep their height, so nothing jumps. See [Loading and empty](/patterns/loading/).
 
 The highlighter sweeps in once, from the left, 300ms after its words land, over 70% of `--motion-draw` (700ms). Under reduced motion it is simply there. In forced colours it becomes a thick underline.
 
 ## Tokens
 
-`--c-accent`, `--c-bg`, `--c-text-accent`, `--c-text-secondary`, `--ease-out`, `--font-display`, `--leading-body-sm`, `--leading-h2`, `--radius-rule`, `--sp-1`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`, `--text-body-sm`, `--text-h2`, `--text-label`, `--tracking-h2`. Compact also uses `--leading-h3`, `--text-h3` and `--tracking-h3`.
+`--c-accent`, `--c-bg`, `--c-text`, `--c-text-secondary`, `--ease-out`, `--font-display`, `--leading-body-sm`, `--leading-h2`, `--leading-h3`, `--radius-rule`, `--sp-2`, `--sp-3`, `--sp-4`, `--sp-5`, `--sp-6`, `--sp-7`, `--text-body-sm`, `--text-h2`, `--text-h3`, `--tracking-h2`, `--tracking-h3`. Compact also uses `--leading-sub` and `--text-sub`.
 
 ## Keyboard and screen reader
 
@@ -58,7 +58,7 @@ The highlighter sweeps in once, from the left, 300ms after its words land, over 
 
 ## Content
 
-- **Say the finding, not the topic,** where there is one.
+- **Say the finding, not the topic,** where there is one. A page that answers a question puts the question in the title and the finding in `answer`.
 - **Say freshness plainly:** "Through 31 Oct".
 - **Highlight the figure, not the sentence:** two or three words, such as "6,5% lower". One highlight a page.
 

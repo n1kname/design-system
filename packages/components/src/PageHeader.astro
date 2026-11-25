@@ -3,9 +3,13 @@
  * The top of a page: what it is, what it says, and how fresh that is, with the page's
  * actions beside it. Actions go in the "actions" slot.
  *
- * `rule` puts the house signature, a short accent bar, under the title. `mark` names the
- * words that answer the question, such as "6,5% lower": the first place they appear, in the
- * title or else the lede, gets a highlighter that sweeps in once. A page that writes its title
+ * For a page that answers a question, the question is the title (the `h1` names the page) and
+ * `answer` follows it, a step smaller, in the same family: "Less.", or "The living room costs the
+ * most". No label over the title: a heading names its own section.
+ *
+ * `rule` puts the house signature, a short accent bar, under the title (and answer). `mark`
+ * names the words that answer the question, such as "6,5% lower": the first place they appear,
+ * in the title, the answer or else the lede, gets a highlighter that sweeps in once. A page that writes its title
  * or lede once its data arrives wraps those words in <mark> itself; the sweep plays as they
  * land.
  *
@@ -15,13 +19,14 @@
 import './highlight.css';
 
 interface Props {
-  eyebrow?: string;
   title: string;
+  /** The answer to the question in the title, under it, a step smaller. */
+  answer?: string;
   lede?: string;
   /** How fresh the data is. Say it plainly, such as "Through 31 Oct". */
   meta?: string;
   /** Ids, for a page that fills these in once its data arrives. */
-  ids?: { eyebrow?: string; title?: string; lede?: string; meta?: string };
+  ids?: { title?: string; answer?: string; lede?: string; meta?: string };
   /** The short accent bar under the title. */
   rule?: boolean;
   /** Words in the title or lede to highlight. */
@@ -29,7 +34,7 @@ interface Props {
   /** Small enough to float over a map. */
   compact?: boolean;
 }
-const { eyebrow, title, lede, meta, ids = {}, rule = false, mark, compact = false } = Astro.props;
+const { title, answer, lede, meta, ids = {}, rule = false, mark, compact = false } = Astro.props;
 
 // The text around the marked words, or the text alone when they aren't in it.
 const split = (text?: string) => {
@@ -37,13 +42,14 @@ const split = (text?: string) => {
   return at < 0 ? null : [text!.slice(0, at), mark, text!.slice(at + mark!.length)];
 };
 const inTitle = split(title);
-const inLede = inTitle ? null : split(lede);
+const inAnswer = inTitle ? null : split(answer);
+const inLede = inTitle || inAnswer ? null : split(lede);
 ---
 
 <header class:list={['page-header', { compact }]}>
   <div class="text">
-    {(eyebrow || ids.eyebrow) && <p class="eyebrow" id={ids.eyebrow}>{eyebrow}</p>}
     <h1 id={ids.title}>{inTitle ? <>{inTitle[0]}<mark>{inTitle[1]}</mark>{inTitle[2]}</> : title}</h1>
+    {(answer || ids.answer) && <p class="answer" id={ids.answer}>{inAnswer ? <>{inAnswer[0]}<mark>{inAnswer[1]}</mark>{inAnswer[2]}</> : answer}</p>}
     {rule && <span class="rule" aria-hidden="true" />}
     {(lede || ids.lede) && <p class="lede" id={ids.lede}>{inLede ? <>{inLede[0]}<mark>{inLede[1]}</mark>{inLede[2]}</> : lede}</p>}
     {(meta || ids.meta) && <p class="meta t-meta" id={ids.meta}>{meta}</p>}
@@ -65,14 +71,6 @@ const inLede = inTitle ? null : split(lede);
     min-width: 0;
   }
 
-  .eyebrow {
-    margin: 0 0 var(--sp-1);
-    font-size: var(--text-label);
-    font-weight: 600;
-    color: var(--c-text-accent);
-    min-height: 1lh;
-  }
-
   h1 {
     margin: 0;
     max-width: 32ch;
@@ -83,6 +81,20 @@ const inLede = inTitle ? null : split(lede);
     letter-spacing: var(--tracking-h2);
     text-wrap: balance;
     /* Keeps its height while a page waits for data. */
+    min-height: 1lh;
+  }
+
+  /* The answer: the headline family a step down, in the text colour. */
+  .answer {
+    margin: var(--sp-2) 0 0;
+    max-width: 36ch;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-h3);
+    line-height: var(--leading-h3);
+    letter-spacing: var(--tracking-h3);
+    color: var(--c-text);
+    text-wrap: balance;
     min-height: 1lh;
   }
 
@@ -145,6 +157,12 @@ const inLede = inTitle ? null : split(lede);
     font-size: var(--text-h3);
     line-height: var(--leading-h3);
     letter-spacing: var(--tracking-h3);
+  }
+
+  .compact .answer {
+    font-size: var(--text-sub);
+    line-height: var(--leading-sub);
+    letter-spacing: normal;
   }
 
   .compact .rule {
