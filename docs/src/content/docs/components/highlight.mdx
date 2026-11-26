@@ -36,7 +36,7 @@ To point at the words a heading or a lede is about, such as the figure that answ
 | `glow` | A soft blue light behind the words that fades in once and then holds still. Quieter than the band; for a big headline that already has an accent nearby. |
 | `spotlight` | A slanted band of blue light that passes through the letters once, then rests as plain text. Each sweep lasts 175ms a character, so a long phrase takes longer rather than rushing. For a big headline; it plays once on load and nothing replays it. |
 
-`n` gives a mark its place among the marks on the page, so several arrive one after the other. [Page header](/components/page-header/) uses the same highlighter for its `mark` prop.
+`n` gives a mark its place among the marks on the page, so several arrive one after the other. [Page header](/components/page-header/) uses the same band for its `mark` prop, without the sweep.
 
 ## States
 
@@ -58,7 +58,7 @@ A few words, never a whole sentence.
 
 ## Status
 
-Used by the portfolio and, through Page header, a dashboard. The glow is new in 0.34.0 and the spotlight in 0.35.0, both for the portfolio's landing headline.
+Used by the portfolio; Page header uses its band, still, on a dashboard. The glow is new in 0.34.0 and the spotlight in 0.35.0, both for the portfolio's landing headline.
 
 ## Code
 

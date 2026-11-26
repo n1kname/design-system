@@ -2,6 +2,8 @@
  * The highlighter: a band behind the words a page is about. It sits low, like a pen, wraps line
  * by line, and is mixed into the page colour rather than see-through, so it holds up in dark. It
  * sweeps in once, a moment after the words land; several marks go one after the other, by --n.
+ * In a page header it is simply there: a page that answers a question is a working page, and
+ * those stay still.
  *
  * `mark.highlight.glow` is the quiet look: a soft blue light behind the words that fades in once
  * and then holds still. It reaches past the line, so it never stops in a hard edge.
@@ -9,8 +11,9 @@
  * `mark.highlight.spotlight` passes a slanted band of blue light through the letters once, then
  * rests as plain text. It needs `--chars` (Highlight sets it) to keep one speed.
  *
- * Used by Highlight and PageHeader. A page that writes its words once its data arrives can wrap
- * them in <mark class="highlight"> itself, and the sweep plays as they land.
+ * Used by Highlight, Facts and PageHeader. A page that writes its words once its data arrives can
+ * wrap them in <mark class="highlight"> itself, and the sweep plays as they land; in a page
+ * header, a plain <mark> takes the band without the sweep.
  *
  *   --highlight         the band colour
  *   --highlight-band    its height
@@ -29,7 +32,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  :where(mark.highlight, .page-header .text mark) {
+  :where(mark.highlight:not(.page-header .text mark)) {
     animation: highlight calc(var(--motion-draw, 1000ms) * 0.7) var(--ease-out)
       calc(var(--highlight-delay, 300ms) + var(--n, 0) * var(--highlight-step, 450ms)) both;
   }

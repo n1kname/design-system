@@ -45,7 +45,7 @@ To open a page with what matters: the conclusion, then the proof below it. A dat
 
 While a page waits for data, the title, answer, lede and meta keep their height, so nothing jumps. See [Loading and empty](/patterns/loading/).
 
-The highlighter sweeps in once, from the left, 300ms after its words land, over 70% of `--motion-draw` (700ms). Under reduced motion it is simply there. In forced colours it becomes a thick underline.
+The highlighter is there as soon as its words are: it doesn't sweep in. A page that answers a question is a working page, and those stay still (the sweep went in 0.68.1). In forced colours it becomes a thick underline.
 
 ## Tokens
 
@@ -81,4 +81,4 @@ import PageHeader from '@n1kname/components/PageHeader.astro';
 ## Keep in mind
 
 - **`ids` lets a page fill in title, lede and meta** when its data arrives at runtime.
-- **`mark` marks the first place its words appear,** in the title or else the lede. A page that fills in its lede at runtime wraps the words in `<mark>` itself, and the sweep plays as they land.
+- **`mark` marks the first place its words appear,** in the title or else the lede. A page that fills in its lede at runtime wraps the words in `<mark>` itself.
