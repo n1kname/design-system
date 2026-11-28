@@ -19,6 +19,6 @@
     "@n1kname/components": "workspace:*",
     "@n1kname/tokens": "workspace:*",
     "astro": "7.4.12",
-    "maplibre-gl": "5.23.0"
+    "maplibre-gl": "6.17.0"
   }
 }
