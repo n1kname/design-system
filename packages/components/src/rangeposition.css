@@ -1,0 +1,99 @@
+/*
+ * RangePosition: where one value sits in its range. Plain classes, not scoped, because
+ * setRangePosition() writes it at runtime. RangePosition imports this file.
+ */
+.rp {
+  --rp-dot: var(--c-text);
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The marks sit 8px in from each side, so a dot at either end stays whole. */
+.rp-scale {
+  position: relative;
+  height: 24px;
+  margin-inline: 8px;
+}
+
+.rp-track,
+.rp-band {
+  position: absolute;
+  top: 9px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.rp-track {
+  left: 0;
+  right: 0;
+  background: var(--c-border);
+}
+
+.rp-band {
+  min-width: 6px;
+  background: color-mix(in oklab, var(--c-chart-2) 55%, var(--c-border));
+}
+
+/* A reference is dashed, as a reference line in a chart. */
+.rp-ref {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin-left: -1px;
+  border-left: 2px dashed var(--c-text-muted);
+}
+
+.rp-dot {
+  position: absolute;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: var(--rp-dot);
+  box-shadow: 0 0 0 3px var(--card-bg, var(--c-surface));
+}
+
+.rp-dot.good,
+.rp-key-dot.good {
+  --rp-dot: var(--c-status-good);
+}
+
+.rp-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-inline: 8px;
+  color: var(--c-text-secondary);
+  white-space: nowrap;
+}
+
+.rp-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  margin: var(--sp-1) 0 0;
+  color: var(--c-text-secondary);
+}
+
+.rp-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rp-key-dot {
+  --rp-dot: var(--c-text);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--rp-dot);
+}
+
+.rp-key-ref {
+  width: 0;
+  height: 12px;
+  border-left: 2px dashed var(--c-text-muted);
+}

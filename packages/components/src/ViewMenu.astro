@@ -81,19 +81,37 @@ const panelId = `${id ?? 'view-menu'}-panel`;
   }
 
   /* In the top layer, placed by viewmenu.js. Its layout applies only while open: a display set on
-   * the closed popover would override the browser's own rule that hides it. */
+   * the closed popover would override the browser's own rule that hides it. As wide as its
+   * controls need, from 300px up to 480px, never wider than the window less 8px a side. It floats
+   * over the list, often over a card's own ring, so it takes the strong hairline and a shadow. */
   .vm-panel {
     position: fixed;
     inset: auto;
     margin: 0;
-    width: min(300px, calc(100vw - 16px));
+    width: max-content;
+    min-width: min(300px, calc(100vw - 16px));
+    max-width: min(480px, calc(100vw - 16px));
     gap: var(--sp-2);
     padding: var(--sp-4);
-    border: 1px solid var(--c-border);
+    border: 1px solid var(--c-border-strong);
     border-radius: var(--radius-md);
     background: var(--c-surface);
     color: var(--c-text);
-    box-shadow: 0 12px 32px oklch(0 0 0 / 0.18);
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 0.08),
+      0 12px 32px oklch(0 0 0 / 0.22);
+  }
+
+  /* A Segmented in the panel spans it, its options sharing the width (a longer label takes more),
+   * and scrolls sideways rather than wrap a label when a phone is too narrow for them. */
+  .vm-panel :global(.segmented) {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .vm-panel :global(.segmented > button) {
+    flex: 1 1 0;
   }
 
   .vm-panel:popover-open {

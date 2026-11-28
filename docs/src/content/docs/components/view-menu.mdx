@@ -25,7 +25,8 @@ The controls that change how a result is laid out, not what's in it: the order a
 ## Anatomy
 
 - **Button:** the lead word ("View:"), what's set, and a chevron that turns over while open.
-- **Panel:** the controls in the slot, each under a caption taken from its own `label`, under the button with its right edge on the button's.
+- **Panel:** the controls in the slot, each under a caption taken from its own `label`, 8px under the button with its right edge on the button's. As wide as its controls need, from 300px to 480px, never wider than the window less 8px a side. A strong hairline and a shadow lift it off the list it opens over.
+- **A Segmented inside** spans the panel, its options sharing the width; a label never wraps, and on a phone too narrow for them the options scroll sideways.
 
 ## Variants
 
@@ -57,10 +58,12 @@ The controls that change how a result is laid out, not what's in it: the order a
 
 - **The summary reads as a phrase:** "Score · 30 days", the sort first.
 - **Two or three controls.** More, and it isn't a view any more.
+- **Option labels of one or two words:** "Closest to target" fits, but each long label widens the panel.
+- **Over a list,** leave `--sp-3` between the bar that holds the button and the first card.
 
 ## Status
 
-New in 0.58.0.
+New in 0.58.0. In 0.69.0 the panel sizes to its controls (it was 300px), sits 8px under the button (it was 6px), and takes the strong hairline and a deeper shadow.
 
 ## Code
 

@@ -111,3 +111,31 @@ console.log('lines: all assertions pass');
   assert.equal(tip.channels.title.value(rows[1]), '2013\nTop quartile  121\nBenchmarks  112–116\nindex', 'the tooltip gives the band as a range');
   console.log('lines: bands pass');
 }
+
+// References: a dashed level behind the lines, with its label, in the domain unless told not.
+{
+  const days = ['2026-01-01', '2026-01-02', '2026-01-05', '2026-01-06'].map((d, i) => ({ date: new Date(d), low: [24.99, 24.99, null, 22.49][i] }));
+  const spec = { rows: days, x: 'date', time: true, unit: 'euro', digits: 2, series: [{ key: 'low', label: 'Lowest', color: 'var(--c-chart-1)' }], legend: true, dots: false };
+  const o = lines({ ...spec, references: [{ y: 18, label: 'Target €18,00', tone: 'good' }], curve: 'step-after' }, 500);
+  const svg = renderPlot(o);
+  assert.ok(o.y.domain[0] <= 18, 'the scale stretches to take the reference in');
+  assert.ok(svg.includes('>Target €18,00<'), 'the reference carries its label');
+  assert.ok(/stroke="var\(--c-status-good\)"[^>]*stroke-dasharray="4 3"|stroke-dasharray="4 3"[^>]*stroke="var\(--c-status-good\)"/.test(svg), 'a good reference is a dashed rule in the status green');
+  assert.ok(svg.indexOf('stroke-dasharray="4 3"') < svg.indexOf('stroke="var(--c-chart-1)" fill="none"'), 'drawn behind the lines');
+  const path = svg.match(/<g[^>]*stroke="var\(--c-chart-1\)" fill="none"[^>]*><path d="([^"]+)"/)[1];
+  const runs = path.split('M').filter(Boolean).map((run) => run.replace(/Z$/, '').split('L').map((pt) => pt.split(',').map(Number)));
+  assert.ok(runs.every((pts) => pts.every((p, i) => i === 0 || p[0] === pts[i - 1][0] || p[1] === pts[i - 1][1])), 'a step-after curve draws flat runs and drops, no slopes');
+  assert.equal(runs.length, 2, 'a null still breaks a stepped line');
+  assert.equal((svg.match(/<circle/g) ?? []).length, 1, 'a value alone between gaps gets a dot, with dots off');
+
+  const kept = lines({ ...spec, references: [{ y: 18, label: 'Target €18,00', stretch: false }] }, 500);
+  const keptSvg = renderPlot(kept);
+  assert.ok(kept.y.domain[0] > 18, 'with stretch: false the scale stays on the lines');
+  assert.ok(keptSvg.includes('>Target €18,00, below the chart<'), 'and the label says where the target is');
+  assert.ok(!keptSvg.includes('stroke-dasharray'), 'with no rule drawn outside the chart');
+
+  const inside = renderPlot(lines({ ...spec, references: [{ y: 23.5, label: 'Target', stretch: false }] }, 500));
+  assert.ok(inside.includes('stroke-dasharray="4 3"') && inside.includes('>Target<'), 'a reference inside the range is drawn either way');
+  assert.ok(!/#[0-9a-f]{6}/i.test(svg), 'no hex: colours are tokens');
+  console.log('lines: references and curves pass');
+}

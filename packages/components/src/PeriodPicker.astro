@@ -174,7 +174,9 @@ const shown = start === 'all' ? all : (periods.find((p) => p.value === start)?.l
     border-radius: var(--radius-md);
     background: var(--c-surface);
     color: var(--c-text);
-    box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 0.08),
+      0 12px 32px oklch(0 0 0 / 0.22);
     /* It opens on the spring from the control it belongs to, and leaves quicker. */
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

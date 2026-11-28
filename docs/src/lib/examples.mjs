@@ -151,3 +151,30 @@ export const heatmapSpec = {
   xTick: (h, _i, width) => (width < 400 && h % 2 ? '' : `${h}:00`),
 };
 export const heatmapChart = renderResponsive((width) => heatmapHelper(heatmapSpec, width));
+
+// A made-up price over 60 days: the lowest offer each day, which changes in steps, with three days
+// no shop answered, read against a target.
+const priceSteps = [[0, 2649], [9, 2599], [16, 2499], [27, 2549], [38, 2449], [51, 2399]];
+export const pricesWide = Array.from({ length: 60 }, (_, i) => ({
+  date: new Date(Date.UTC(2026, 8, 1 + i)),
+  low: i >= 21 && i <= 23 ? null : priceSteps.findLast(([from]) => i >= from)[1],
+}));
+const euro = (v) => `€${v.toLocaleString('nl-NL', { minimumFractionDigits: v < 10 ? 2 : 0, maximumFractionDigits: v < 10 ? 2 : 0 })}`;
+export const pricesSpec = {
+  rows: pricesWide,
+  x: 'date',
+  time: true,
+  xTicks: (width) => pricesWide.filter((_, i) => i % (width < 480 ? 28 : 14) === 0).map((r) => r.date),
+  tick: (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }),
+  unit: 'lowest price that day',
+  format: euro,
+  dots: false,
+  curve: 'step-after',
+  legend: true,
+  marginLeft: 52,
+  title: (r) => `${r.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}\n${euro(r.low)}`,
+  series: [{ key: 'low', label: 'Lowest price', color: 'var(--c-chart-1)' }],
+  references: [{ y: 2420, label: 'Target €2.420', tone: 'good' }],
+};
+export const pricesChart = renderResponsive((width) => linesHelper(pricesSpec, width));
+export const pricesBelowChart = renderResponsive((width) => linesHelper({ ...pricesSpec, references: [{ y: 1999, label: 'Target €1.999', tone: 'good', stretch: false }] }, width));

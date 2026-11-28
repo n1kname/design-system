@@ -15,6 +15,8 @@
  * A state sets its parts; hover only swaps --edge for --edge-hover and adds the lift. */
 .card {
   --none: 0 0 0 0 transparent;
+  /* The card's own surface, which a state may tint; chips and figures mix their tints on it. */
+  --card-bg: var(--c-surface);
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -27,7 +29,7 @@
   padding: var(--sp-4) var(--sp-5);
   border: 1px solid var(--edge, var(--c-border));
   border-radius: var(--radius-lg);
-  background: var(--c-surface);
+  background: var(--card-bg);
   box-shadow: var(--band, var(--none)), var(--spine, var(--none)), var(--ring, var(--none)), var(--halo, var(--none)), var(--lift, var(--none));
   transition:
     border-color var(--motion-hover) var(--ease-hover),
@@ -54,6 +56,26 @@
   --edge-hover: var(--c-item-live);
   --ring: inset 0 0 0 1px var(--c-item-live);
   --halo: 0 0 0 3px color-mix(in oklab, var(--c-item-live) 20%, transparent);
+}
+
+/* Good: in the person's favour, such as a price at or under its target. A ring and a light tint
+ * of the status green, never a band down one side, and the good chip says it in words. Its
+ * secondary words take the green's hue at their own lightness, so they still read at AA. */
+.card-item[data-state='good'] .card {
+  --card-bg: color-mix(in oklab, var(--c-status-good) 9%, var(--c-surface));
+  --card-ink-2: var(--c-text-secondary);
+  --card-ink-2: oklch(from var(--c-text-secondary) l c 150);
+  --edge: var(--c-status-good);
+  --edge-hover: var(--c-status-good);
+  --ring: inset 0 0 0 1px var(--c-status-good);
+}
+
+.card-item[data-state='good'] :is(.card-sub, .card-figure-sub, .fact-chip) {
+  color: var(--card-ink-2);
+}
+
+.card-item[data-state='good'] .fact-chip.good {
+  color: var(--c-text);
 }
 
 /* Action (weight 5): your process, needing you soon. The ring, a band, and the filled chip. */
@@ -209,7 +231,7 @@
 
 /* Something in the item's favour. The page decides what; the chip only says good. */
 .fact-chip.good {
-  background: color-mix(in oklab, var(--c-status-good) 16%, var(--c-surface));
+  background: color-mix(in oklab, var(--c-status-good) 16%, var(--card-bg, var(--c-surface)));
   color: var(--c-text);
 }
 
@@ -290,7 +312,7 @@
   position: absolute;
   inset: 4px;
   border-radius: 50%;
-  background: var(--c-surface);
+  background: var(--card-bg, var(--c-surface));
 }
 
 .score-dial > span {
@@ -328,6 +350,214 @@
   .score-dial {
     width: 44px;
     height: 44px;
+  }
+}
+
+/* ---- Figure columns (CardList `columns`): a few numbers every card shares ---- */
+.card-figures {
+  margin: 0;
+}
+
+/* Top-aligned, so labels and values each share a line across the card whatever has a small line. */
+.card-figure {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+}
+
+.card-figure.right {
+  justify-items: end;
+  text-align: right;
+}
+
+.card-figure.left {
+  justify-items: start;
+  text-align: left;
+}
+
+.card-figure dd {
+  margin: 0;
+}
+
+.card-figure-label {
+  font-size: var(--text-caption);
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+.card-figure-value,
+.card-figure.none dd {
+  color: var(--c-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.card-figure.none dd {
+  color: var(--c-text-muted);
+  font-weight: 400;
+}
+
+.card-figure-sub {
+  font-size: var(--text-caption);
+  color: var(--c-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* In the item's favour: the good chip's tint behind the figure, its digits where they'd be. */
+.card-figure.good .card-figure-value {
+  margin-inline: -6px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--c-status-good) 16%, var(--card-bg, var(--c-surface)));
+}
+
+.card-item.placeholder .card-figure .bar {
+  width: 6ch;
+}
+
+/* 640px and up: the figures sit in columns lined up down the list. The wrap is the grid and each
+ * level down (list, item, card, figures) a subgrid of it, so every card shares its column lines
+ * with the header row of labels. */
+@media (min-width: 640px) {
+  .card-list-wrap.has-columns {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) repeat(var(--card-cols, 1), auto) auto;
+    column-gap: var(--sp-4);
+    row-gap: var(--sp-1);
+  }
+
+  .card-list-wrap.has-columns > *,
+  .card-list-wrap.has-columns .card-item {
+    grid-column: 1 / -1;
+  }
+
+  .card-list-wrap.has-columns :is(.card-list, .card-item, .card, .card-cols-head, .card-figures) {
+    display: grid;
+    grid-template-columns: subgrid;
+    column-gap: inherit;
+  }
+
+  .card-list-wrap.has-columns[data-state='empty'] > .card-list,
+  .card-list-wrap.has-columns[data-state='failed'] > .card-list {
+    display: none;
+  }
+
+  .card-list-wrap.has-columns .card {
+    grid-column: 1 / -1;
+    grid-template-areas: none;
+  }
+
+  .card-list-wrap.has-columns .card-lead {
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+
+  .card-list-wrap.has-columns .card-head {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+  }
+
+  .card-list-wrap.has-columns .card-chips {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .card-list-wrap.has-columns .card:not(:has(.card-chips)) .card-head {
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .card-list-wrap.has-columns .card-figures {
+    grid-column: 3 / -2;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .card-list-wrap.has-columns .card-actions {
+    grid-column: -2 / -1;
+    grid-row: 1 / 3;
+  }
+
+  /* The header row: the labels over their columns, in from the card's edge as the figures are. */
+  .card-cols-head .card-figures {
+    grid-row: auto;
+  }
+
+  .card-cols-head .card-figure-label.right {
+    text-align: right;
+  }
+
+  /* With the header row, each figure's own label is for screen readers only. */
+  .card-list-wrap.has-columns:not(.cell-labels) .card-list .card-figure-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.card-cols-head {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .card-list-wrap.has-columns > .card-cols-head {
+    display: grid;
+  }
+
+  .card-list-wrap.has-columns[data-state='empty'] > .card-cols-head,
+  .card-list-wrap.has-columns[data-state='failed'] > .card-cols-head,
+  .card-list-wrap.has-columns:has(> .card-list:empty) > .card-cols-head {
+    display: none;
+  }
+}
+
+/* Below 640px: the figures wrap into a line under the chips, each with its label. */
+@media (max-width: 639px) {
+  .card-list-wrap.has-columns .card {
+    grid-template-areas:
+      'lead head head'
+      'chips chips actions'
+      'figs figs figs';
+  }
+
+  .card-list-wrap.has-columns .card:has(.card-chips) .card-actions {
+    align-self: center;
+  }
+
+  .card-list-wrap.has-columns .card:not(:has(.card-chips)) {
+    grid-template-areas:
+      'lead head head'
+      'figs figs actions';
+  }
+
+  .card-list-wrap.has-columns .card-figures {
+    grid-area: figs;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-1) var(--sp-4);
+  }
+
+  .card-list-wrap.has-columns .card-figure {
+    display: flex;
+    align-items: baseline;
+    column-gap: 6px;
+    text-align: left;
+  }
+
+  .card-list-wrap.has-columns .card-figure.good .card-figure-value {
+    margin-inline: 0;
+  }
+
+  .card-list-wrap.has-columns .card-figure.none {
+    display: none;
   }
 }
 

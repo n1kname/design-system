@@ -30,14 +30,19 @@ export const wireViewMenu = (root) => {
     control.before(caption);
   }
 
-  // Under the button, its right edge on the button's, kept on screen. Placed before it shows
-  // (beforetoggle), so it never flashes elsewhere; its width is set in CSS, so it's known then.
+  // 8px under the button, its right edge on the button's, kept on screen. Placed by its right
+  // edge before it shows (beforetoggle), so it never flashes elsewhere, since its width follows its
+  // controls and isn't known until then. Once shown, if it would run off the left, it moves in.
   const place = () => {
     const b = button.getBoundingClientRect();
-    const w = panel.offsetWidth || Math.min(300, innerWidth - 16);
-    const left = Math.max(8, Math.min(b.right - w, innerWidth - w - 8));
-    panel.style.top = `${b.bottom + 6}px`;
-    panel.style.left = `${left}px`;
+    const vw = document.documentElement.clientWidth;
+    panel.style.top = `${b.bottom + 8}px`;
+    panel.style.left = 'auto';
+    panel.style.right = `${Math.max(8, vw - b.right)}px`;
+    if (panel.matches(':popover-open') && panel.getBoundingClientRect().left < 8) {
+      panel.style.right = 'auto';
+      panel.style.left = '8px';
+    }
   };
   panel.addEventListener('beforetoggle', (e) => {
     if (e.newState !== 'open') return;
@@ -48,6 +53,7 @@ export const wireViewMenu = (root) => {
   panel.addEventListener('toggle', (e) => {
     const open = e.newState === 'open';
     button.setAttribute('aria-expanded', String(open));
+    if (open) place();
     if (!open) {
       removeEventListener('resize', place);
       removeEventListener('scroll', place, { capture: true });

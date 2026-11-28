@@ -9,6 +9,15 @@
 //
 // A band shades the range between two keys, such as a benchmark envelope from its lowest to its
 // highest value, behind the lines, and ends in its own label.
+//
+// A reference is a level to read the lines against, such as a target price: a dashed rule behind
+// the lines, its label at the left end, in muted text over a halo of the surface. The scale
+// stretches to take it in, so the gap between the lines and the target shows. With
+// `stretch: false` a reference outside the lines' range isn't drawn; its label sits at the chart's
+// edge and says the target is below (or above) the chart instead.
+//
+// `curve` is Plot's: 'step-after' for a value that changes in steps, such as a price, where a
+// slope between two days would show a change that never happened. Per series or for the chart.
 
 import * as Plot from '@observablehq/plot';
 import { chrome, tipStyle } from './theme.mjs';
@@ -50,13 +59,22 @@ export const lines = (
     marginRight = legend ? 8 : 58,
     // Ranges shaded behind the lines: { low, high, label, color }, two keys per row.
     bands = [],
+    // Levels to read the lines against: { y, label, tone?: 'neutral' | 'good', stretch? }.
+    references = [],
+    // Plot's curve for every line and band, such as 'step-after'; a series' own `curve` wins.
+    curve,
   },
   width,
 ) => {
   const has = (r, key) => typeof r[key] === 'number';
   const keys = [...series.map((s) => s.key), ...bands.flatMap((b) => [b.low, b.high])];
   const values = rows.flatMap((r) => keys.filter((k) => has(r, k)).map((k) => r[k]));
-  const domain = [y[0] === 'auto' ? Math.min(...values) : y[0], y[1] === 'auto' ? Math.max(...values) : y[1]];
+  const reached = [...values, ...references.filter((ref) => ref.stretch !== false).map((ref) => ref.y)];
+  const domain = [y[0] === 'auto' ? Math.min(...reached) : y[0], y[1] === 'auto' ? Math.max(...reached) : y[1]];
+  // A reference left out of the domain and outside it is only said, at the edge it lies beyond.
+  const beyond = (ref) => (ref.y < domain[0] ? 'below' : ref.y > domain[1] ? 'above' : null);
+  const refColor = (ref) => (ref.tone === 'good' ? 'var(--c-status-good)' : chrome.textMuted);
+  const halo = { stroke: 'var(--c-surface)', strokeWidth: 4, paintOrder: 'stroke', strokeLinejoin: 'round' };
 
   // The tooltip names every series with a value at that x. A silent one, such as the
   // dashed rest of another line, only where the line it `continues` has none, and after
@@ -87,11 +105,23 @@ export const lines = (
     marks: [
       Plot.gridY({ stroke: chrome.grid, strokeOpacity: 1, ticks: 5 }),
       ...(zero ? [Plot.ruleY([0], { stroke: chrome.axis })] : []),
+      ...references.flatMap((ref) => {
+        const side = beyond(ref);
+        if (side) {
+          return ref.label
+            ? [Plot.text([ref], { frameAnchor: side === 'below' ? 'bottom-left' : 'top-left', text: () => `${ref.label}, ${side} the chart`, dx: 4, dy: side === 'below' ? -4 : 4, textAnchor: 'start', fill: chrome.textMuted, fontSize: 11, ...halo, className: 'enter-fade' })]
+            : [];
+        }
+        return [
+          Plot.ruleY([ref.y], { stroke: refColor(ref), strokeWidth: 1.5, strokeDasharray: '4 3', className: 'enter-fade' }),
+          ...(ref.label ? [Plot.text([ref], { y: 'y', frameAnchor: 'left', text: 'label', dx: 4, dy: -7, textAnchor: 'start', fill: chrome.textMuted, fontSize: 11, ...halo, className: 'enter-fade' })] : []),
+        ];
+      }),
       ...bands.flatMap((b) => {
         const inside = rows.filter((r) => has(r, b.low) && has(r, b.high));
         const last = inside.at(-1);
         return [
-          Plot.areaY(inside, { x, y1: b.low, y2: b.high, fill: b.color ?? chrome.neutral, fillOpacity: b.opacity ?? 0.38, className: 'enter-fade' }),
+          Plot.areaY(inside, { x, y1: b.low, y2: b.high, curve: b.curve ?? curve, fill: b.color ?? chrome.neutral, fillOpacity: b.opacity ?? 0.38, className: 'enter-fade' }),
           ...(legend || !b.label
             ? []
             : [
@@ -112,6 +142,7 @@ export const lines = (
         Plot.line(rows, {
           x,
           y: (r) => (has(r, s.key) ? r[s.key] : NaN),
+          curve: s.curve ?? curve,
           stroke: s.color,
           strokeWidth: s.width ?? 2,
           strokeDasharray: s.dashed ? '4 3' : undefined,
@@ -119,6 +150,13 @@ export const lines = (
           className: s.dashed ? 'enter-fade' : 'enter-line',
         }),
       ),
+      // A value alone between two gaps would draw no line at all: it gets a dot, dots or not.
+      ...series
+        .filter((s) => !(s.dots ?? dots))
+        .map((s) => {
+          const alone = rows.filter((r, i) => has(r, s.key) && !(i > 0 && has(rows[i - 1], s.key)) && !(i < rows.length - 1 && has(rows[i + 1], s.key)));
+          return Plot.dot(alone, { x, y: s.key, r: 2.5, fill: s.color, className: 'enter-dot' });
+        }),
       // A series' own `dots` wins over the chart's.
       ...series
         .filter((s) => s.dots ?? dots)

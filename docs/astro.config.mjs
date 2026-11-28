@@ -78,6 +78,7 @@ export default defineConfig({
             { label: 'Bars', link: '/components/bars/' },
             { label: 'Sparkline', link: '/components/sparkline/' },
             { label: 'Range bars', link: '/components/range-bars/' },
+            { label: 'Range position', link: '/components/range-position/' },
             { label: 'Heatmap', link: '/components/heatmap/' },
             { label: 'Year calendar', link: '/components/year-calendar/' },
             { label: 'Day strips', link: '/components/day-strips/' },

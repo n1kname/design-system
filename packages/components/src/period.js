@@ -156,7 +156,7 @@ export const wirePeriodPicker = (root) => {
     }
     const r = root.getBoundingClientRect();
     const w = list.offsetWidth;
-    list.style.top = `${r.bottom + 6}px`;
+    list.style.top = `${r.bottom + 8}px`;
     list.style.left = `${Math.max(16, Math.min(r.right - w, innerWidth - w - 16))}px`;
     // After the browser has finished opening it, which would otherwise keep focus on the button.
     requestAnimationFrame(() => (list.querySelector('[aria-pressed="true"]') ?? list.querySelector('.option'))?.focus());

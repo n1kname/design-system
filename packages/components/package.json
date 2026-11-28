@@ -1,6 +1,6 @@
 {
   "name": "@n1kname/components",
-  "version": "0.68.1",
+  "version": "0.69.0",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -33,7 +33,9 @@
     "./cardlist.js": "./src/cardlist.js",
     "./filtersheet.js": "./src/filtersheet.js",
     "./activefilters.js": "./src/activefilters.js",
-    "./viewmenu.js": "./src/viewmenu.js"
+    "./viewmenu.js": "./src/viewmenu.js",
+    "./rangeposition.js": "./src/rangeposition.js",
+    "./rangeposition.css": "./src/rangeposition.css"
   },
   "scripts": {
     "check": "node src/yearcalendar.test.mjs && node src/facts.test.mjs"

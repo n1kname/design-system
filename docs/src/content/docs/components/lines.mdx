@@ -4,7 +4,7 @@ description: "A few series on one axis, each ending in its name, as Observable P
 ---
 
 import Chart from '../../../components/Chart.astro';
-import { linesChart } from '../../../lib/examples.mjs';
+import { linesChart, pricesChart, pricesBelowChart } from '../../../lib/examples.mjs';
 
 <Chart chart={linesChart} alt="Two fictional series over 26 weeks. Outside swings between about 1 and 15 °C; inside stays between about 16 and 22 °C, with one week missing." />
 
@@ -41,6 +41,8 @@ For a few series in the same unit over the same steps, such as weeks or hours, w
 | `yLabel`, `yDigits` | Words on the y axis, and the decimals its labels show. |
 | `title` | The tooltip's own text per row. |
 | `marginRight` | Room for a long last x label, such as a month and year, on a chart with a legend. |
+| `references` | `{ y, label, tone?, stretch? }`: a level to read the lines against, such as a target. A dashed rule behind the lines, its label at the left end in muted text. `tone: 'good'` draws the rule in the status green. See [references](#references). |
+| `curve` | Plot's curve, for the chart or per series: `'step-after'` for a value that changes in steps, such as a price. |
 
 ## States
 
@@ -48,7 +50,7 @@ For a few series in the same unit over the same steps, such as weeks or hours, w
 
 ## Tokens
 
-`--c-chart-*`, `--c-chart-grid`, `--c-chart-axis`, `--c-surface`, `--c-text`.
+`--c-chart-*`, `--c-chart-grid`, `--c-chart-axis`, `--c-status-good` (a good reference), `--c-surface`, `--c-text`, `--c-text-muted`.
 
 ## Keyboard and screen reader
 
@@ -59,10 +61,33 @@ For a few series in the same unit over the same steps, such as weeks or hours, w
 
 - **Say the unit once,** in the subtitle; the tooltip repeats it.
 - **Name lines by what they are,** such as "Outside", not by a column name.
+- **A reference's label says what and how much:** "Target €2.420".
 
 ## Status
 
-New. Used by a dashboard.
+New. Used by a dashboard. `references` and `curve` are new in charts 0.16.0, for a price history; a value alone between two gaps now gets a dot even with `dots` off, since it drew nothing before.
+
+## References
+
+A price changes in steps, so it is drawn with `curve: 'step-after'`: a slope between two days would show a change that never happened. The target is a reference. By default the scale stretches to take it in, so the distance to it shows:
+
+<Chart chart={pricesChart} alt="A fictional price over 60 days, falling in steps from €2.649 to €2.399, with three days missing. A dashed target line at €2.420 is crossed in the last week." />
+
+When the target is far below every price, stretching flattens the line into a strip at the top. With `stretch: false` the scale stays on the prices, no rule is drawn, and the label at the chart's foot says where the target is:
+
+<Chart chart={pricesBelowChart} alt="The same fictional price, with a target of €1.999 below the chart, said in words at its foot." />
+
+Stretch unless the line would lose its shape: as a rule of thumb, keep the default while the target sits within about a third of the prices' own range from it.
+
+```js wrap
+lines({
+  rows, // [{ date: new Date(…), low: 2649 }, …], null for a day with no price
+  x: 'date', time: true, curve: 'step-after', dots: false, legend: true,
+  format: (v) => `€${v.toLocaleString('nl-NL', { minimumFractionDigits: v < 10 ? 2 : 0, maximumFractionDigits: v < 10 ? 2 : 0 })}`,
+  series: [{ key: 'low', label: 'Lowest price', color: 'var(--c-chart-1)' }],
+  references: [{ y: 2420, label: 'Target €2.420', tone: 'good' }],
+}, width);
+```
 
 ## Code
 

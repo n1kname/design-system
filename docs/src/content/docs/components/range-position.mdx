@@ -1,0 +1,90 @@
+---
+title: "Range position"
+description: "Where one value sits in its range: a band from low to high, a dot for the value, a tick for a target."
+---
+
+import RangePosition from '@n1kname/components/RangePosition.astro';
+
+export const euro = (v) => `€${v.toLocaleString('nl-NL', { minimumFractionDigits: v < 10 ? 2 : 0, maximumFractionDigits: v < 10 ? 2 : 0 })}`;
+
+<div class="not-content" style={{ maxWidth: '420px' }}>
+  <RangePosition low={2399} high={2649} value={2449} reference={2420} format={euro} />
+</div>
+
+## What it's for
+
+One value read against its own recent past, such as today's price against the last 90 days, with a level to read it against, such as the price someone is waiting for. It answers "is this low for it?" at a glance.
+
+## When not to use it
+
+- **Many rows of figures, each with its range.** That's [range bars](/components/range-bars/).
+- **How a value moved over time.** That's [lines](/components/lines/); this one keeps only the low, the high and now.
+- **A value with no range yet,** such as a first reading. Say the value.
+
+## Anatomy
+
+- **Track:** the scale, from the lowest to the highest of the low, the high, the value and the reference, so each of them shows.
+- **Band:** from the period's low to its high, in a quiet tint of the second chart colour.
+- **Dot:** the value, ringed in the surface so it reads over the band.
+- **Tick:** the reference, dashed as a reference line in a chart.
+- **Ends:** the low and the high under the band's ends.
+- **Key:** the dot and the tick in words, with their values: "Today €2.449", "Target €2.420".
+
+## Variants
+
+| Prop | Does |
+|---|---|
+| `low`, `high`, `value` | The band and the dot. Leave `low` out to hold the room until `setRangePosition()` fills it. |
+| `reference` | A dashed tick, such as a target. Optional. |
+| `format` | Words for a number, such as a price. |
+| `valueLabel`, `referenceLabel`, `rangeLabel` | Names in the key and for a screen reader: "Today", "Target", "Range" by default. |
+| `tone` | `good`: the dot in the status green, for a value in the person's favour, such as at or under its target. The key still says it. |
+
+## States
+
+| State | What shows |
+|---|---|
+| Waiting | Its room, empty, so nothing moves when it's filled. |
+| Filled | The scale, the ends and the key. |
+| Value or reference outside the band | The scale widens to take it in; the band stays the period's own. |
+| Low equals high | A short band, still drawn. |
+
+<div class="not-content" style={{ maxWidth: '420px', display: 'grid', gap: 'var(--sp-5)' }}>
+  <RangePosition low={2399} high={2649} value={2389} reference={2420} format={euro} tone="good" />
+  <RangePosition low={1.39} high={1.89} value={1.89} reference={1.2} format={euro} />
+</div>
+
+## Tokens
+
+`--c-border`, `--c-chart-2`, `--c-status-good`, `--c-surface` (or `--card-bg` inside a card), `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--sp-1`, `--sp-2`, `--sp-4`, `--text-caption`.
+
+## Keyboard and screen reader
+
+- **One image with a name** that says it all in a sentence: "Today €2.449. Range €2.399 to €2.649. Target €2.420."
+- **Nothing to focus:** it has no controls.
+- **Colour never carries it alone:** the key names the dot and the tick, and a good value is also said by the page, in a chip or a line.
+
+## Content
+
+- **Say the period near it,** such as in its heading: "Where today's price sits, last 90 days".
+- **Labels of one word.** The key is a line, not a sentence.
+
+## Status
+
+New in 0.69.0, from a price tracker's item panel, after Google Shopping's price insights bar.
+
+## Code
+
+```astro wrap
+import RangePosition from '@n1kname/components/RangePosition.astro';
+
+<RangePosition id="range" />
+<script>
+  import { setRangePosition } from '@n1kname/components/rangeposition.js';
+  setRangePosition(document.getElementById('range'), {
+    low: 2399, high: 2649, value: 2449, reference: 2420,
+    format: (v) => `€${v.toLocaleString('nl-NL')}`,
+    tone: 2449 <= 2420 ? 'good' : undefined,
+  });
+</script>
+```

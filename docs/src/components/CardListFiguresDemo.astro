@@ -1,0 +1,75 @@
+---
+// A fictional price list: every card shares three figures, and the items at or under their target
+// are in the person's favour. All names and prices are made up.
+import CardList from '@n1kname/components/CardList.astro';
+import { ICONS } from '@n1kname/components/icons';
+
+interface Props {
+  columnHeader?: boolean;
+  id?: string;
+}
+const { columnHeader = true, id = 'prices-demo' } = Astro.props;
+
+const svg = (name: keyof typeof ICONS, size = 20) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+// The page's own lead: here a stand-in for the product photo.
+const lead = `<span class="demo-photo" role="img" aria-label="No photo yet">${svg('image')}</span>`;
+
+const columns = [
+  { key: 'now', label: 'Now' },
+  { key: 'target', label: 'Target' },
+  { key: 'lowest', label: 'Lowest recorded' },
+];
+const actions = [
+  { action: 'open', icon: 'external-link', label: "Open the shop's page" },
+  { action: 'edit', icon: 'pencil', label: 'Edit' },
+];
+const under = { icon: 'trending-down', label: 'Under target', tone: 'good' as const };
+
+const items = [
+  {
+    id: 'lamp', title: 'Desk lamp, 40 cm', subtitle: 'Lantern & Co', lead, state: 'good' as const,
+    chips: [under, { icon: 'lightbulb', label: 'Lighting' }],
+    figures: { now: { value: '€34,95', tone: 'good' as const }, target: { value: '€40,00' }, lowest: { value: '€34,95', sub: 'Today' } },
+    actions,
+  },
+  {
+    id: 'drive', title: 'Portable drive, 2 TB', subtitle: 'Bytebox', lead,
+    chips: [{ icon: 'hard-drive', label: 'Storage' }],
+    figures: { now: { value: '€89,00' }, target: { value: '€75,00' }, lowest: { value: '€72,50', sub: 'Nov 2025' } },
+    actions,
+  },
+  {
+    id: 'fountain', title: 'Water fountain for cats', subtitle: 'Whisker Supply', lead, state: 'good' as const,
+    chips: [under, { icon: 'cat', label: 'Cat' }],
+    figures: { now: { value: '€22,99', tone: 'good' as const }, target: { value: '€25,00' }, lowest: { value: '€21,49', sub: 'Feb 2026' } },
+    actions,
+  },
+  {
+    id: 'oats', title: 'Oat drink, 1 L', subtitle: 'Corner Market', lead,
+    chips: [{ icon: 'shopping-basket', label: 'Groceries' }],
+    figures: { now: { value: '€1,89' }, target: { value: '€1,50' }, lowest: { value: '€1,39', sub: 'Sep 2023' } },
+    actions,
+  },
+  {
+    id: 'screen', title: 'Television, 55 inch', subtitle: 'Northpoint Electronics', lead,
+    chips: [{ icon: 'tv', label: 'TV' }, { icon: 'tag', label: 'Added this week' }],
+    figures: { now: { value: '€649,00' }, target: { value: '€549,00' } },
+    actions,
+  },
+];
+---
+
+<CardList id={id} label="Fictional wish list, with prices" level={3} columns={columns} columnHeader={columnHeader} items={items} />
+
+<style is:global>
+  .demo-photo {
+    display: inline-grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--c-surface-sunken, var(--c-bg));
+    color: var(--c-text-muted);
+  }
+</style>

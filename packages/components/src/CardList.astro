@@ -7,10 +7,14 @@
  * Fill it at build time with `items`, or at runtime with setCards() from cardlist.js, which also
  * has setCardState() for loading, empty and failed, and removeCard(), which slides a card out and
  * closes the gap. Fires `card-open` and `card-action` with the item's id. The page sorts.
+ *
+ * With `columns`, every card also carries a few figures by key (now, target, lowest), lined up in
+ * columns between the title and the actions under a header row of the labels. Below 640px they
+ * wrap into a line under the chips, each with its label. New in 0.69.0.
  */
 import './controls.css';
 import './cardlist.css';
-import { cardHTML, placeholdersHTML } from './cardlist.js';
+import { cardHTML, placeholdersHTML, columnsHeadHTML } from './cardlist.js';
 
 interface Chip {
   icon?: string;
@@ -21,19 +25,39 @@ interface Chip {
    */
   tone?: 'neutral' | 'good' | 'action' | 'live' | 'history';
 }
+interface Column {
+  /** The key of the figure in each item's `figures`. */
+  key: string;
+  /** Short: "Now", "Target", "Lowest". Heads the column, and says the figure on a phone. */
+  label: string;
+  /** Figures are right-aligned, so their digits line up; left for a word. */
+  align?: 'left' | 'right';
+}
+interface Figure {
+  value: string | number;
+  /** A small second line, such as when it was: "Sep 2023". */
+  sub?: string;
+  /** good: in the item's favour, in the status-good tint, as the good chip. */
+  tone?: 'neutral' | 'good';
+}
 interface Item {
   id: string;
   title: string;
   subtitle?: string;
   href?: string;
+  /** HTML in place of the dial (a photo, a figure, a sparkline), put in as it is. */
+  lead?: string;
+  /** By column key. A column the item has no figure for shows a dash. */
+  figures?: Record<string, Figure>;
   score?: number | null;
   scoreText?: string;
   /**
    * Hue says what kind of thing it is, weight says how much it needs you. action: your process,
-   * needing you soon (band, ring, pulses once). live: your process, moving (ring). history: closed
+   * needing you soon (band, ring, pulses once). live: your process, moving (ring). good: in the
+   * person's favour, such as a price at or under its target (green ring and tint). history: closed
    * or set aside (the words step down). Pair each with a chip of the same tone that says it.
    */
-  state?: 'action' | 'live' | 'history';
+  state?: 'action' | 'live' | 'good' | 'history';
   /** They weighed in themselves: a status, a note, a rating. A spine. */
   reviewed?: boolean;
   /** New since they last looked: a dot before the title, and "New" said with it. */
@@ -54,19 +78,25 @@ interface Props {
   level?: 2 | 3 | 4 | 5;
   /** Actions show on hover or focus where a pointer hovers; always on touch. Off: always shown. */
   reveal?: boolean;
+  /** Figure columns every card shares, between the title and the actions. */
+  columns?: Column[];
+  /** The header row of the column labels. Off: each figure shows its label above it instead. */
+  columnHeader?: boolean;
   /** Starts with placeholder cards; setCards() or setCardState() ends it. */
   loading?: boolean;
   loadingCards?: number;
   id?: string;
 }
-const { items = [], label, good = 7, warning = 5, max = 10, level = 3, reveal = false, loading = false, loadingCards = 4, id } = Astro.props;
+const { items = [], label, good = 7, warning = 5, max = 10, level = 3, reveal = false, columns = [], columnHeader = true, loading = false, loadingCards = 4, id } = Astro.props;
 const hasEmpty = Astro.slots.has('empty');
-const html = loading ? placeholdersHTML(loadingCards) : items.map((i) => cardHTML(i, { good, warning, max, level })).join('');
+const cols = columns.map(({ key, label, align }) => ({ key, label, ...(align ? { align } : {}) }));
+const html = loading ? placeholdersHTML(loadingCards, cols.length) : items.map((i) => cardHTML(i, { good, warning, max, level, columns: cols })).join('');
 const state = loading ? 'loading' : items.length === 0 && hasEmpty ? 'empty' : 'ready';
 ---
 
-<div class="card-list-wrap" data-state={state}>
-  <ul class:list={['card-list', { reveal }]} id={id} aria-label={label} data-card-list data-good={good} data-warning={warning} data-max={max} data-level={level} aria-busy={loading ? 'true' : undefined} data-filled={items.length ? '' : undefined} set:html={html} />
+<div class:list={['card-list-wrap', { 'has-columns': cols.length, 'cell-labels': cols.length && !columnHeader }]} data-state={state} style={cols.length ? `--card-cols: ${cols.length}` : undefined}>
+  {cols.length > 0 && columnHeader && <Fragment set:html={columnsHeadHTML(cols)} />}
+  <ul class:list={['card-list', { reveal }]} id={id} aria-label={label} data-card-list data-good={good} data-warning={warning} data-max={max} data-level={level} data-columns={cols.length ? JSON.stringify(cols) : undefined} aria-busy={loading ? 'true' : undefined} data-filled={items.length ? '' : undefined} set:html={html} />
   {hasEmpty && <div class="state empty" data-state-for="empty"><slot name="empty" /></div>}
   {Astro.slots.has('failed') && <div class="state failed" data-state-for="failed"><slot name="failed" /></div>}
 </div>

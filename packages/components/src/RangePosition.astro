@@ -1,0 +1,41 @@
+---
+/**
+ * Where one value sits in its range: a band from the period's low to its high, a dot for the
+ * value and a dashed tick for a reference such as a target, the low and high under the band, and
+ * a key that says the dot and the tick in words. For one value read against its own history, such
+ * as today's price against the last 90 days. For many rows of estimates, use RangeBars.
+ *
+ * Fill it at build time with the props, or at runtime with setRangePosition() from
+ * rangeposition.js. Leave `low` out to hold its room until then. New in 0.69.0.
+ */
+import './rangeposition.css';
+import { rangePositionHTML } from './rangeposition.js';
+
+interface Props {
+  low?: number;
+  high?: number;
+  value?: number;
+  /** A level to read the value against, such as a target. A dashed tick. */
+  reference?: number;
+  /** Words for a number, such as a price. Build time only; at runtime pass `format` to setRangePosition(). */
+  format?: (v: number) => string;
+  /** Names the dot, the tick and the band in the key and for a screen reader. */
+  valueLabel?: string;
+  referenceLabel?: string;
+  rangeLabel?: string;
+  /** good: the value is in the person's favour, and the dot turns the status green. */
+  tone?: 'neutral' | 'good';
+  id?: string;
+}
+const { id, ...opts } = Astro.props;
+const html = rangePositionHTML(opts);
+---
+
+<div class="range-position" id={id} data-range-position set:html={html} />
+
+<style>
+  /* Room for the scale, the ends and one line of key, so nothing moves when it's filled. */
+  .range-position {
+    min-height: 76px;
+  }
+</style>

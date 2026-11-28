@@ -1,9 +1,10 @@
 ---
 title: "Card list"
-description: "One long card per item: a score dial, a title, fact chips and actions, for a list worked through item by item."
+description: "One long card per item: a score dial, a title, fact chips, figures and actions, for a list worked through item by item."
 ---
 
 import CardListDemo from '../../../components/CardListDemo.astro';
+import CardListFiguresDemo from '../../../components/CardListFiguresDemo.astro';
 import CardList from '@n1kname/components/CardList.astro';
 
 <div class="not-content">
@@ -16,7 +17,7 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 
 ## When not to use it
 
-- **Comparing figures across items.** That's a [data table](/components/data-table/), sortable, in columns.
+- **Comparing figures across items** as the main job, or more than three or four of them. That's a [data table](/components/data-table/), sortable, in columns. A card list's figure columns are for a few numbers that help decide on each item.
 - **Links to elsewhere.** That's a [link card](/components/link-card/).
 - **Fewer than three items.** Say it on the page.
 
@@ -25,6 +26,7 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 - **Lead:** a score dial, a ring filled to the score with the figure in mono in the middle, coloured by threshold. Or anything in `lead`.
 - **Head:** the title, which opens the item, and a secondary line.
 - **Chips:** facts with an icon, a label and a tone.
+- **Figures** (with `columns`): a few numbers every card shares, in columns lined up down the list, under a header row of the labels. Each has a value, an optional small line under it (when it was) and a tone.
 - **Actions:** [icon buttons](/components/icon-button/), a toggle and a remove.
 
 ## Variants
@@ -35,10 +37,15 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 | `max` | The top of the scale, 10. |
 | `level` | The heading level of each title, 3 by default, to follow the page's headings. |
 | `reveal` | Actions show on hover or focus where a pointer hovers; always on touch. Off by default: always shown. |
+| `columns` | Figure columns every card shares, `[{ key, label, align? }]`, between the title and the actions. Right-aligned, so the digits line up; `align: 'left'` for a word. See [figures](#figures). |
+| `columnHeader` | The header row of labels over the columns, on by default. Off: each figure shows its label above it. |
+| Item `figures` | By column key: `{ value, sub?, tone? }`. A column with no figure shows a dash. |
+| Item `lead` | HTML in place of the dial, put in as it is: a photo, a figure, a sparkline. |
 | `loading` | Starts with placeholder cards. |
 | `empty`, `failed` slots | Shown instead of the cards, as DataTable's. |
 | Chip `tone` | `neutral` (default) or `good`: something in the item's favour. The page decides what counts. `action`, `live` and `history` say an item state in words. |
-| Item `state` | `action`, `live` or `history`. See [item states](#item-states). |
+| Figure `tone` | `neutral` (default) or `good`: the good chip's tint behind that figure. |
+| Item `state` | `action`, `live`, `good` or `history`. See [item states](#item-states). |
 | Item `reviewed`, `unseen` | The person weighed in themselves; new since they last looked. |
 
 ## States
@@ -52,10 +59,13 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 | Removed | `removeCard()` slides it out and the gap closes. |
 | Toggled on | The heart pops. |
 | Empty, failed | Their slot instead of the cards. |
-| Action, live, new, reviewed, history | The item states, below. They stack. |
+| Action, live, good, new, reviewed, history | The item states, below. They stack. |
+| Below 640px, with columns | The figures wrap into a line under the chips, each with its label: "Now €34,95". A missing figure is left out. |
 | First fill with an action card | That card pulses once, over `--motion-reveal`, so the eye finds it. Never again on the page. |
 
 ## Tokens
+
+The card's surface is `--card-bg`, `--c-surface` unless a state tints it; chips and figures mix their tints on it, so they stay distinct on a good card. The figure columns share their lines down the list through CSS subgrid; `--card-cols` is the number of columns, set by CardList.
 
 `--c-border`, `--c-border-strong`, `--c-focus`, `--c-item-action`, `--c-item-action-ink`, `--c-item-history`, `--c-item-live`, `--c-item-live-bg`, `--c-item-new`, `--c-item-reviewed`, `--c-status-good`, `--c-status-warning`, `--c-surface`, `--c-surface-sunken`, `--c-text`, `--c-text-muted`, `--c-text-secondary`, `--ease-hover`, `--ease-out`, `--font-body`, `--font-mono`, `--motion-base`, `--motion-hover`, `--motion-reveal`, `--motion-slow`, `--radius-lg`, `--radius-sm`, `--sp-1` to `--sp-5`, `--text-body-sm`, `--text-caption`, `--text-mono`.
 
@@ -64,6 +74,7 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 - **The title is the card's one link or button,** stretched over the card, so Tab reaches each card once, then its actions.
 - **The dial is an image with a name,** "Score 8.4 out of 10".
 - **The list is named** with `label`, and `aria-busy` while loading.
+- **Each card's figures are a description list,** label then value then the small line: "Now, €34,95". The header row over the columns is hidden from screen readers, since each figure says its own label.
 - **An unseen card says "New"** with its title, since the dot before it is only drawn.
 - **Every item state is also a chip in words,** so colour never carries it alone.
 - **Under reduced motion** nothing lifts, rises, slides, pops or pulses.
@@ -73,10 +84,11 @@ A list someone works through one item at a time, deciding on each: keep, drop, o
 - **Title: what the item is.** Line: who or where it belongs to.
 - **Chips are facts, two to four,** short enough not to wrap: "Haarlem, 12 km", "Remote", "€5–7k".
 - **Good means good for this person,** set by the page. Don't colour a chip just to decorate it.
+- **Figures: three at most,** short labels ("Now", "Target", "Lowest recorded"), values formatted by the page, with their unit. The small line says when or where, not the value again.
 
 ## Status
 
-New in 0.31.0. Item states in 0.58.0.
+New in 0.31.0. Item states in 0.58.0. Figure columns, the good state and `lead` in the types in 0.69.0.
 
 ## Item states
 
@@ -86,11 +98,12 @@ One rule: **hue says what kind of thing it is, weight says how much it needs you
 |---|---|---|---|
 | 5 | Action: your process, needing you soon | `state: 'action'` and an `action` chip, such as the date | A band, a ring, the filled chip. Pulses once. |
 | 4 | Live: your process, moving | `state: 'live'` and a `live` chip | A ring and a tinted chip |
+| 4 | Good: in their favour, such as a price under its target | `state: 'good'` and a `good` chip that says why | A green ring and tint |
 | 3 | New since they last looked | `unseen: true` | A dot before the title |
 | 2 | Reviewed: they weighed in themselves | `reviewed: true` | A spine |
 | 1 | History: closed or set aside | `state: 'history'` and a `history` chip that says why | The words step down an ink level; a dashed chip |
 
-They stack: a live item someone reviewed shows the ring and the spine. History steps its words down a level rather than fading them, so they still read at AA.
+They stack: a live item someone reviewed shows the ring and the spine. Good tints the whole card, with no band down its side, and its secondary words take the green's hue at their own lightness. History steps its words down a level rather than fading them, so they still read at AA.
 
 <div class="not-content">
   <CardList
@@ -107,6 +120,44 @@ They stack: a live item someone reviewed shows the ring and the spine. History s
 </div>
 
 In a working list, see the [filterable list](/patterns/filterable-list/) pattern.
+
+## Figures
+
+For a list where every card shares a few numbers, such as a wish list that watches prices. The list gives the `columns`; each item its `figures` by key. The columns line up down the list, whatever the length of the title. The two good cards are at or under their target: a green ring and tint, the good chip that says so, and the figure that makes it so in the good tint. Narrow the window under 640px to see the figures wrap under the chips.
+
+<div class="not-content">
+  <CardListFiguresDemo />
+</div>
+
+Without the header row (`columnHeader={false}`), each figure carries its label above it:
+
+<div class="not-content">
+  <CardListFiguresDemo id="prices-demo-cells" columnHeader={false} />
+</div>
+
+At runtime, setCards() reads the columns from the list, so the page only adds `figures`:
+
+```astro wrap
+<CardList id="prices" label="Wish list" loading
+  columns={[{ key: 'now', label: 'Now' }, { key: 'target', label: 'Target' }, { key: 'lowest', label: 'Lowest recorded' }]} />
+<script>
+  import { setCards } from '@n1kname/components/cardlist.js';
+  const eur = (n) => n.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' });
+  setCards(document.getElementById('prices'), products.map((p) => ({
+    id: p.id, title: p.name, subtitle: p.shop,
+    lead: `<img src="${p.photo}" alt="" width="48" height="48">`,
+    state: p.now <= p.target ? 'good' : undefined,
+    chips: p.now <= p.target ? [{ icon: 'trending-down', label: 'Under target', tone: 'good' }] : [],
+    figures: {
+      now: { value: eur(p.now), tone: p.now <= p.target ? 'good' : undefined },
+      target: { value: eur(p.target) },
+      lowest: { value: eur(p.lowest), sub: p.lowestWhen },
+    },
+  })));
+</script>
+```
+
+`cardHTML(item, { columns })` writes one card the same way, and `figuresHTML(figures, columns)` only the figures.
 
 ## Code
 

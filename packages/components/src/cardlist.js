@@ -10,19 +10,27 @@
 //     list.addEventListener('card-open', (e) => open(e.detail.id));
 //     list.addEventListener('card-action', (e) => act(e.detail.id, e.detail.action, e.detail.button));
 //
-// An item: { id, title, subtitle?, href?, score?, scoreText?, state?, reviewed?, unseen?,
-// chips?: [{ icon?, label, tone? }], actions?: [{ action, icon, label, pressed? }] }. Text is
-// escaped; `href` makes the title a link, otherwise it's a button that fires `card-open`. The page
-// sorts; the list keeps the order given.
+// An item: { id, title, subtitle?, href?, lead?, score?, scoreText?, state?, reviewed?, unseen?,
+// chips?: [{ icon?, label, tone? }], figures?: { [key]: { value, sub?, tone? } },
+// actions?: [{ action, icon, label, pressed? }] }. Text is escaped; `lead` is HTML, put in as it
+// is, in place of the dial. `href` makes the title a link, otherwise it's a button that fires
+// `card-open`. The page sorts; the list keeps the order given.
+//
+// Figures: a list whose cards share a few numbers (now, target, lowest) gives CardList `columns`,
+// [{ key, label, align? }], and each item its `figures` by key. They sit in columns between the
+// title and the actions, lined up down the list, under a header row of the labels. Below 640px they
+// wrap into a line under the chips, each with its label. setCards() reads the columns from the list;
+// cardHTML() takes them as `columns`. A figure's tone 'good' tints it, as the good chip.
 //
 // State follows one rule: hue says what kind of thing it is, weight says how much it needs you.
 //   state: 'action'   your process, needing you soon: a band, a ring, and the page's filled chip
 //   state: 'live'     your process, moving: a ring
+//   state: 'good'     in the person's favour (a price at or under its target): a green ring and tint
 //   unseen: true      new since the person last looked: a dot before the title
 //   reviewed: true    they weighed in themselves: a spine
 //   state: 'history'  closed or set aside: the words step down a level
 // They stack: a live item someone reviewed shows the ring and the spine. Each state also says
-// itself in words, in a chip the page writes (tone 'action', 'live' or 'history'), so colour never
+// itself in words, in a chip the page writes (tone 'action', 'live', 'good' or 'history'), so colour never
 // carries it alone. An action card pulses once on the first fill, so the eye finds it.
 import { ICONS } from './icons';
 import { snapshot, flip } from './flip.js';
@@ -42,8 +50,35 @@ export const dialHTML = (score, opts = {}) => {
   return `<span class="score-dial ${scoreTone(score, opts)}" style="--p:${Math.max(0, Math.min(1, score / max))}" role="img" aria-label="Score ${esc(text)} out of ${max}"><span>${esc(text)}</span></span>`;
 };
 
-const STATES = new Set(['action', 'live', 'history']);
+const STATES = new Set(['action', 'live', 'good', 'history']);
 const TONES = new Set(['good', 'action', 'live', 'history']);
+const FIGURE_TONES = new Set(['good']);
+
+const alignOf = (c) => (c.align === 'left' ? 'left' : 'right');
+
+/** The figures of one card, a <dl> in the list's columns. A missing figure shows a dash. */
+export const figuresHTML = (figures = {}, columns = []) =>
+  `<dl class="card-figures">` +
+  columns
+    .map((c) => {
+      const f = figures?.[c.key];
+      const has = f && f.value !== null && f.value !== undefined && f.value !== '';
+      const tone = has && FIGURE_TONES.has(f.tone) ? ` ${f.tone}` : '';
+      const value = has ? `<span class="card-figure-value">${esc(f.value)}</span>` : `<span aria-hidden="true">–</span><span class="card-vh">None</span>`;
+      return (
+        `<div class="card-figure ${alignOf(c)}${tone}${has ? '' : ' none'}" data-col="${esc(c.key)}">` +
+        `<dt class="card-figure-label">${esc(c.label)}</dt>` +
+        `<dd>${value}</dd>` +
+        (has && f.sub ? `<dd class="card-figure-sub">${esc(f.sub)}</dd>` : '') +
+        `</div>`
+      );
+    })
+    .join('') +
+  `</dl>`;
+
+/** The header row of the labels, for a list with columns. Hidden from screen readers: each figure says its own. */
+export const columnsHeadHTML = (columns = []) =>
+  `<div class="card-cols-head" aria-hidden="true"><div class="card-figures">${columns.map((c) => `<span class="card-figure-label ${alignOf(c)}">${esc(c.label)}</span>`).join('')}</div></div>`;
 
 export const cardHTML = (item, opts = {}) => {
   // "New: " is said with the title, since the dot before it is only drawn.
@@ -64,21 +99,31 @@ export const cardHTML = (item, opts = {}) => {
     `<div class="card-lead">${item.lead ?? dialHTML(item.score, { ...opts, text: item.scoreText })}</div>` +
     `<div class="card-head"><h${opts.level ?? 3} class="card-title">${title}</h${opts.level ?? 3}>${item.subtitle ? `<p class="card-sub">${esc(item.subtitle)}</p>` : ''}</div>` +
     (chips ? `<ul class="card-chips">${chips}</ul>` : '') +
+    (opts.columns?.length ? figuresHTML(item.figures, opts.columns) : '') +
     (actions ? `<div class="card-actions">${actions}</div>` : '') +
     `</article></li>`
   );
 };
 
-export const placeholdersHTML = (n) =>
-  Array.from({ length: n }, () => `<li class="card-item placeholder" aria-hidden="true"><div class="card"><div class="card-lead"><span class="score-dial none"></span></div><div class="card-head"><span class="bar wide"></span><span class="bar"></span></div><ul class="card-chips"><li class="bar chip"></li><li class="bar chip"></li></ul></div></li>`).join('');
+export const placeholdersHTML = (n, columns = 0) => {
+  const figures = columns ? `<div class="card-figures">${'<div class="card-figure right"><span class="bar"></span></div>'.repeat(columns)}</div>` : '';
+  return Array.from({ length: n }, () => `<li class="card-item placeholder" aria-hidden="true"><div class="card"><div class="card-lead"><span class="score-dial none"></span></div><div class="card-head"><span class="bar wide"></span><span class="bar"></span></div><ul class="card-chips"><li class="bar chip"></li><li class="bar chip"></li></ul>${figures}</div></li>`).join('');
+};
 
-const opts = (root) => ({ good: Number(root.dataset.good ?? 7), warning: Number(root.dataset.warning ?? 5), max: Number(root.dataset.max ?? 10), level: Number(root.dataset.level ?? 3) });
+const columnsOf = (root) => {
+  try {
+    return root.dataset.columns ? JSON.parse(root.dataset.columns) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+const opts = (root) => ({ good: Number(root.dataset.good ?? 7), warning: Number(root.dataset.warning ?? 5), max: Number(root.dataset.max ?? 10), level: Number(root.dataset.level ?? 3), columns: columnsOf(root) });
 const wrapOf = (root) => root.closest('.card-list-wrap');
 
 /** 'loading' shows placeholder cards (after 300ms), 'empty' and 'failed' their slots, 'ready' the cards. */
 export const setCardState = (root, state, { cards = 4 } = {}) => {
   if (state === 'loading') {
-    root.innerHTML = placeholdersHTML(cards);
+    root.innerHTML = placeholdersHTML(cards, columnsOf(root)?.length ?? 0);
     root.setAttribute('aria-busy', 'true');
   } else root.removeAttribute('aria-busy');
   const wrap = wrapOf(root);
